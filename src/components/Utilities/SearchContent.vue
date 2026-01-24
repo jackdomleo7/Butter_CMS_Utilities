@@ -414,6 +414,9 @@ async function searchButterCMSPages(
     }
   }
 
+  // Sort results alphabetically by slug
+  searchResults.sort((a, b) => a.slug.localeCompare(b.slug))
+
   return { results: searchResults, totalItems: allItems.length, failedItems: failedItemsLocal }
 }
 
@@ -474,6 +477,9 @@ async function searchButterCMSBlog(token: string, searchString: string): Promise
       }
     }
   }
+
+  // Sort results alphabetically by slug
+  searchResults.sort((a, b) => a.slug.localeCompare(b.slug))
 
   return { results: searchResults, totalItems: allItems.length, failedItems: failedItemsLocal }
 }
@@ -542,6 +548,9 @@ async function searchButterCMSCollections(
       }
     }
   }
+
+  // Sort results alphabetically by slug
+  searchResults.sort((a, b) => a.slug.localeCompare(b.slug))
 
   return { results: searchResults, totalItems: allItems.length, failedItems: failedItemsLocal }
 }
