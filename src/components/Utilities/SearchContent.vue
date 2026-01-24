@@ -299,10 +299,32 @@ function searchObject(
   if (obj === null || obj === undefined) return matches
 
   if (typeof obj === 'string') {
-    if (obj.toLowerCase().includes(searchLower)) {
+    const lowerObj = obj.toLowerCase()
+    if (lowerObj.includes(searchLower)) {
+      // Find the position of the match
+      const matchIndex = lowerObj.indexOf(searchLower)
+
+      // Show context around the match (e.g., 100 chars before and after)
+      const contextStart = Math.max(0, matchIndex - 100)
+      const contextEnd = Math.min(obj.length, matchIndex + searchLower.length + 100)
+
+      let snippet = obj.substring(contextStart, contextEnd)
+
+      // Add ellipsis if we're not at the start/end
+      if (contextStart > 0) snippet = '...' + snippet
+      if (contextEnd < obj.length) snippet = snippet + '...'
+
       matches.push({
         path,
-        value: obj.length > 200 ? obj.substring(0, 200) + '...' : obj,
+        value: snippet,
+      })
+    }
+  } else if (typeof obj === 'number' || typeof obj === 'boolean') {
+    const stringValue = String(obj)
+    if (stringValue.toLowerCase().includes(searchLower)) {
+      matches.push({
+        path,
+        value: stringValue,
       })
     }
   } else if (Array.isArray(obj)) {
@@ -313,15 +335,6 @@ function searchObject(
     for (const [key, value] of Object.entries(obj)) {
       if (key === 'meta' || key === 'url' || key === 'href') continue
       matches.push(...searchObject(value, searchLower, path ? `${path}.${key}` : key, depth + 1))
-    }
-  } else if (typeof obj === 'number' || typeof obj === 'boolean') {
-    // Convert numbers and booleans to strings for searching
-    const stringValue = String(obj)
-    if (stringValue.toLowerCase().includes(searchLower)) {
-      matches.push({
-        path,
-        value: stringValue,
-      })
     }
   }
 
