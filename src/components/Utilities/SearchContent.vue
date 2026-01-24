@@ -166,6 +166,11 @@ function escapeHtml(str: string): string {
   return div.innerHTML
 }
 
+function normalizeWhitespace(str: string): string {
+  // Replace &nbsp; HTML entity and non-breaking space character (U+00A0) with regular space
+  return str.replace(/&nbsp;/gi, ' ').replace(/\u00A0/g, ' ')
+}
+
 function highlightMatches(text: string, searchTerm: string): string {
   const escapedText = escapeHtml(text)
   const escapedSearchTerm = searchTerm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
@@ -293,21 +298,24 @@ function searchObject(
   if (obj === null || obj === undefined) return matches
 
   if (typeof obj === 'string') {
-    const lowerObj = obj.toLowerCase()
+    // Normalize whitespace in both the search term and the object string
+    const normalizedObj = normalizeWhitespace(obj)
+    const normalizedSearchLower = normalizeWhitespace(searchLower)
+    const lowerNormalizedObj = normalizedObj.toLowerCase()
 
     // Count how many times the search term appears
     let occurrenceCount = 0
     let searchIndex = 0
-    while ((searchIndex = lowerObj.indexOf(searchLower, searchIndex)) !== -1) {
+    while ((searchIndex = lowerNormalizedObj.indexOf(normalizedSearchLower, searchIndex)) !== -1) {
       occurrenceCount++
-      searchIndex += searchLower.length
+      searchIndex += normalizedSearchLower.length
     }
 
     if (occurrenceCount > 0) {
       // Find the first occurrence to show context
-      const firstMatchIndex = lowerObj.indexOf(searchLower)
+      const firstMatchIndex = lowerNormalizedObj.indexOf(normalizedSearchLower)
       const contextStart = Math.max(0, firstMatchIndex - 100)
-      const contextEnd = Math.min(obj.length, firstMatchIndex + searchLower.length + 100)
+      const contextEnd = Math.min(obj.length, firstMatchIndex + normalizedSearchLower.length + 100)
 
       let snippet = obj.substring(contextStart, contextEnd)
 
