@@ -40,7 +40,7 @@
       </label>
     </UtilitySection>
 
-    <h2 style="font-weight: 500">Available Utilities</h2>
+    <h2 style="font-weight: 500">Utilities</h2>
     <SearchContent />
     <ComingSoon>List all draft content</ComingSoon>
     <ComingSoon
