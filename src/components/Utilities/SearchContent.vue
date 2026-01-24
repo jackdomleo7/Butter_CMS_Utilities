@@ -3,6 +3,9 @@
     title="Search Content"
     description="Search through pages, blog posts, or collections for content matching your search term. Results will highlight exactly where matches were found."
   >
+    <ComingSoon style="padding: 1rem"
+      >Search <span style="text-transform: uppercase">everything</span></ComingSoon
+    >
     <!-- Search Scope Selection -->
     <div class="search-content__scope-selection">
       <label class="search-content__scope-label">Search Scope</label>
@@ -137,6 +140,7 @@ import TextInput from '../TextInput.vue'
 import Btn from '../Btn.vue'
 import InfoBanner from '../InfoBanner.vue'
 import Chip from '../Chip.vue'
+import ComingSoon from '../ComingSoon.vue'
 
 const store = useStore()
 const searchScope = ref<'pages' | 'blog' | 'collections'>('pages')

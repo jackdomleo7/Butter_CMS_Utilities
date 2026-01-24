@@ -42,6 +42,10 @@
 
     <h2 style="font-weight: 500">Available Utilities</h2>
     <SearchContent />
+    <ComingSoon>List all draft content</ComingSoon>
+    <ComingSoon
+      >WYSIWYG Analyzer: Search for unwanted meta HTML caused by copy and pasting</ComingSoon
+    >
   </main>
   <Footer />
 </template>
@@ -54,6 +58,7 @@ import InfoBanner from './components/InfoBanner.vue'
 import UtilitySection from './components/UtilitySection.vue'
 import TextInput from './components/TextInput.vue'
 import SearchContent from './components/Utilities/SearchContent.vue'
+import ComingSoon from './components/ComingSoon.vue'
 
 const store = useStore()
 
