@@ -92,8 +92,8 @@
               <div class="search-content__result-slug">{{ result.slug }}</div>
             </div>
             <Chip
-              >{{ result.matches.length }}
-              {{ pluralize(result.matches.length, 'match', 'matches') }}</Chip
+              >{{ getResultMatchCount(result) }}
+              {{ pluralize(getResultMatchCount(result), 'match', 'matches') }}</Chip
             >
           </div>
           <div class="search-content__matches-list">
@@ -149,13 +149,7 @@ const showMissingSearchTermError = ref(false)
 const isLoading = ref(false)
 const statusMessage = ref('')
 const statusType = ref<'info' | 'success' | 'error' | 'warning'>('info')
-const results = ref<
-  Array<{
-    title: string
-    slug: string
-    matches: Array<{ path: string; value: string }>
-  }>
->([])
+const results = ref<Array<SearchResult>>([])
 const failedItems = ref<Array<{ page: number; error: string; source: string }>>([])
 const totalItems = ref(0)
 
@@ -278,7 +272,7 @@ async function fetchWithRetry(url: string, maxRetries = 3): Promise<ButterCMSApi
 interface SearchResult {
   title: string
   slug: string
-  matches: Array<{ path: string; value: string }>
+  matches: Array<{ path: string; value: string; count?: number }>
 }
 
 interface SearchResponse {
@@ -292,21 +286,28 @@ function searchObject(
   searchLower: string,
   path = '',
   depth = 0,
-): Array<{ path: string; value: string }> {
-  const matches: Array<{ path: string; value: string }> = []
+): Array<{ path: string; value: string; count?: number }> {
+  const matches: Array<{ path: string; value: string; count?: number }> = []
 
   if (depth > 10) return matches
   if (obj === null || obj === undefined) return matches
 
   if (typeof obj === 'string') {
     const lowerObj = obj.toLowerCase()
-    if (lowerObj.includes(searchLower)) {
-      // Find the position of the match
-      const matchIndex = lowerObj.indexOf(searchLower)
 
-      // Show context around the match (e.g., 100 chars before and after)
-      const contextStart = Math.max(0, matchIndex - 100)
-      const contextEnd = Math.min(obj.length, matchIndex + searchLower.length + 100)
+    // Count how many times the search term appears
+    let occurrenceCount = 0
+    let searchIndex = 0
+    while ((searchIndex = lowerObj.indexOf(searchLower, searchIndex)) !== -1) {
+      occurrenceCount++
+      searchIndex += searchLower.length
+    }
+
+    if (occurrenceCount > 0) {
+      // Find the first occurrence to show context
+      const firstMatchIndex = lowerObj.indexOf(searchLower)
+      const contextStart = Math.max(0, firstMatchIndex - 100)
+      const contextEnd = Math.min(obj.length, firstMatchIndex + searchLower.length + 100)
 
       let snippet = obj.substring(contextStart, contextEnd)
 
@@ -317,6 +318,7 @@ function searchObject(
       matches.push({
         path,
         value: snippet,
+        count: occurrenceCount,
       })
     }
   } else if (typeof obj === 'number' || typeof obj === 'boolean') {
@@ -325,6 +327,7 @@ function searchObject(
       matches.push({
         path,
         value: stringValue,
+        count: 1,
       })
     }
   } else if (Array.isArray(obj)) {
@@ -615,8 +618,14 @@ async function executeSearch(): Promise<void> {
 }
 
 const totalMatches = computed(() => {
-  return results.value.reduce((sum, r) => sum + r.matches.length, 0)
+  return results.value.reduce((sum, r) => {
+    return sum + r.matches.reduce((matchSum, m) => matchSum + (m.count || 1), 0)
+  }, 0)
 })
+
+function getResultMatchCount(result: SearchResult): number {
+  return result.matches.reduce((sum, m) => sum + (m.count || 1), 0)
+}
 </script>
 
 <style lang="scss" scoped>
