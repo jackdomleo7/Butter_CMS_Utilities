@@ -8,15 +8,15 @@
       <label class="search-content__scope-label">Search Scope</label>
       <div class="search-content__scope-options">
         <label class="search-content__radio-option">
-          <input type="radio" v-model="searchScope" value="pages" />
+          <input type="radio" v-model="searchScope" value="pages" :disabled="hasResults" />
           <span>Page Type</span>
         </label>
         <label class="search-content__radio-option">
-          <input type="radio" v-model="searchScope" value="blog" />
+          <input type="radio" v-model="searchScope" value="blog" :disabled="hasResults" />
           <span>Blog Posts</span>
         </label>
         <label class="search-content__radio-option">
-          <input type="radio" v-model="searchScope" value="collections" />
+          <input type="radio" v-model="searchScope" value="collections" :disabled="hasResults" />
           <span>Collection</span>
         </label>
       </div>
@@ -59,8 +59,12 @@
       <template v-slot:error v-if="showMissingSearchTermError">Please enter a search term</template>
     </TextInput>
 
-    <Btn @click="executeSearch" :disabled="isLoading">
+    <Btn @click="executeSearch" v-if="!hasResults" :disabled="isLoading">
       {{ isLoading ? 'Searching...' : 'Search' }}
+    </Btn>
+
+    <Btn v-if="hasResults || statusMessage" type="reset" status="secondary" @click="resetSearch">
+      Reset
     </Btn>
 
     <InfoBanner v-if="statusMessage" class="status-message" :status="statusType" role="alert">
@@ -155,6 +159,8 @@ const results = ref<
 const failedItems = ref<Array<{ page: number; error: string; source: string }>>([])
 const totalItems = ref(0)
 
+const hasResults = computed(() => results.value.length > 0)
+
 // Utility functions
 function pluralize(count: number, singular: string, plural: string): string {
   return count === 1 ? singular : plural
@@ -171,6 +177,18 @@ function highlightMatches(text: string, searchTerm: string): string {
   const escapedSearchTerm = searchTerm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
   const regex = new RegExp(`(${escapedSearchTerm})`, 'gi')
   return escapedText.replace(regex, '<mark>$1</mark>')
+}
+
+function resetSearch(): void {
+  results.value = []
+  failedItems.value = []
+  statusMessage.value = ''
+  pageType.value = ''
+  collectionKey.value = ''
+  searchTerm.value = ''
+  showMissingPageTypeError.value = false
+  showMissingCollectionKeyError.value = false
+  showMissingSearchTermError.value = false
 }
 
 function setStatus(
@@ -295,6 +313,15 @@ function searchObject(
     for (const [key, value] of Object.entries(obj)) {
       if (key === 'meta' || key === 'url' || key === 'href') continue
       matches.push(...searchObject(value, searchLower, path ? `${path}.${key}` : key, depth + 1))
+    }
+  } else if (typeof obj === 'number' || typeof obj === 'boolean') {
+    // Convert numbers and booleans to strings for searching
+    const stringValue = String(obj)
+    if (stringValue.toLowerCase().includes(searchLower)) {
+      matches.push({
+        path,
+        value: stringValue,
+      })
     }
   }
 
@@ -609,6 +636,15 @@ const totalMatches = computed(() => {
 
     input[type='radio'] {
       cursor: pointer;
+    }
+
+    &--disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+
+      input[type='radio'] {
+        cursor: not-allowed;
+      }
     }
   }
 

@@ -4,6 +4,7 @@
     :href="href"
     :type="tag === 'button' ? type : undefined"
     class="btn"
+    :class="status ? `btn--${status}` : ''"
     :disabled="disabled"
   >
     <slot />
@@ -29,6 +30,7 @@ withDefaults(
      */
     href?: string
     disabled?: boolean
+    status?: 'secondary'
   }>(),
   {
     tag: 'button',
@@ -69,6 +71,14 @@ withDefaults(
   gap: 0.5rem;
   user-select: none;
   position: relative;
+
+  &--secondary {
+    --btn-background-color: #fff;
+    --btn-border-color: var(--butter-yellow);
+    --btn-color: var(--butter-dark);
+    --btn-hover-background-color: #fff8e8;
+    --btn-hover-border-color: var(--butter-yellow);
+  }
 
   &:disabled {
     cursor: default;
