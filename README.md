@@ -20,7 +20,7 @@ Simply visit the GitHub Pages site (https://jackdomleo7.github.io/Butter_CMS_Uti
 
 ## 🛠️ Current Utilities
 
-- **Search Pages** - Search for specific content across a given page type
+- **Search Content** - Search for specific content across a given page type, a give collection type, or the entire blog engine
 
 ## 📝 License
 MIT - Feel free to use, modify, and share!

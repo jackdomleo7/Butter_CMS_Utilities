@@ -36,7 +36,7 @@
     </UtilitySection>
 
     <h2 style="font-weight: 500">Available Utilities</h2>
-    <SearchPages />
+    <SearchContent />
   </main>
   <Footer />
 </template>
@@ -49,7 +49,7 @@ import Footer from './components/Footer.vue'
 import InfoBanner from './components/InfoBanner.vue'
 import UtilitySection from './components/UtilitySection.vue'
 import TextInput from './components/TextInput.vue'
-import SearchPages from './components/Utilities/SearchPages.vue'
+import SearchContent from './components/Utilities/SearchContent.vue'
 
 const store = useStore()
 const lockToken = ref(localStorage.getItem('butter_cms_lock_token') === 'true')
