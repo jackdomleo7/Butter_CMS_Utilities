@@ -16,11 +16,11 @@ I used AI to scaffold this project because:
 Important: All utilities run entirely in your browser. No API tokens or data are stored, cached, or transmitted to any third-party servers. Your Butter CMS token is used only for direct API calls to the official Butter CMS API.
 
 ## 🚀 Usage
-Simply visit the GitHub Pages site (coming soon) and use the utilities with your Butter CMS API token.
+Simply visit the GitHub Pages site (https://jackdomleo7.github.io/Butter_CMS_Utilities/) and use the utilities with your Butter CMS API token.
 
 ## 🛠️ Current Utilities
 
-Coming soon...
+- **Search Pages** - Search for specific content across a given page type
 
 ## 📝 License
 MIT - Feel free to use, modify, and share!
