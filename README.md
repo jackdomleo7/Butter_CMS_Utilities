@@ -8,9 +8,9 @@ While working with Butter CMS, I needed certain utilities for searching and mana
 I used AI to scaffold this project because:
 
 - I needed a quick, simple tool without the overhead of frameworks
-- A single HTML file is perfect for this use case - easy to host on GitHub Pages
-- No need for TypeScript, build processes, or complex tooling
 - AI helped me iterate faster on something that's meant to be functional, not fancy
+
+I did have to convert the project to Vue from static HTML/JS/CSS files though so it could scale. The HTML file after 1 feature was getting quite large.
 
 ## 🔒 Privacy & Security
 Important: All utilities run entirely in your browser. No API tokens or data are stored, cached, or transmitted to any third-party servers. Your Butter CMS token is used only for direct API calls to the official Butter CMS API.
