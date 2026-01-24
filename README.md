@@ -1,2 +1,30 @@
 # Butter_CMS_Utilities
 An unofficial collection of client-side utilities for Butter CMS that I found myself needing but aren't available out of the box (yet).
+
+## 🎯 Why This Exists
+While working with Butter CMS, I needed certain utilities for searching and managing content that surprisingly weren't provided by default. Rather than building these into a larger project or waiting for official tools, I created this simple, no-frills utility page.
+
+## 🤖 Why AI?
+I used AI to scaffold this project because:
+
+- I needed a quick, simple tool without the overhead of frameworks
+- A single HTML file is perfect for this use case - easy to host on GitHub Pages
+- No need for TypeScript, build processes, or complex tooling
+- AI helped me iterate faster on something that's meant to be functional, not fancy
+
+## 🔒 Privacy & Security
+Important: All utilities run entirely in your browser. No API tokens or data are stored, cached, or transmitted to any third-party servers. Your Butter CMS token is used only for direct API calls to the official Butter CMS API.
+
+## 🚀 Usage
+Simply visit the GitHub Pages site (coming soon) and use the utilities with your Butter CMS API token.
+
+## 🛠️ Current Utilities
+
+Coming soon...
+
+## 📝 License
+MIT - Feel free to use, modify, and share!
+
+---
+
+Note: This is an unofficial tool and is not affiliated with or endorsed by Butter CMS.
