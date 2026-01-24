@@ -16,7 +16,7 @@
           type="password"
           placeholder="Enter your Butter CMS API Token"
           :required="true"
-          :readonly="lockToken"
+          :readonly="store.lockToken"
           v-model="store.token"
         >
           <template v-slot:label>Butter CMS API Token</template>
@@ -28,11 +28,16 @@
           v-if="store.token"
           @click="toggleTokenLock"
           class="app__lock-button"
-          :title="lockToken ? 'Unlock token' : 'Lock token'"
+          :title="store.lockToken ? 'Unlock token' : 'Lock token'"
         >
-          {{ lockToken ? '🔒' : '🔓' }}
+          {{ store.lockToken ? '🔒' : '🔓' }}
         </button>
       </div>
+
+      <label class="app__checkbox-label">
+        <input type="checkbox" v-model="store.includePreview" class="app__checkbox-input" />
+        <span>Include draft content in search results</span>
+      </label>
     </UtilitySection>
 
     <h2 style="font-weight: 500">Available Utilities</h2>
@@ -42,7 +47,6 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue'
 import { useStore } from './stores/index'
 import Header from './components/Header.vue'
 import Footer from './components/Footer.vue'
@@ -52,17 +56,9 @@ import TextInput from './components/TextInput.vue'
 import SearchContent from './components/Utilities/SearchContent.vue'
 
 const store = useStore()
-const lockToken = ref(localStorage.getItem('butter_cms_lock_token') === 'true')
-
-watch(
-  () => lockToken.value,
-  (newValue) => {
-    localStorage.setItem('butter_cms_lock_token', String(newValue))
-  },
-)
 
 function toggleTokenLock(): void {
-  lockToken.value = !lockToken.value
+  store.lockToken = !store.lockToken
 }
 </script>
 
@@ -120,6 +116,23 @@ main {
       outline: 2px solid #7c8db0;
       outline-offset: 2px;
     }
+  }
+
+  &__checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-top: 1.5rem;
+    cursor: pointer;
+    font-size: 0.9375rem;
+    user-select: none;
+  }
+
+  &__checkbox-input {
+    cursor: pointer;
+    width: 1.25rem;
+    height: 1.25rem;
+    flex-shrink: 0;
   }
 }
 </style>
