@@ -38,15 +38,20 @@
 
           <h3>Local Storage</h3>
           <p>
-            To improve your experience, we store your Butter CMS API token locally in your browser's
-            localStorage. This is completely safe because:
+            To improve your experience, we offer the option to store your Butter CMS API token and
+            other settings locally in your browser's localStorage. You have full control over this
+            feature and can disable it at any time using the checkbox in the API Configuration
+            section. When disabled, no data is stored locally and your settings will reset when you
+            refresh the page.
           </p>
+          <p>When localStorage is enabled, this is completely safe because:</p>
           <ul>
             <li>Data is stored only on your device, never on our servers</li>
             <li>Only your browser can access localStorage from this domain</li>
             <li>Other websites cannot access your stored token</li>
             <li>Clearing your browser data will remove the stored token</li>
             <li>You have full control and can delete it anytime</li>
+            <li>You can disable storage entirely using the in-app toggle</li>
           </ul>
 
           <h3>How It Works</h3>

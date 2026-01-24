@@ -9,6 +9,10 @@
       </p>
     </InfoBanner>
     <UtilitySection title="API Configuration" title-heading-level="h2">
+      <label class="app__checkbox-label">
+        <input type="checkbox" v-model="store.useLocalStorage" class="app__checkbox-input" />
+        <span>Store settings in browser local storage</span>
+      </label>
       <div class="app__token-input-container">
         <TextInput
           root-class="app__token-input"
