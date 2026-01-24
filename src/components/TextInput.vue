@@ -115,7 +115,7 @@ $inputHeight: 2.5rem;
 
     &:disabled,
     &:read-only {
-      background-color: var(--j-global-grey-100);
+      background-color: #eee;
     }
 
     &[aria-invalid='true'] {

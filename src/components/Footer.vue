@@ -25,13 +25,28 @@
           <p><strong>Last updated: January 2026</strong></p>
 
           <h3>Data Collection</h3>
-          <p>We do not collect, store, or transmit any data whatsoever. This includes:</p>
+          <p>
+            We do not collect, store on servers, or transmit any data to third parties. This
+            includes:
+          </p>
           <ul>
-            <li>No API tokens or credentials</li>
-            <li>No personal information</li>
+            <li>No personal information transmitted to our servers</li>
             <li>No usage analytics or tracking</li>
-            <li>No cookies or local storage</li>
             <li>No server-side logging</li>
+            <li>No data shared with third-party services</li>
+          </ul>
+
+          <h3>Local Storage</h3>
+          <p>
+            To improve your experience, we store your Butter CMS API token locally in your browser's
+            localStorage. This is completely safe because:
+          </p>
+          <ul>
+            <li>Data is stored only on your device, never on our servers</li>
+            <li>Only your browser can access localStorage from this domain</li>
+            <li>Other websites cannot access your stored token</li>
+            <li>Clearing your browser data will remove the stored token</li>
+            <li>You have full control and can delete it anytime</li>
           </ul>
 
           <h3>How It Works</h3>
