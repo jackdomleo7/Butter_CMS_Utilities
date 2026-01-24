@@ -10,6 +10,8 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css">
   <script src="./privacy-policy-modal.js" defer async></script>
   <link rel="stylesheet" href="./privacy-policy-modal.css">
+  <script src="./api-token.js" defer async></script>
+  <link rel="stylesheet" href="./api-token.css">
   <style>
     :root {
       --butter-yellow: #FDB714;
@@ -85,6 +87,40 @@
 
     .info-banner strong {
       color: var(--text-primary);
+    }
+
+    .form-group {
+      margin-bottom: 1rem;
+    }
+
+    .form-group:last-child {
+      margin-bottom: 0;
+    }
+
+    label {
+      display: block;
+      font-weight: 500;
+      margin-bottom: 0.5rem;
+      color: var(--text-primary);
+      font-size: 0.9375rem;
+    }
+
+    input[type="text"],
+    input[type="password"] {
+      width: 100%;
+      padding: 0.75rem;
+      border: 1px solid var(--butter-border);
+      border-radius: 6px;
+      font-size: 0.9375rem;
+      font-family: inherit;
+      transition: border-color 0.2s;
+    }
+
+    input[type="text"]:focus,
+    input[type="password"]:focus {
+      outline: none;
+      border-color: var(--butter-yellow);
+      box-shadow: 0 0 0 3px rgba(253, 183, 20, 0.1);
     }
 
     .utilities-section {
@@ -187,6 +223,14 @@
   <main>
     <div class="info-banner">
       <p><strong>🔒 Privacy First:</strong> All operations run entirely in your browser. No API tokens or data are stored or transmitted to any third-party servers. Your Butter CMS token is used only for direct API calls to Butter CMS.</p>
+    </div>
+
+    <div class="api-config">
+      <h2>API Configuration</h2>
+      <div class="form-group">
+        <label for="apiToken">Butter CMS API Token</label>
+        <input type="password" id="apiToken" placeholder="Enter your API token">
+      </div>
     </div>
 
     <section class="utilities-section">
