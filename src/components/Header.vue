@@ -3,6 +3,7 @@
     <div class="header__content">
       <h1>🧈 Butter CMS Utilities</h1>
       <p>Unofficial client-side tools for Butter CMS</p>
+      <p style="font-size: 0.875rem">I can't believe it's not Butter CMS!</p>
     </div>
   </header>
 </template>
