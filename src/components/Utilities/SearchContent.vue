@@ -307,19 +307,16 @@ function searchObject(
     const normalizedSearchLower = normalizeWhitespace(searchLower)
     const lowerNormalizedObj = normalizedObj.toLowerCase()
 
-    // Count how many times the search term appears
-    let occurrenceCount = 0
+    // Find all occurrences and create a snippet for each
     let searchIndex = 0
-    while ((searchIndex = lowerNormalizedObj.indexOf(normalizedSearchLower, searchIndex)) !== -1) {
-      occurrenceCount++
-      searchIndex += normalizedSearchLower.length
-    }
+    let occurrenceNumber = 0
 
-    if (occurrenceCount > 0) {
-      // Find the first occurrence to show context
-      const firstMatchIndex = lowerNormalizedObj.indexOf(normalizedSearchLower)
-      const contextStart = Math.max(0, firstMatchIndex - 100)
-      const contextEnd = Math.min(obj.length, firstMatchIndex + normalizedSearchLower.length + 100)
+    while ((searchIndex = lowerNormalizedObj.indexOf(normalizedSearchLower, searchIndex)) !== -1) {
+      occurrenceNumber++
+
+      // Show context around this specific match
+      const contextStart = Math.max(0, searchIndex - 100)
+      const contextEnd = Math.min(obj.length, searchIndex + normalizedSearchLower.length + 100)
 
       let snippet = obj.substring(contextStart, contextEnd)
 
@@ -328,10 +325,13 @@ function searchObject(
       if (contextEnd < obj.length) snippet = snippet + '...'
 
       matches.push({
-        path,
+        path: occurrenceNumber > 1 ? `${path} (occurrence ${occurrenceNumber})` : path,
         value: snippet,
-        count: occurrenceCount,
+        count: 1,
       })
+
+      // Move past this match to find the next one
+      searchIndex += normalizedSearchLower.length
     }
   } else if (typeof obj === 'number' || typeof obj === 'boolean') {
     const stringValue = String(obj)
