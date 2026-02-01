@@ -6,7 +6,6 @@ import vueDevTools from 'vite-plugin-vue-devtools'
 
 // https://vite.dev/config/
 export default defineConfig({
-  base: '/Butter_CMS_Utilities/',
   plugins: [
     vue(),
     vueDevTools(),
