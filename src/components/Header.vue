@@ -1,7 +1,7 @@
 <template>
   <header class="header">
     <div class="header__content">
-      <h1>🧈 Butter CMS Utilities</h1>
+      <h1><img src="/favicon.png" alt="" width="36" height="36" /> Butter CMS Utilities</h1>
       <p>Unofficial client-side tools for Butter CMS</p>
       <p style="font-size: 0.875rem">I can't believe it's not Butter CMS!</p>
     </div>
@@ -10,7 +10,7 @@
 
 <style lang="scss">
 .header {
-  background: linear-gradient(135deg, var(--butter-yellow) 0%, #ffa500 100%);
+  background: var(--butter-yellow);
   color: var(--butter-dark);
   padding: 1.5rem 1rem;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
