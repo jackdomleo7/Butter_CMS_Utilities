@@ -370,8 +370,8 @@ async function searchButterCMSPages(
   setStatus(`Fetching pages of type "${pageTypeParam}"...`, 'info', true)
 
   while (hasMore) {
-    const previewParam = store.includePreview ? '&preview=true' : ''
-    const url = `${baseUrl}/${pageTypeParam}/?auth_token=${token}&page=${page}&page_size=100${previewParam}`
+    const previewParam = store.includePreview ? '&preview=1' : ''
+    const url = `${baseUrl}/${pageTypeParam}/?auth_token=${token}&page=${page}&page_size=100&levels=5&order=title${previewParam}`
 
     try {
       const data = await fetchWithRetry(url)
@@ -435,7 +435,7 @@ async function searchButterCMSBlog(token: string, searchString: string): Promise
   setStatus('Fetching blog posts...', 'info', true)
 
   while (hasMore) {
-    const previewParam = store.includePreview ? '&preview=true' : ''
+    const previewParam = store.includePreview ? '&preview=1' : ''
     const url = `${baseUrl}/?auth_token=${token}&page=${page}&page_size=100${previewParam}`
 
     try {
@@ -504,8 +504,8 @@ async function searchButterCMSCollections(
   setStatus(`Fetching collection "${collectionKeyParam}"...`, 'info', true)
 
   while (hasMore) {
-    const previewParam = store.includePreview ? '&preview=true' : ''
-    const url = `${baseUrl}/${collectionKeyParam}/?auth_token=${token}&page=${page}&page_size=100${previewParam}`
+    const previewParam = store.includePreview ? '&preview=1' : ''
+    const url = `${baseUrl}/${collectionKeyParam}/?auth_token=${token}&page=${page}&page_size=100&levels=5&order=title${previewParam}`
 
     try {
       const data = await fetchWithRetry(url)
