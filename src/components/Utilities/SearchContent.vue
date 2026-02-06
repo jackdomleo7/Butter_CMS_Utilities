@@ -348,7 +348,6 @@ function searchObject(
     })
   } else if (typeof obj === 'object') {
     for (const [key, value] of Object.entries(obj)) {
-      if (key === 'meta' || key === 'url' || key === 'href') continue
       matches.push(...searchObject(value, searchLower, path ? `${path}.${key}` : key, depth + 1))
     }
   }
