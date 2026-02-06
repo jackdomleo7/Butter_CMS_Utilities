@@ -371,7 +371,7 @@ async function searchButterCMSPages(
 
   while (hasMore) {
     const previewParam = store.includePreview ? '&preview=1' : ''
-    const url = `${baseUrl}/${pageTypeParam}/?auth_token=${token}&page=${page}&page_size=100&levels=5&order=title${previewParam}`
+    const url = `${baseUrl}/${pageTypeParam}/?auth_token=${token}&page=${page}&page_size=100&levels=5${previewParam}`
 
     try {
       const data = await fetchWithRetry(url)
@@ -505,7 +505,7 @@ async function searchButterCMSCollections(
 
   while (hasMore) {
     const previewParam = store.includePreview ? '&preview=1' : ''
-    const url = `${baseUrl}/${collectionKeyParam}/?auth_token=${token}&page=${page}&page_size=100&levels=5&order=title${previewParam}`
+    const url = `${baseUrl}/${collectionKeyParam}/?auth_token=${token}&page=${page}&page_size=100&levels=5${previewParam}`
 
     try {
       const data = await fetchWithRetry(url)
