@@ -16,7 +16,7 @@
       @close="showPrivacyModal = false"
     >
       <template #heading>Privacy Policy</template>
-      <p><strong>Last updated: January 2026</strong></p>
+      <p><strong>Last updated: February 2026</strong></p>
 
       <h3>Data Collection</h3>
       <p>
@@ -31,19 +31,15 @@
 
       <h3>Local Storage</h3>
       <p>
-        To improve your experience, we offer the option to store your Butter CMS API token and other
-        settings locally in your browser's localStorage. You have full control over this feature and
-        can disable it at any time using the checkbox in the API Configuration section. When
-        disabled, no data is stored locally and your settings will reset when you refresh the page.
+        We store your Butter CMS API token and other settings locally in your browser's localStorage
+        to improve your experience. This is completely safe because:
       </p>
-      <p>When localStorage is enabled, this is completely safe because:</p>
       <ul>
         <li>Data is stored only on your device, never on our servers</li>
         <li>Only your browser can access localStorage from this domain</li>
         <li>Other websites cannot access your stored token</li>
         <li>Clearing your browser data will remove the stored token</li>
-        <li>You have full control and can delete it anytime</li>
-        <li>You can disable storage entirely using the in-app toggle</li>
+        <li>You can delete your stored token anytime by clearing the input and refreshing</li>
       </ul>
 
       <h3>How It Works</h3>
@@ -52,6 +48,10 @@
         Butter CMS API token, it is used only to make direct API calls from your browser to Butter
         CMS's official API endpoints. Your token never passes through our servers because we don't
         have any servers.
+      </p>
+      <p>
+        <strong>Token Type:</strong> We only require a read-only API token. This application only
+        reads data from your Butter CMS account and never attempts to write or modify any content.
       </p>
 
       <h3>Third-Party Services</h3>
@@ -77,13 +77,16 @@
       <h3>Your Responsibility</h3>
       <p>
         You are responsible for keeping your Butter CMS API token secure. Do not share your token
-        with others or use it on untrusted devices.
+        with others or use it on untrusted devices. Additionally, please ensure you only provide a
+        read-only API token to this application. While this application never attempts to write or
+        modify data, providing a write-enabled token would be unnecessary and poses a potential
+        security risk.
       </p>
 
       <h3>Questions</h3>
       <p>
-        If you have questions about this privacy policy, please contact Jack Domleo via the link in
-        the footer.
+        If you have questions about this privacy policy, please contact
+        <a href="https://jackdomleo.dev" target="_blank" rel="noopener noreferrer">Jack Domleo</a>.
       </p>
     </Modal>
   </footer>

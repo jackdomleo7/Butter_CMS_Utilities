@@ -2,20 +2,15 @@ import { ref, watch, computed } from 'vue'
 import { defineStore } from 'pinia'
 
 export const useStore = defineStore('store', () => {
-  // Initialize useLocalStorage from localStorage (defaults to true)
-  const useLocalStorage = ref(localStorage.getItem('butter_cms_use_localstorage') !== 'false')
-
-  // Initialize config from localStorage or default object (only if useLocalStorage is enabled)
+  // Initialize config from localStorage or default object
   const config = ref(
     (() => {
-      if (useLocalStorage.value) {
-        const stored = localStorage.getItem('butter_cms_config')
-        if (stored) {
-          try {
-            return JSON.parse(stored)
-          } catch {
-            console.warn('Failed to parse stored config, using defaults')
-          }
+      const stored = localStorage.getItem('butter_cms_config')
+      if (stored) {
+        try {
+          return JSON.parse(stored)
+        } catch {
+          console.warn('Failed to parse stored config, using defaults')
         }
       }
       return { token: '', lockToken: false, includePreview: false }
@@ -44,29 +39,14 @@ export const useStore = defineStore('store', () => {
     },
   })
 
-  // Watch for useLocalStorage changes and save to localStorage
-  watch(
-    () => useLocalStorage.value,
-    (newValue) => {
-      localStorage.setItem('butter_cms_use_localstorage', String(newValue))
-      if (!newValue) {
-        localStorage.removeItem('butter_cms_config')
-      }
-    },
-  )
-
-  // Watch for config changes and save to localStorage (only if useLocalStorage is enabled)
+  // Watch for config changes and save to localStorage
   watch(
     config,
     (newConfig) => {
-      if (useLocalStorage.value) {
-        localStorage.setItem('butter_cms_config', JSON.stringify(newConfig))
-      } else {
-        localStorage.removeItem('butter_cms_config')
-      }
+      localStorage.setItem('butter_cms_config', JSON.stringify(newConfig))
     },
     { deep: true },
   )
 
-  return { token, lockToken, includePreview, useLocalStorage }
+  return { token, lockToken, includePreview }
 })

@@ -9,21 +9,17 @@
       </p>
     </InfoBanner>
     <UtilitySection title="API Configuration" title-heading-level="h2">
-      <label class="app__checkbox-label">
-        <input type="checkbox" v-model="store.useLocalStorage" class="app__checkbox-input" />
-        <span>Store settings in browser local storage</span>
-      </label>
       <div class="app__token-input-container">
         <TextInput
           root-class="app__token-input"
           id="butter-api-token"
           type="password"
-          placeholder="Enter your Butter CMS API Token"
+          placeholder="Enter your read-only Butter CMS API Token"
           :required="true"
           :readonly="store.lockToken"
           v-model="store.token"
         >
-          <template v-slot:label>Butter CMS API Token</template>
+          <template v-slot:label>Butter CMS API Token (Read-Only)</template>
           <template v-slot:error v-if="!store.token"
             >Please provide your Butter CMS API Token</template
           >
