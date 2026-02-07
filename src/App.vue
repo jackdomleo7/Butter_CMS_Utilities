@@ -52,12 +52,14 @@
     >
   </main>
   <Footer />
+  <WhatsNew />
 </template>
 
 <script setup lang="ts">
 import { useStore } from './stores/index'
 import Header from './components/Header.vue'
 import Footer from './components/Footer.vue'
+import WhatsNew from './components/WhatsNew.vue'
 import InfoBanner from './components/InfoBanner.vue'
 import UtilitySection from './components/UtilitySection.vue'
 import TextInput from './components/TextInput.vue'

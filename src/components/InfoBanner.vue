@@ -25,7 +25,6 @@ withDefaults(
   border-left: 4px solid var(--info-banner-border-color);
   color: var(--info-banner-text-color);
   padding: 1rem 1.25rem;
-  margin-bottom: 2rem;
   border-radius: 4px;
   font-size: 1rem;
   line-height: 1.5rem;
