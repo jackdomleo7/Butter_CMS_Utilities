@@ -6,115 +6,94 @@
     </p>
     <p style="margin-top: 0.5rem; font-size: 0.8125rem">
       Not affiliated with Butter CMS •
-      <button class="privacy-link" @click="openPrivacyModal()">Privacy Policy</button>
+      <button class="privacy-link" @click="showPrivacyModal = true">Privacy Policy</button>
     </p>
 
-    <dialog ref="privacyModal" id="privacyModal" class="privacy-policy-modal">
-      <div class="privacy-policy-modal__content">
-        <div class="privacy-policy-modal__header">
-          <h2>Privacy Policy</h2>
-          <button
-            class="privacy-policy-modal__close"
-            @click="closePrivacyModal()"
-            aria-label="Close privacy policy"
-          >
-            &times;
-          </button>
-        </div>
-        <div class="privacy-policy-modal__body">
-          <p><strong>Last updated: January 2026</strong></p>
+    <Modal
+      id="privacyModal"
+      class="privacy-policy-modal"
+      :open="showPrivacyModal"
+      @close="showPrivacyModal = false"
+    >
+      <template #heading>Privacy Policy</template>
+      <p><strong>Last updated: January 2026</strong></p>
 
-          <h3>Data Collection</h3>
-          <p>
-            We do not collect, store on servers, or transmit any data to third parties. This
-            includes:
-          </p>
-          <ul>
-            <li>No personal information transmitted to our servers</li>
-            <li>No usage analytics or tracking</li>
-            <li>No server-side logging</li>
-            <li>No data shared with third-party services</li>
-          </ul>
+      <h3>Data Collection</h3>
+      <p>
+        We do not collect, store on servers, or transmit any data to third parties. This includes:
+      </p>
+      <ul>
+        <li>No personal information transmitted to our servers</li>
+        <li>No usage analytics or tracking</li>
+        <li>No server-side logging</li>
+        <li>No data shared with third-party services</li>
+      </ul>
 
-          <h3>Local Storage</h3>
-          <p>
-            To improve your experience, we offer the option to store your Butter CMS API token and
-            other settings locally in your browser's localStorage. You have full control over this
-            feature and can disable it at any time using the checkbox in the API Configuration
-            section. When disabled, no data is stored locally and your settings will reset when you
-            refresh the page.
-          </p>
-          <p>When localStorage is enabled, this is completely safe because:</p>
-          <ul>
-            <li>Data is stored only on your device, never on our servers</li>
-            <li>Only your browser can access localStorage from this domain</li>
-            <li>Other websites cannot access your stored token</li>
-            <li>Clearing your browser data will remove the stored token</li>
-            <li>You have full control and can delete it anytime</li>
-            <li>You can disable storage entirely using the in-app toggle</li>
-          </ul>
+      <h3>Local Storage</h3>
+      <p>
+        To improve your experience, we offer the option to store your Butter CMS API token and other
+        settings locally in your browser's localStorage. You have full control over this feature and
+        can disable it at any time using the checkbox in the API Configuration section. When
+        disabled, no data is stored locally and your settings will reset when you refresh the page.
+      </p>
+      <p>When localStorage is enabled, this is completely safe because:</p>
+      <ul>
+        <li>Data is stored only on your device, never on our servers</li>
+        <li>Only your browser can access localStorage from this domain</li>
+        <li>Other websites cannot access your stored token</li>
+        <li>Clearing your browser data will remove the stored token</li>
+        <li>You have full control and can delete it anytime</li>
+        <li>You can disable storage entirely using the in-app toggle</li>
+      </ul>
 
-          <h3>How It Works</h3>
-          <p>
-            All utilities on this page run entirely in your browser (client-side). When you provide
-            your Butter CMS API token, it is used only to make direct API calls from your browser to
-            Butter CMS's official API endpoints. Your token never passes through our servers because
-            we don't have any servers.
-          </p>
+      <h3>How It Works</h3>
+      <p>
+        All utilities on this page run entirely in your browser (client-side). When you provide your
+        Butter CMS API token, it is used only to make direct API calls from your browser to Butter
+        CMS's official API endpoints. Your token never passes through our servers because we don't
+        have any servers.
+      </p>
 
-          <h3>Third-Party Services</h3>
-          <p>
-            The only external service this page interacts with is the official Butter CMS API
-            (api.buttercms.com), and only when you explicitly use one of the utilities with your own
-            API token.
-          </p>
+      <h3>Third-Party Services</h3>
+      <p>
+        The only external service this page interacts with is the official Butter CMS API
+        (api.buttercms.com), and only when you explicitly use one of the utilities with your own API
+        token.
+      </p>
 
-          <h3>GitHub Pages Hosting</h3>
-          <p>
-            This site is hosted on GitHub Pages. GitHub may collect visitor information as part of
-            their standard hosting service. Please refer to
-            <a
-              href="https://docs.github.com/en/site-policy/privacy-policies/github-privacy-statement"
-              target="_blank"
-              rel="noopener noreferrer"
-              >GitHub's Privacy Statement</a
-            >
-            for more information.
-          </p>
+      <h3>GitHub Pages Hosting</h3>
+      <p>
+        This site is hosted on GitHub Pages. GitHub may collect visitor information as part of their
+        standard hosting service. Please refer to
+        <a
+          href="https://docs.github.com/en/site-policy/privacy-policies/github-privacy-statement"
+          target="_blank"
+          rel="noopener noreferrer"
+          >GitHub's Privacy Statement</a
+        >
+        for more information.
+      </p>
 
-          <h3>Your Responsibility</h3>
-          <p>
-            You are responsible for keeping your Butter CMS API token secure. Do not share your
-            token with others or use it on untrusted devices.
-          </p>
+      <h3>Your Responsibility</h3>
+      <p>
+        You are responsible for keeping your Butter CMS API token secure. Do not share your token
+        with others or use it on untrusted devices.
+      </p>
 
-          <h3>Questions</h3>
-          <p>
-            If you have questions about this privacy policy, please contact Jack Domleo via the link
-            in the footer.
-          </p>
-        </div>
-      </div>
-    </dialog>
+      <h3>Questions</h3>
+      <p>
+        If you have questions about this privacy policy, please contact Jack Domleo via the link in
+        the footer.
+      </p>
+    </Modal>
   </footer>
 </template>
 
 <script setup lang="ts">
 import { ref } from 'vue'
+import Modal from './Modal.vue'
 
-const privacyModal = ref<HTMLDialogElement | null>(null)
-
-function openPrivacyModal() {
-  if (privacyModal.value) {
-    privacyModal.value.showModal()
-  }
-}
-
-function closePrivacyModal() {
-  if (privacyModal.value) {
-    privacyModal.value.close()
-  }
-}
+const showPrivacyModal = ref<boolean>(false)
 </script>
 
 <style lang="scss">
@@ -139,11 +118,6 @@ function closePrivacyModal() {
     &:hover {
       text-decoration: underline;
     }
-
-    &:focus {
-      outline: 2px solid var(--butter-yellow);
-      outline-offset: 2px;
-    }
   }
 }
 
@@ -160,70 +134,10 @@ function closePrivacyModal() {
   &:hover {
     text-decoration: underline;
   }
-
-  &:focus {
-    outline: 2px solid var(--butter-yellow);
-    outline-offset: 2px;
-  }
 }
 
 .privacy-policy-modal {
-  text-align: left;
-  padding: 0;
-  border: none;
-  border-radius: 8px;
-  max-width: 600px;
-  width: calc(100% - 2rem);
-  max-height: 90vh;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-
-  &::backdrop {
-    background: rgba(0, 0, 0, 0.5);
-  }
-
-  &__content {
-    padding: 2rem;
-    max-height: 90vh;
-  }
-
-  &__header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 1.5rem;
-    padding-bottom: 1rem;
-    border-bottom: 2px solid var(--butter-border);
-
-    h2 {
-      font-size: 1.5rem;
-      color: var(--butter-dark);
-      font-weight: 600;
-      margin: 0;
-    }
-  }
-
-  &__close {
-    background: none;
-    border: none;
-    font-size: 1.5rem;
-    cursor: pointer;
-    color: var(--text-secondary);
-    padding: 0.25rem 0.5rem;
-    line-height: 1;
-    border-radius: 4px;
-
-    &:hover {
-      background-color: var(--butter-light-gray);
-      color: var(--text-primary);
-    }
-
-    &:focus {
-      outline: 2px solid var(--butter-yellow);
-      outline-offset: 2px;
-    }
-  }
-
-  &__body {
+  :deep() {
     h3 {
       font-size: 1.125rem;
       color: var(--butter-dark);

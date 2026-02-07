@@ -120,11 +120,6 @@ main {
     &:active {
       background-color: #a8aeb8;
     }
-
-    &:focus {
-      outline: 2px solid #7c8db0;
-      outline-offset: 2px;
-    }
   }
 
   &__checkbox-label {
