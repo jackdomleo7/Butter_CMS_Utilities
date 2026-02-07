@@ -140,32 +140,32 @@ const showPrivacyModal = ref<boolean>(false)
 }
 
 .privacy-policy-modal {
-  :deep() {
-    h3 {
-      font-size: 1.125rem;
-      color: var(--butter-dark);
-      margin-top: 1.5rem;
+  font-size: 14px;
+
+  h3 {
+    font-size: 1.125rem;
+    color: var(--butter-dark);
+    margin-top: 0.75rem;
+    margin-bottom: 0.25rem;
+    font-weight: 600;
+
+    &:first-child {
+      margin-top: 0;
+    }
+  }
+
+  p {
+    color: var(--text-secondary);
+    margin: 0;
+  }
+
+  ul {
+    padding-left: 1.5rem;
+    margin-bottom: 0.5rem;
+    color: var(--text-secondary);
+
+    li {
       margin-bottom: 0.5rem;
-      font-weight: 600;
-
-      &:first-child {
-        margin-top: 0;
-      }
-    }
-
-    p {
-      color: var(--text-secondary);
-      margin-bottom: 1rem;
-    }
-
-    ul {
-      margin-left: 1.5rem;
-      margin-bottom: 1rem;
-      color: var(--text-secondary);
-
-      li {
-        margin-bottom: 0.5rem;
-      }
     }
   }
 }
