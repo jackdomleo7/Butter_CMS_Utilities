@@ -85,7 +85,12 @@
         {{ pluralize(totalMatches, 'match', 'matches') }}
       </div>
       <div class="results-list">
-        <div v-for="(result, index) in results" :key="index" class="search-content__result-item">
+        <div
+          v-for="(result, index) in results"
+          :key="index"
+          v-memo="[result, searchTerm]"
+          class="search-content__result-item"
+        >
           <div class="search-content__result-header search-content__result-header--desktop">
             <div>
               <div class="search-content__result-title-wrapper">
@@ -776,6 +781,7 @@ function getResultMatchCount(result: SearchResult): number {
     padding: 0.75rem;
     margin-bottom: 0.5rem;
     border-radius: 4px;
+    line-height: 1.4;
   }
 
   // Match path
