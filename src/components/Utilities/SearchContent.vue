@@ -122,17 +122,9 @@
     </div>
 
     <!-- Failed items -->
-    <div v-if="failedItems.length > 0" class="search-content__failed-items">
-      <h4 class="search-content__failed-items-title">
-        ⚠️ Failed to retrieve {{ failedItems.length }}
-        {{ pluralize(failedItems.length, 'item', 'items') }}
-      </h4>
-      <p>Please check these manually:</p>
-      <ul class="search-content__failed-items-list">
-        <li v-for="(failed, index) in failedItems" :key="index">
-          {{ failed.source }} {{ failed.page }}: {{ failed.error }}
-        </li>
-      </ul>
+    <div v-if="failedResource" class="search-content__failed-items">
+      <h4 class="search-content__failed-items-title">⚠️ Failed to retrieve content</h4>
+      <p>{{ failedError }}</p>
     </div>
   </UtilitySection>
 </template>
@@ -146,6 +138,9 @@ import Btn from '../Btn.vue'
 import InfoBanner from '../InfoBanner.vue'
 import Chip from '../Chip.vue'
 import ComingSoon from '../ComingSoon.vue'
+import { getAllPages } from '@/core/pages'
+import { getAllPosts } from '@/core/posts'
+import { getAllCollections } from '@/core/collections'
 
 const store = useStore()
 const searchScope = ref<'pages' | 'blog' | 'collections'>('pages')
@@ -159,8 +154,15 @@ const isLoading = ref(false)
 const statusMessage = ref('')
 const statusType = ref<'info' | 'success' | 'error' | 'warning'>('info')
 const results = ref<Array<SearchResult>>([])
-const failedItems = ref<Array<{ page: number; error: string; source: string }>>([])
+const failedResource = ref<string | null>(null)
+const failedError = ref<string | null>(null)
 const totalItems = ref(0)
+
+interface SearchResult {
+  title: string
+  slug: string
+  matches: Array<{ path: string; value: string; count?: number }>
+}
 
 const hasResults = computed(() => results.value.length > 0)
 
@@ -189,7 +191,8 @@ function highlightMatches(text: string, searchTerm: string): string {
 
 function resetSearch(): void {
   results.value = []
-  failedItems.value = []
+  failedResource.value = null
+  failedError.value = null
   statusMessage.value = ''
   pageType.value = ''
   collectionKey.value = ''
@@ -248,52 +251,16 @@ function getScopeBadgeText(): string {
   }
 }
 
-// API functions
-interface ButterCMSData {
-  name?: string
-  title?: string
-  slug: string
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  [key: string]: any
-}
-
-interface ButterCMSApiResponse {
-  data: ButterCMSData[] | ButterCMSData
-  meta?: {
-    next_page: number | null
-  }
-}
-
-async function fetchWithRetry(url: string, maxRetries = 3): Promise<ButterCMSApiResponse> {
-  let lastError: Error | null = null
-  for (let attempt = 1; attempt <= maxRetries; attempt++) {
-    try {
-      const response = await fetch(url)
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`)
-      }
-      return await response.json()
-    } catch (error) {
-      lastError = error as Error
-      if (attempt < maxRetries) {
-        await new Promise((resolve) => setTimeout(resolve, 1000 * attempt))
-      }
+type SearchResponse =
+  | {
+      success: true
+      results: SearchResult[]
+      totalItems: number
     }
-  }
-  throw lastError
-}
-
-interface SearchResult {
-  title: string
-  slug: string
-  matches: Array<{ path: string; value: string; count?: number }>
-}
-
-interface SearchResponse {
-  results: SearchResult[]
-  totalItems: number
-  failedItems: Array<{ page: number; error: string; source: string }>
-}
+  | {
+      success: false
+      error: string
+    }
 
 function searchObject(
   obj: unknown,
@@ -365,133 +332,76 @@ async function searchButterCMSPages(
   searchString: string,
   pageTypeParam: string,
 ): Promise<SearchResponse> {
-  const baseUrl = 'https://api.buttercms.com/v2/pages'
-  const allItems: ButterCMSData[] = []
-  const failedItemsLocal: Array<{ page: number; error: string; source: string }> = []
-  let page = 1
-  let hasMore = true
+  setStatus(`Searching ${pageTypeParam} pages...`, 'info', true)
+  try {
+    const allItems = await getAllPages({
+      token,
+      pageType: pageTypeParam,
+      preview: store.includePreview,
+    })
 
-  setStatus(`Fetching pages of type "${pageTypeParam}"...`, 'info', true)
+    const searchLower = searchString.toLowerCase()
+    const searchResults: SearchResult[] = []
 
-  while (hasMore) {
-    const previewParam = store.includePreview ? '&preview=1' : ''
-    const url = `${baseUrl}/${pageTypeParam}/?auth_token=${token}&page=${page}&page_size=100&levels=5&alt_media_text=1${previewParam}`
+    for (const itemData of allItems) {
+      const matches = searchObject(itemData, searchLower)
 
-    try {
-      const data = await fetchWithRetry(url)
+      if (matches.length > 0) {
+        const validMatches = matches.filter((m) => m.value && m.value.trim().length > 0)
 
-      if (data.data && Array.isArray(data.data) && data.data.length > 0) {
-        allItems.push(...data.data)
-        hasMore = data.meta?.next_page !== null
-        page++
-        setStatus(
-          `Fetched ${allItems.length} ${pluralize(allItems.length, 'page', 'pages')} so far...`,
-          'info',
-          true,
-        )
-      } else {
-        hasMore = false
-      }
-    } catch (error) {
-      failedItemsLocal.push({ page, error: (error as Error).message, source: 'Page' })
-      hasMore = false
-    }
-  }
-
-  setStatus(
-    `Searching through ${allItems.length} ${pluralize(allItems.length, 'page', 'pages')}...`,
-    'info',
-    true,
-  )
-
-  const searchLower = searchString.toLowerCase()
-  const searchResults: SearchResult[] = []
-
-  for (const itemData of allItems) {
-    const matches = searchObject(itemData, searchLower)
-
-    if (matches.length > 0) {
-      const validMatches = matches.filter((m) => m.value && m.value.trim().length > 0)
-
-      if (validMatches.length > 0) {
-        searchResults.push({
-          title: itemData.name || itemData.slug || 'Untitled',
-          slug: itemData.slug,
-          matches: validMatches,
-        })
+        if (validMatches.length > 0) {
+          searchResults.push({
+            title: itemData.name || itemData.slug || 'Untitled',
+            slug: itemData.slug,
+            matches: validMatches,
+          })
+        }
       }
     }
+
+    // Sort results alphabetically by slug
+    searchResults.sort((a, b) => a.slug.localeCompare(b.slug))
+    return { success: true, results: searchResults, totalItems: allItems.length }
+  } catch (error) {
+    return {
+      success: false,
+      error: `Failed to fetch ${pageTypeParam} pages: ${(error as Error).message}`,
+    }
   }
-
-  // Sort results alphabetically by slug
-  searchResults.sort((a, b) => a.slug.localeCompare(b.slug))
-
-  return { results: searchResults, totalItems: allItems.length, failedItems: failedItemsLocal }
 }
 
 async function searchButterCMSBlog(token: string, searchString: string): Promise<SearchResponse> {
-  const baseUrl = 'https://api.buttercms.com/v2/posts'
-  const allItems: ButterCMSData[] = []
-  const failedItemsLocal: Array<{ page: number; error: string; source: string }> = []
-  let page = 1
-  let hasMore = true
-
   setStatus('Fetching blog posts...', 'info', true)
 
-  while (hasMore) {
-    const previewParam = store.includePreview ? '&preview=1' : ''
-    const url = `${baseUrl}/?auth_token=${token}&page=${page}&page_size=100${previewParam}`
+  try {
+    const allItems = await getAllPosts({ token, preview: store.includePreview })
 
-    try {
-      const data = await fetchWithRetry(url)
+    const searchLower = searchString.toLowerCase()
+    const searchResults: SearchResult[] = []
 
-      if (data.data && Array.isArray(data.data) && data.data.length > 0) {
-        allItems.push(...data.data)
-        hasMore = data.meta?.next_page !== null
-        page++
-        setStatus(
-          `Fetched ${allItems.length} ${pluralize(allItems.length, 'blog post', 'blog posts')} so far...`,
-          'info',
-          true,
-        )
-      } else {
-        hasMore = false
-      }
-    } catch (error) {
-      failedItemsLocal.push({ page, error: (error as Error).message, source: 'Blog' })
-      hasMore = false
-    }
-  }
+    for (const itemData of allItems) {
+      const matches = searchObject(itemData, searchLower)
 
-  setStatus(
-    `Searching through ${allItems.length} ${pluralize(allItems.length, 'blog post', 'blog posts')}...`,
-    'info',
-    true,
-  )
+      if (matches.length > 0) {
+        const validMatches = matches.filter((m) => m.value && m.value.trim().length > 0)
 
-  const searchLower = searchString.toLowerCase()
-  const searchResults: SearchResult[] = []
-
-  for (const itemData of allItems) {
-    const matches = searchObject(itemData, searchLower)
-
-    if (matches.length > 0) {
-      const validMatches = matches.filter((m) => m.value && m.value.trim().length > 0)
-
-      if (validMatches.length > 0) {
-        searchResults.push({
-          title: itemData.title || itemData.slug || 'Untitled',
-          slug: itemData.slug,
-          matches: validMatches,
-        })
+        if (validMatches.length > 0) {
+          searchResults.push({
+            title: itemData.title || itemData.slug || 'Untitled',
+            slug: itemData.slug,
+            matches: validMatches,
+          })
+        }
       }
     }
+
+    // Sort results alphabetically by slug
+    searchResults.sort((a, b) => a.slug.localeCompare(b.slug))
+
+    return { success: true, results: searchResults, totalItems: allItems.length }
+  } catch (error) {
+    return { success: false, error: `Failed to fetch blog posts: ${(error as Error).message}` }
   }
-
-  // Sort results alphabetically by slug
-  searchResults.sort((a, b) => a.slug.localeCompare(b.slug))
-
-  return { results: searchResults, totalItems: allItems.length, failedItems: failedItemsLocal }
 }
 
 async function searchButterCMSCollections(
@@ -499,71 +409,44 @@ async function searchButterCMSCollections(
   searchString: string,
   collectionKeyParam: string,
 ): Promise<SearchResponse> {
-  const baseUrl = 'https://api.buttercms.com/v2/content'
-  const allItems: ButterCMSData[] = []
-  const failedItemsLocal: Array<{ page: number; error: string; source: string }> = []
-  let page = 1
-  let hasMore = true
+  setStatus(`Fetching ${collectionKeyParam} collection...`, 'info', true)
 
-  setStatus(`Fetching collection "${collectionKeyParam}"...`, 'info', true)
+  try {
+    const allItems = await getAllCollections({
+      token,
+      collectionType: collectionKeyParam,
+      preview: store.includePreview,
+    })
 
-  while (hasMore) {
-    const previewParam = store.includePreview ? '&preview=1' : ''
-    const url = `${baseUrl}/${collectionKeyParam}/?auth_token=${token}&page=${page}&page_size=100&levels=5&alt_media_text=1${previewParam}`
+    const searchLower = searchString.toLowerCase()
+    const searchResults: SearchResult[] = []
 
-    try {
-      const data = await fetchWithRetry(url)
+    for (const itemData of allItems) {
+      const matches = searchObject(itemData, searchLower)
 
-      // Collections return data differently - it's nested under the collection key
-      const collectionData = (data.data as Record<string, ButterCMSData[]>)?.[collectionKeyParam]
+      if (matches.length > 0) {
+        const validMatches = matches.filter((m) => m.value && m.value.trim().length > 0)
 
-      if (collectionData && Array.isArray(collectionData) && collectionData.length > 0) {
-        allItems.push(...collectionData)
-        hasMore = data.meta?.next_page !== null
-        page++
-        setStatus(
-          `Fetched ${allItems.length} ${pluralize(allItems.length, 'collection item', 'collection items')} so far...`,
-          'info',
-          true,
-        )
-      } else {
-        hasMore = false
-      }
-    } catch (error) {
-      failedItemsLocal.push({ page, error: (error as Error).message, source: 'Collection' })
-      hasMore = false
-    }
-  }
-
-  setStatus(
-    `Searching through ${allItems.length} ${pluralize(allItems.length, 'collection item', 'collection items')}...`,
-    'info',
-    true,
-  )
-
-  const searchLower = searchString.toLowerCase()
-  const searchResults: SearchResult[] = []
-
-  for (const itemData of allItems) {
-    const matches = searchObject(itemData, searchLower)
-
-    if (matches.length > 0) {
-      const validMatches = matches.filter((m) => m.value && m.value.trim().length > 0)
-
-      if (validMatches.length > 0) {
-        searchResults.push({
-          title: itemData.name || itemData.title || 'Untitled',
-          slug: itemData.slug || 'N/A',
-          matches: validMatches,
-        })
+        if (validMatches.length > 0) {
+          searchResults.push({
+            title: itemData.name || itemData.title || 'Untitled',
+            slug: itemData.slug || 'N/A',
+            matches: validMatches,
+          })
+        }
       }
     }
+
+    // Sort results alphabetically by slug
+    searchResults.sort((a, b) => a.slug.localeCompare(b.slug))
+
+    return { success: true, results: searchResults, totalItems: allItems.length }
+  } catch (error) {
+    return {
+      success: false,
+      error: `Failed to fetch ${collectionKeyParam} collection: ${(error as Error).message}`,
+    }
   }
-
-  // Sort results alphabetically by slug
-  searchResults.sort((a, b) => a.slug.localeCompare(b.slug))
-
-  return { results: searchResults, totalItems: allItems.length, failedItems: failedItemsLocal }
 }
 
 // Main search execution
@@ -572,7 +455,8 @@ async function executeSearch(): Promise<void> {
   const searchTermValue = searchTerm.value.trim()
 
   results.value = []
-  failedItems.value = []
+  failedResource.value = null
+  failedError.value = null
   statusMessage.value = ''
 
   if (!token) {
@@ -614,30 +498,29 @@ async function executeSearch(): Promise<void> {
         throw new Error('Invalid search scope')
     }
 
-    const {
-      results: searchResults,
-      totalItems: totalItemsCount,
-      failedItems: failedItemsResults,
-    } = searchResponse
+    if (!searchResponse.success) {
+      failedResource.value = searchResponse.error
+      failedError.value = searchResponse.error
+      setStatus(searchResponse.error, 'error')
+      return
+    }
 
-    totalItems.value = totalItemsCount
+    totalItems.value = searchResponse.totalItems
 
-    if (searchResults.length === 0) {
+    if (searchResponse.results.length === 0) {
       setStatus(
-        `No matches found for "${searchTermValue}" in ${totalItemsCount} ${pluralize(totalItemsCount, getScopeItemName(), getScopeItemNamePlural())}`,
+        `No matches found for "${searchTermValue}" in ${searchResponse.totalItems} ${pluralize(searchResponse.totalItems, getScopeItemName(), getScopeItemNamePlural())}`,
         'info',
         false,
       )
     } else {
       setStatus(
-        `Found ${searchResults.length} ${pluralize(searchResults.length, getScopeItemName(), getScopeItemNamePlural())} with matches out of ${totalItemsCount} total ${pluralize(totalItemsCount, getScopeItemName(), getScopeItemNamePlural())}`,
+        `Found ${searchResponse.results.length} ${pluralize(searchResponse.results.length, getScopeItemName(), getScopeItemNamePlural())} with matches out of ${searchResponse.totalItems} total ${pluralize(searchResponse.totalItems, getScopeItemName(), getScopeItemNamePlural())}`,
         'success',
         false,
       )
-      results.value = searchResults
+      results.value = searchResponse.results
     }
-
-    failedItems.value = failedItemsResults
   } catch (error) {
     setStatus(`Error: ${(error as Error).message}`, 'error')
   } finally {
