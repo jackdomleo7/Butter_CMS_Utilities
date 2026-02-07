@@ -25,7 +25,7 @@ export default defineConfig({
       enabled: true,
       provider: 'v8',
       include: ['src/**/*.ts', 'src/**/*.vue'],
-      exclude: ['**/node_modules/**', 'src/main.ts']
+      exclude: ['**/node_modules/**', 'src/main.ts', 'src/types.ts']
     }
   }
 })
