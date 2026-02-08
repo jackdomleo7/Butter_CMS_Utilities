@@ -138,9 +138,8 @@ import Btn from '../Btn.vue'
 import InfoBanner from '../InfoBanner.vue'
 import Chip from '../Chip.vue'
 import ComingSoon from '../ComingSoon.vue'
-import { getAllPages } from '@/core/pages'
-import { getAllPosts } from '@/core/posts'
-import { getAllCollections } from '@/core/collections'
+import { searchContent } from '@/features/searchContent'
+import type { AsyncReturnType } from 'type-fest'
 
 const store = useStore()
 const searchScope = ref<'pages' | 'blog' | 'collections'>('pages')
@@ -153,16 +152,10 @@ const showMissingSearchTermError = ref(false)
 const isLoading = ref(false)
 const statusMessage = ref('')
 const statusType = ref<'info' | 'success' | 'error' | 'warning'>('info')
-const results = ref<Array<SearchResult>>([])
+const results = ref<AsyncReturnType<typeof searchContent>['results']>([])
 const failedResource = ref<string | null>(null)
 const failedError = ref<string | null>(null)
 const totalItems = ref(0)
-
-interface SearchResult {
-  title: string
-  slug: string
-  matches: Array<{ path: string; value: string; count?: number }>
-}
 
 const hasResults = computed(() => results.value.length > 0)
 
@@ -175,11 +168,6 @@ function escapeHtml(str: string): string {
   const div = document.createElement('div')
   div.textContent = str
   return div.innerHTML
-}
-
-function normalizeWhitespace(str: string): string {
-  // Replace &nbsp; HTML entity and non-breaking space character (U+00A0) with regular space
-  return str.replace(/&nbsp;/gi, ' ').replace(/\u00A0/g, ' ')
 }
 
 function highlightMatches(text: string, searchTerm: string): string {
@@ -251,204 +239,6 @@ function getScopeBadgeText(): string {
   }
 }
 
-type SearchResponse =
-  | {
-      success: true
-      results: SearchResult[]
-      totalItems: number
-    }
-  | {
-      success: false
-      error: string
-    }
-
-function searchObject(
-  obj: unknown,
-  searchLower: string,
-  path = '',
-  depth = 0,
-): Array<{ path: string; value: string; count?: number }> {
-  const matches: Array<{ path: string; value: string; count?: number }> = []
-
-  if (depth > 10) return matches
-  if (obj === null || obj === undefined) return matches
-
-  if (typeof obj === 'string') {
-    // Normalize whitespace in both the search term and the object string
-    const normalizedObj = normalizeWhitespace(obj)
-    const normalizedSearchLower = normalizeWhitespace(searchLower)
-    const lowerNormalizedObj = normalizedObj.toLowerCase()
-
-    // Find all occurrences and create a snippet for each
-    let searchIndex = 0
-    let occurrenceNumber = 0
-
-    while ((searchIndex = lowerNormalizedObj.indexOf(normalizedSearchLower, searchIndex)) !== -1) {
-      occurrenceNumber++
-
-      // Show context around this specific match
-      const contextStart = Math.max(0, searchIndex - 100)
-      const contextEnd = Math.min(obj.length, searchIndex + normalizedSearchLower.length + 100)
-
-      let snippet = obj.substring(contextStart, contextEnd)
-
-      // Add ellipsis if we're not at the start/end
-      if (contextStart > 0) snippet = '...' + snippet
-      if (contextEnd < obj.length) snippet = snippet + '...'
-
-      matches.push({
-        path: occurrenceNumber > 1 ? `${path} (occurrence ${occurrenceNumber})` : path,
-        value: snippet,
-        count: 1,
-      })
-
-      // Move past this match to find the next one
-      searchIndex += normalizedSearchLower.length
-    }
-  } else if (typeof obj === 'number' || typeof obj === 'boolean') {
-    const stringValue = String(obj)
-    if (stringValue.toLowerCase().includes(searchLower)) {
-      matches.push({
-        path,
-        value: stringValue,
-        count: 1,
-      })
-    }
-  } else if (Array.isArray(obj)) {
-    obj.forEach((item, index) => {
-      matches.push(...searchObject(item, searchLower, `${path}[${index}]`, depth + 1))
-    })
-  } else if (typeof obj === 'object') {
-    for (const [key, value] of Object.entries(obj)) {
-      matches.push(...searchObject(value, searchLower, path ? `${path}.${key}` : key, depth + 1))
-    }
-  }
-
-  return matches
-}
-
-async function searchButterCMSPages(
-  token: string,
-  searchString: string,
-  pageTypeParam: string,
-): Promise<SearchResponse> {
-  setStatus(`Searching ${pageTypeParam} pages...`, 'info', true)
-  try {
-    const allItems = await getAllPages({
-      token,
-      pageType: pageTypeParam,
-      preview: store.includePreview,
-    })
-
-    const searchLower = searchString.toLowerCase()
-    const searchResults: SearchResult[] = []
-
-    for (const itemData of allItems) {
-      const matches = searchObject(itemData, searchLower)
-
-      if (matches.length > 0) {
-        const validMatches = matches.filter((m) => m.value && m.value.trim().length > 0)
-
-        if (validMatches.length > 0) {
-          searchResults.push({
-            title: itemData.name || itemData.slug || 'Untitled',
-            slug: itemData.slug,
-            matches: validMatches,
-          })
-        }
-      }
-    }
-
-    // Sort results alphabetically by slug
-    searchResults.sort((a, b) => a.slug.localeCompare(b.slug))
-    return { success: true, results: searchResults, totalItems: allItems.length }
-  } catch (error) {
-    return {
-      success: false,
-      error: `Failed to fetch ${pageTypeParam} pages: ${(error as Error).message}`,
-    }
-  }
-}
-
-async function searchButterCMSBlog(token: string, searchString: string): Promise<SearchResponse> {
-  setStatus('Fetching blog posts...', 'info', true)
-
-  try {
-    const allItems = await getAllPosts({ token, preview: store.includePreview })
-
-    const searchLower = searchString.toLowerCase()
-    const searchResults: SearchResult[] = []
-
-    for (const itemData of allItems) {
-      const matches = searchObject(itemData, searchLower)
-
-      if (matches.length > 0) {
-        const validMatches = matches.filter((m) => m.value && m.value.trim().length > 0)
-
-        if (validMatches.length > 0) {
-          searchResults.push({
-            title: itemData.title || itemData.slug || 'Untitled',
-            slug: itemData.slug,
-            matches: validMatches,
-          })
-        }
-      }
-    }
-
-    // Sort results alphabetically by slug
-    searchResults.sort((a, b) => a.slug.localeCompare(b.slug))
-
-    return { success: true, results: searchResults, totalItems: allItems.length }
-  } catch (error) {
-    return { success: false, error: `Failed to fetch blog posts: ${(error as Error).message}` }
-  }
-}
-
-async function searchButterCMSCollections(
-  token: string,
-  searchString: string,
-  collectionKeyParam: string,
-): Promise<SearchResponse> {
-  setStatus(`Fetching ${collectionKeyParam} collection...`, 'info', true)
-
-  try {
-    const allItems = await getAllCollections({
-      token,
-      collectionType: collectionKeyParam,
-      preview: store.includePreview,
-    })
-
-    const searchLower = searchString.toLowerCase()
-    const searchResults: SearchResult[] = []
-
-    for (const itemData of allItems) {
-      const matches = searchObject(itemData, searchLower)
-
-      if (matches.length > 0) {
-        const validMatches = matches.filter((m) => m.value && m.value.trim().length > 0)
-
-        if (validMatches.length > 0) {
-          searchResults.push({
-            title: itemData.name || itemData.title || 'Untitled',
-            slug: itemData.slug || 'N/A',
-            matches: validMatches,
-          })
-        }
-      }
-    }
-
-    // Sort results alphabetically by slug
-    searchResults.sort((a, b) => a.slug.localeCompare(b.slug))
-
-    return { success: true, results: searchResults, totalItems: allItems.length }
-  } catch (error) {
-    return {
-      success: false,
-      error: `Failed to fetch ${collectionKeyParam} collection: ${(error as Error).message}`,
-    }
-  }
-}
-
 // Main search execution
 async function executeSearch(): Promise<void> {
   const token = store.token
@@ -476,46 +266,36 @@ async function executeSearch(): Promise<void> {
     return
 
   isLoading.value = true
+  setStatus('Searching...', 'info', true)
 
   try {
-    let searchResponse: SearchResponse
-
-    switch (searchScope.value) {
-      case 'pages':
-        searchResponse = await searchButterCMSPages(token, searchTermValue, pageType.value.trim())
-        break
-      case 'blog':
-        searchResponse = await searchButterCMSBlog(token, searchTermValue)
-        break
-      case 'collections':
-        searchResponse = await searchButterCMSCollections(
-          token,
-          searchTermValue,
-          collectionKey.value.trim(),
-        )
-        break
-      default:
-        throw new Error('Invalid search scope')
-    }
+    const searchResponse = await searchContent(
+      searchScope.value,
+      searchTermValue,
+      token,
+      store.includePreview,
+      pageType.value.trim() || undefined,
+      collectionKey.value.trim() || undefined,
+    )
 
     if (!searchResponse.success) {
-      failedResource.value = searchResponse.error
-      failedError.value = searchResponse.error
-      setStatus(searchResponse.error, 'error')
+      failedResource.value = searchResponse.error!
+      failedError.value = searchResponse.error!
+      setStatus(searchResponse.error!, 'error')
       return
     }
 
-    totalItems.value = searchResponse.totalItems
+    totalItems.value = searchResponse.totalItems!
 
     if (searchResponse.results.length === 0) {
       setStatus(
-        `No matches found for "${searchTermValue}" in ${searchResponse.totalItems} ${pluralize(searchResponse.totalItems, getScopeItemName(), getScopeItemNamePlural())}`,
+        `No matches found for "${searchTermValue}" in ${searchResponse.totalItems} ${pluralize(searchResponse.totalItems!, getScopeItemName(), getScopeItemNamePlural())}`,
         'info',
         false,
       )
     } else {
       setStatus(
-        `Found ${searchResponse.results.length} ${pluralize(searchResponse.results.length, getScopeItemName(), getScopeItemNamePlural())} with matches out of ${searchResponse.totalItems} total ${pluralize(searchResponse.totalItems, getScopeItemName(), getScopeItemNamePlural())}`,
+        `Found ${searchResponse.results.length} ${pluralize(searchResponse.results.length, getScopeItemName(), getScopeItemNamePlural())} with matches out of ${searchResponse.totalItems} total ${pluralize(searchResponse.totalItems!, getScopeItemName(), getScopeItemNamePlural())}`,
         'success',
         false,
       )
@@ -534,7 +314,9 @@ const totalMatches = computed(() => {
   }, 0)
 })
 
-function getResultMatchCount(result: SearchResult): number {
+function getResultMatchCount(
+  result: AsyncReturnType<typeof searchContent>['results'][number],
+): number {
   return result.matches.reduce((sum, m) => sum + (m.count || 1), 0)
 }
 </script>
