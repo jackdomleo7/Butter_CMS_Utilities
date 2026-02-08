@@ -59,7 +59,7 @@ import WhatsNew from './components/WhatsNew.vue'
 import InfoBanner from './components/InfoBanner.vue'
 import UtilitySection from './components/UtilitySection.vue'
 import TextInput from './components/TextInput.vue'
-import SearchContent from './components/Utilities/SearchContent.vue'
+import SearchContent from './components/Features/SearchContent.vue'
 import ComingSoon from './components/ComingSoon.vue'
 
 const store = useStore()
