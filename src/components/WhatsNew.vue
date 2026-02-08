@@ -41,6 +41,14 @@ const showModal = ref<boolean>(false)
 
 const features: Feature[] = [
   {
+    id: 'search-content-multi-types',
+    type: 'improvement',
+    title: 'Search Content utility now supports multiple page types and collection types',
+    description:
+      'The Search Content utility has been improved to allow searching across multiple page types and collection types at once, making it easier to find content that may be spread across different types. Simply use a comma-separated list of page type and collection keys in the search input to search across them all simultaneously.',
+    utcDatetimeAdded: new Date('2026-02-08T14:00:00Z'),
+  },
+  {
     id: 'search-content-alt-text',
     type: 'bugfix',
     title: 'Fix Search Content not searching new alt text API',
