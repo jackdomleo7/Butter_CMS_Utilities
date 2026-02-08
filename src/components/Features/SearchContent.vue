@@ -165,7 +165,12 @@ import { searchContent } from '@/features/searchContent'
 import type { AsyncReturnType } from 'type-fest'
 
 const store = useStore()
-const includeBlog = ref(store.selectedScopes.blog)
+const includeBlog = computed({
+  get: () => store.selectedScopes.blog,
+  set: (val: boolean) => {
+    store.selectedScopes = { ...store.selectedScopes, blog: val }
+  },
+})
 const searchTerm = ref('')
 const showMissingSearchTermError = ref(false)
 const isLoading = ref(false)
@@ -226,20 +231,20 @@ function getResultSourceBadge(
 
 function togglePageType(pageType: string): void {
   const index = store.selectedScopes.pageTypes.indexOf(pageType)
-  if (index > -1) {
-    store.selectedScopes.pageTypes.splice(index, 1)
-  } else {
-    store.selectedScopes.pageTypes.push(pageType)
-  }
+  const newPageTypes =
+    index > -1
+      ? store.selectedScopes.pageTypes.filter((pt) => pt !== pageType)
+      : [...store.selectedScopes.pageTypes, pageType]
+  store.selectedScopes = { ...store.selectedScopes, pageTypes: newPageTypes }
 }
 
 function toggleCollectionKey(collectionKey: string): void {
   const index = store.selectedScopes.collectionKeys.indexOf(collectionKey)
-  if (index > -1) {
-    store.selectedScopes.collectionKeys.splice(index, 1)
-  } else {
-    store.selectedScopes.collectionKeys.push(collectionKey)
-  }
+  const newCollectionKeys =
+    index > -1
+      ? store.selectedScopes.collectionKeys.filter((ck) => ck !== collectionKey)
+      : [...store.selectedScopes.collectionKeys, collectionKey]
+  store.selectedScopes = { ...store.selectedScopes, collectionKeys: newCollectionKeys }
 }
 
 // Main search execution
@@ -265,9 +270,6 @@ async function executeSearch(): Promise<void> {
   setStatus('Searching...', 'info', true)
 
   try {
-    // Update the store with the current selection
-    store.selectedScopes.blog = includeBlog.value
-
     const searchResponse = await searchContent(
       searchTermValue,
       token,

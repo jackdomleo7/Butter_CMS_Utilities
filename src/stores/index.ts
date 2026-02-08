@@ -3,7 +3,18 @@ import { defineStore } from 'pinia'
 
 export const useStore = defineStore('store', () => {
   // Initialize config from localStorage or default object
-  const config = ref(
+  const config = ref<{
+    token: string
+    lockToken: boolean
+    includePreview: boolean
+    pageTypes: string[]
+    collectionKeys: string[]
+    selectedScopes: {
+      blog: boolean
+      pageTypes: string[]
+      collectionKeys: string[]
+    }
+  }>(
     (() => {
       const stored = localStorage.getItem('butter_cms_config')
       if (stored) {
@@ -20,7 +31,7 @@ export const useStore = defineStore('store', () => {
         pageTypes: [],
         collectionKeys: [],
         selectedScopes: {
-          blog: true,
+          blog: false,
           pageTypes: [],
           collectionKeys: [],
         },
@@ -65,7 +76,7 @@ export const useStore = defineStore('store', () => {
   })
 
   const selectedScopes = computed({
-    get: () => config.value.selectedScopes ?? { blog: true, pageTypes: [], collectionKeys: [] },
+    get: () => config.value.selectedScopes ?? { blog: false, pageTypes: [], collectionKeys: [] },
     set: (val: { blog: boolean; pageTypes: string[]; collectionKeys: string[] }) => {
       config.value.selectedScopes = val
     },
