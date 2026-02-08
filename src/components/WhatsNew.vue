@@ -41,12 +41,13 @@ const showModal = ref<boolean>(false)
 
 const features: Feature[] = [
   {
-    id: 'search-content-multi-types',
+    id: 'search-content-multi-scope',
     type: 'improvement',
-    title: 'Search Content utility now supports multiple page types and collection types',
+    title:
+      'Define and store your known page types & collections keys, and search across them simultaneously',
     description:
-      'The Search Content utility has been improved to allow searching across multiple page types and collection types at once, making it easier to find content that may be spread across different types. Simply use a comma-separated list of page type and collection keys in the search input to search across them all simultaneously.',
-    utcDatetimeAdded: new Date('2026-02-08T14:00:00Z'),
+      'You can now use the API Configuration UI to store your known page types and collection keys. These will be remembered on your device. Use these to use the new checkbox-UI in the Search Content utility to search across all your content simultaneously, instead of having to search each page type and collection separately.',
+    utcDatetimeAdded: new Date('2026-02-08T20:30:00Z'),
   },
   {
     id: 'search-content-alt-text',
