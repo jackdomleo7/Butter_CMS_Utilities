@@ -248,4 +248,192 @@ describe('searchContent', () => {
       expect(result.results).toHaveLength(1)
     })
   })
+
+  describe('Negation mode', () => {
+    it('should return items NOT containing search term when negate is true', async () => {
+      mockGetAllPages.mockImplementation(async () => [
+        {
+          id: '1',
+          slug: 'about',
+          name: 'About Us',
+          page_type: 'landing_page',
+          published: '2023-01-01',
+        },
+        {
+          id: '2',
+          slug: 'contact',
+          name: 'Contact Page',
+          page_type: 'landing_page',
+          published: '2023-01-02',
+        },
+        {
+          id: '3',
+          slug: 'services',
+          name: 'TestServices',
+          page_type: 'landing_page',
+          published: '2023-01-03',
+        },
+      ])
+      mockGetAllPosts.mockImplementation(async () => [])
+      mockGetAllCollections.mockImplementation(async () => [])
+
+      const result = await searchContent(
+        'Test',
+        'test-token',
+        false,
+        ['landing_page'],
+        [],
+        false,
+        true,
+      )
+
+      expect(result.success).toBe(true)
+      expect(result.results).toHaveLength(2)
+      expect(result.results.map((r) => r.slug)).toEqual(['about', 'contact'])
+    })
+
+    it('should return empty matches array for negated results', async () => {
+      mockGetAllPages.mockImplementation(async () => [
+        {
+          id: '1',
+          slug: 'about',
+          name: 'About Us',
+          page_type: 'landing_page',
+          published: '2023-01-01',
+        },
+      ])
+      mockGetAllPosts.mockImplementation(async () => [])
+      mockGetAllCollections.mockImplementation(async () => [])
+
+      const result = await searchContent(
+        'Test',
+        'test-token',
+        false,
+        ['landing_page'],
+        [],
+        false,
+        true,
+      )
+
+      expect(result.success).toBe(true)
+      expect(result.results).toHaveLength(1)
+      expect(result.results[0]!.matches).toHaveLength(0)
+    })
+
+    it('should work with multiple scopes in negate mode', async () => {
+      mockGetAllPages.mockImplementation(async () => [
+        {
+          id: '1',
+          slug: 'test-page',
+          name: 'TestPage',
+          page_type: 'landing_page',
+          published: '2023-01-01',
+        },
+        {
+          id: '2',
+          slug: 'about',
+          name: 'About',
+          page_type: 'landing_page',
+          published: '2023-01-02',
+        },
+      ])
+      mockGetAllPosts.mockImplementation(async () => [
+        {
+          id: '1',
+          slug: 'post-1',
+          title: 'Regular Post',
+          published: '2023-01-01',
+        },
+        {
+          id: '2',
+          slug: 'test-blog',
+          title: 'Test Blog Post',
+          published: '2023-01-02',
+        },
+      ])
+      mockGetAllCollections.mockImplementation(async () => [])
+
+      const result = await searchContent(
+        'Test',
+        'test-token',
+        false,
+        ['landing_page'],
+        [],
+        true,
+        true,
+      )
+
+      expect(result.success).toBe(true)
+      expect(result.results).toHaveLength(2)
+      expect(result.results.map((r) => r.slug).sort()).toEqual(['about', 'post-1'])
+    })
+
+    it('should return all items when negating and no items contain search term', async () => {
+      mockGetAllPages.mockImplementation(async () => [
+        {
+          id: '1',
+          slug: 'page-1',
+          name: 'Page One',
+          page_type: 'landing_page',
+          published: '2023-01-01',
+        },
+        {
+          id: '2',
+          slug: 'page-2',
+          name: 'Page Two',
+          page_type: 'landing_page',
+          published: '2023-01-02',
+        },
+      ])
+      mockGetAllPosts.mockImplementation(async () => [])
+      mockGetAllCollections.mockImplementation(async () => [])
+
+      const result = await searchContent(
+        'NonExistent',
+        'test-token',
+        false,
+        ['landing_page'],
+        [],
+        false,
+        true,
+      )
+
+      expect(result.success).toBe(true)
+      expect(result.results).toHaveLength(2)
+    })
+
+    it('should return no items when negating and all items contain search term', async () => {
+      mockGetAllPages.mockImplementation(async () => [
+        {
+          id: '1',
+          slug: 'test-1',
+          name: 'Test Page One',
+          page_type: 'landing_page',
+          published: '2023-01-01',
+        },
+        {
+          id: '2',
+          slug: 'test-2',
+          name: 'Test Page Two',
+          page_type: 'landing_page',
+          published: '2023-01-02',
+        },
+      ])
+      mockGetAllPosts.mockImplementation(async () => [])
+      mockGetAllCollections.mockImplementation(async () => [])
+
+      const result = await searchContent(
+        'Test',
+        'test-token',
+        false,
+        ['landing_page'],
+        [],
+        false,
+        true,
+      )
+
+      expect(result.success).toBe(true)
+      expect(result.results).toHaveLength(0)
+    })
+  })
 })

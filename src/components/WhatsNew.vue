@@ -41,13 +41,21 @@ const showModal = ref<boolean>(false)
 
 const features: Feature[] = [
   {
+    id: 'search-content-negate',
+    type: 'improvement',
+    title: 'Ability to negate search in Search Content to find items NOT containing search term',
+    description:
+      'You can now negate your search in the Search Content utility to find items that do NOT contain your search term. This is useful for finding items that may be missing a term you expected to be there, or for excluding common terms to find more specific results. Simply check the "Show items NOT containing search term" checkbox.',
+    utcDatetimeAdded: new Date('2026-02-08T20:30:00Z'),
+  },
+  {
     id: 'search-content-multi-scope',
     type: 'improvement',
     title:
       'Define and store your known page types & collections keys, and search across them simultaneously',
     description:
       'You can now use the API Configuration UI to store your known page types and collection keys. These will be remembered on your device. Use these to use the new checkbox-UI in the Search Content utility to search across all your content simultaneously, instead of having to search each page type and collection separately.',
-    utcDatetimeAdded: new Date('2026-02-08T20:30:00Z'),
+    utcDatetimeAdded: new Date('2026-02-08T20:15:00Z'),
   },
   {
     id: 'search-content-alt-text',
@@ -79,7 +87,7 @@ const features: Feature[] = [
     title: 'Normalise &nbsp; and spaces',
     description:
       'Searching for a "<code> </code>" (space) now also returns results with non-breaking spaces (<code>&amp;nbsp;</code>), and vice versa.',
-    utcDatetimeAdded: new Date('2026-01-14T19:30:00Z'),
+    utcDatetimeAdded: new Date('2026-01-24T19:30:00Z'),
   },
   {
     id: 'search-content',

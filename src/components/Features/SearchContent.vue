@@ -1,7 +1,7 @@
 <template>
   <UtilitySection
     title="Search Content"
-    description="Search through pages, blog posts, or collections for content matching your search term. Results will highlight exactly where matches were found."
+    :description="`Search through pages, blog posts, or collections for content ${negateSearch ? 'NOT' : ''} matching your search term. Results will highlight exactly where matches were ${negateSearch ? 'NOT' : ''} found.`"
   >
     <!-- Search Scopes Selection -->
     <fieldset class="search-content__scopes-selection">
@@ -71,6 +71,20 @@
           No page types or collection keys configured. Configure them in API Configuration above.
         </p>
       </div>
+    </fieldset>
+
+    <!-- Negation Option -->
+    <fieldset class="search-content__negation-section">
+      <legend class="search-content__negation-label">Search Mode</legend>
+      <label class="search-content__checkbox-option">
+        <input
+          type="checkbox"
+          v-model="negateSearch"
+          :disabled="hasResults"
+          aria-label="Negate search to find items NOT containing the search term"
+        />
+        <span>Show items NOT containing search term</span>
+      </label>
     </fieldset>
 
     <!-- Search Term -->
@@ -172,6 +186,7 @@ const includeBlog = computed({
   },
 })
 const searchTerm = ref('')
+const negateSearch = ref(false)
 const showMissingSearchTermError = ref(false)
 const isLoading = ref(false)
 const statusMessage = ref('')
@@ -277,6 +292,7 @@ async function executeSearch(): Promise<void> {
       store.selectedScopes.pageTypes,
       store.selectedScopes.collectionKeys,
       includeBlog.value,
+      negateSearch.value,
     )
 
     if (!searchResponse.success) {
@@ -288,15 +304,17 @@ async function executeSearch(): Promise<void> {
 
     totalItems.value = searchResponse.totalItems!
 
+    const modeText = negateSearch.value ? 'NOT containing' : 'containing'
+
     if (searchResponse.results.length === 0) {
       setStatus(
-        `No matches found for "${searchTermValue}" in ${searchResponse.totalItems} selected items`,
+        `No items ${modeText} "${searchTermValue}" found in ${searchResponse.totalItems} selected items`,
         'info',
         false,
       )
     } else {
       setStatus(
-        `Found ${searchResponse.results.length} items with matches out of ${searchResponse.totalItems} total selected items`,
+        `Found ${searchResponse.results.length} items ${modeText} "${searchTermValue}" out of ${searchResponse.totalItems} total selected items`,
         'success',
         false,
       )
@@ -332,6 +350,20 @@ function getResultMatchCount(
   }
 
   &__scopes-label {
+    display: block;
+    font-weight: 500;
+    margin-bottom: 0.75rem;
+    color: var(--text-primary);
+    font-size: 0.9375rem;
+  }
+
+  &__negation-section {
+    margin: 1.5rem 0;
+    padding: 0;
+    border: 0;
+  }
+
+  &__negation-label {
     display: block;
     font-weight: 500;
     margin-bottom: 0.75rem;
