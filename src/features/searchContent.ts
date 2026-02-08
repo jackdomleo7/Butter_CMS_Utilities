@@ -134,6 +134,7 @@ export async function searchContent(
   selectedPageTypes: string[],
   selectedCollectionKeys: string[],
   includeBlog: boolean,
+  negate: boolean = false,
 ): Promise<SearchResponse> {
   // Validate and normalize search input
   const trimmedSearch = searchString.trim()
@@ -202,31 +203,14 @@ export async function searchContent(
 
     for (const { data: itemData, sourceType } of itemsWithSource) {
       const matchMap = searchObject(itemData, searchLower)
+      const hasMatches = matchMap.size > 0
 
-      if (matchMap.size > 0) {
+      // When negating: include items WITHOUT matches. When not negating: include items WITH matches
+      if (hasMatches === !negate) {
         const item = itemData as Record<string, unknown>
 
-        // Convert map to array of matches
-        const matches = Array.from(matchMap.values()).map((acc) => {
-          // For multiple occurrences, show count in path and use first snippet
-          if (acc.count > 1) {
-            return {
-              path: `${acc.path} (${acc.count} occurrences)`,
-              value: acc.snippets[0] || '',
-              count: acc.count,
-            }
-          }
-          // For single occurrence, return as-is
-          return {
-            path: acc.path,
-            value: acc.snippets[0] || '',
-            count: acc.count,
-          }
-        })
-
-        const validMatches = matches.filter((m) => m.value && m.value.trim().length > 0)
-
-        if (validMatches.length > 0) {
+        // When negating, we don't show any matches since we're looking for items that DON'T contain the term
+        if (negate) {
           searchResults.push({
             title:
               (item.name as string) ||
@@ -235,8 +219,41 @@ export async function searchContent(
               'Untitled',
             slug: (item.slug as string) || 'N/A',
             sourceType: sourceType,
-            matches: validMatches,
+            matches: [],
           })
+        } else {
+          // Convert map to array of matches
+          const matches = Array.from(matchMap.values()).map((acc) => {
+            // For multiple occurrences, show count in path and use first snippet
+            if (acc.count > 1) {
+              return {
+                path: `${acc.path} (${acc.count} occurrences)`,
+                value: acc.snippets[0] || '',
+                count: acc.count,
+              }
+            }
+            // For single occurrence, return as-is
+            return {
+              path: acc.path,
+              value: acc.snippets[0] || '',
+              count: acc.count,
+            }
+          })
+
+          const validMatches = matches.filter((m) => m.value && m.value.trim().length > 0)
+
+          if (validMatches.length > 0) {
+            searchResults.push({
+              title:
+                (item.name as string) ||
+                (item.title as string) ||
+                (item.slug as string) ||
+                'Untitled',
+              slug: (item.slug as string) || 'N/A',
+              sourceType: sourceType,
+              matches: validMatches,
+            })
+          }
         }
       }
     }
