@@ -13,7 +13,18 @@ export const useStore = defineStore('store', () => {
           console.warn('Failed to parse stored config, using defaults')
         }
       }
-      return { token: '', lockToken: false, includePreview: false }
+      return {
+        token: '',
+        lockToken: false,
+        includePreview: false,
+        pageTypes: [],
+        collectionKeys: [],
+        selectedScopes: {
+          blog: true,
+          pageTypes: [],
+          collectionKeys: [],
+        },
+      }
     })(),
   )
 
@@ -39,6 +50,27 @@ export const useStore = defineStore('store', () => {
     },
   })
 
+  const pageTypes = computed({
+    get: () => config.value.pageTypes ?? [],
+    set: (val: string[]) => {
+      config.value.pageTypes = val
+    },
+  })
+
+  const collectionKeys = computed({
+    get: () => config.value.collectionKeys ?? [],
+    set: (val: string[]) => {
+      config.value.collectionKeys = val
+    },
+  })
+
+  const selectedScopes = computed({
+    get: () => config.value.selectedScopes ?? { blog: true, pageTypes: [], collectionKeys: [] },
+    set: (val: { blog: boolean; pageTypes: string[]; collectionKeys: string[] }) => {
+      config.value.selectedScopes = val
+    },
+  })
+
   // Watch for config changes and save to localStorage
   watch(
     config,
@@ -48,5 +80,5 @@ export const useStore = defineStore('store', () => {
     { deep: true },
   )
 
-  return { token, lockToken, includePreview }
+  return { token, lockToken, includePreview, pageTypes, collectionKeys, selectedScopes }
 })

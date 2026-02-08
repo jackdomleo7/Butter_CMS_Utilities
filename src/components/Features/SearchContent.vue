@@ -3,54 +3,71 @@
     title="Search Content"
     description="Search through pages, blog posts, or collections for content matching your search term. Results will highlight exactly where matches were found."
   >
-    <ComingSoon style="padding: 1rem"
-      >Search <span style="text-transform: uppercase">everything</span></ComingSoon
-    >
-    <!-- Search Scope Selection -->
-    <div class="search-content__scope-selection">
-      <label class="search-content__scope-label">Search Scope</label>
-      <div class="search-content__scope-options">
-        <label class="search-content__radio-option">
-          <input type="radio" v-model="searchScope" value="pages" :disabled="hasResults" />
-          <span>Page Type</span>
-        </label>
-        <label class="search-content__radio-option">
-          <input type="radio" v-model="searchScope" value="blog" :disabled="hasResults" />
-          <span>Blog Posts</span>
-        </label>
-        <label class="search-content__radio-option">
-          <input type="radio" v-model="searchScope" value="collections" :disabled="hasResults" />
-          <span>Collection</span>
+    <!-- Search Scopes Selection -->
+    <div class="search-content__scopes-selection">
+      <label class="search-content__scopes-label">Search Scopes</label>
+
+      <!-- Blog Checkbox -->
+      <label class="search-content__checkbox-option">
+        <input
+          type="checkbox"
+          v-model="includeBlog"
+          :disabled="hasResults"
+          aria-label="Include blog posts in search"
+        />
+        <span>Blog</span>
+      </label>
+
+      <!-- Page Types Checkboxes -->
+      <div v-if="store.pageTypes.length > 0" class="search-content__scope-group">
+        <div class="search-content__scope-group-title">Page Types</div>
+        <label
+          v-for="pageType in store.pageTypes"
+          :key="pageType"
+          class="search-content__checkbox-option"
+        >
+          <input
+            type="checkbox"
+            :value="pageType"
+            :checked="store.selectedScopes.pageTypes.includes(pageType)"
+            @change="togglePageType(pageType)"
+            :disabled="hasResults"
+            :aria-label="`Include ${pageType} pages in search`"
+          />
+          <span>{{ pageType }}</span>
         </label>
       </div>
-    </div>
 
-    <!-- Conditional inputs based on scope -->
-    <TextInput
-      v-if="searchScope === 'pages'"
-      id="search-content-page-type"
-      type="text"
-      :required="true"
-      placeholder="page_type_1, page_type_2, etc."
-      v-model="pageType"
-    >
-      <template v-slot:label>Page Type</template>
-      <template v-slot:error v-if="showMissingPageTypeError">Please enter a page type</template>
-    </TextInput>
+      <!-- Collection Keys Checkboxes -->
+      <div v-if="store.collectionKeys.length > 0" class="search-content__scope-group">
+        <div class="search-content__scope-group-title">Collection Keys</div>
+        <label
+          v-for="collectionKey in store.collectionKeys"
+          :key="collectionKey"
+          class="search-content__checkbox-option"
+        >
+          <input
+            type="checkbox"
+            :value="collectionKey"
+            :checked="store.selectedScopes.collectionKeys.includes(collectionKey)"
+            @change="toggleCollectionKey(collectionKey)"
+            :disabled="hasResults"
+            :aria-label="`Include ${collectionKey} collection in search`"
+          />
+          <span>{{ collectionKey }}</span>
+        </label>
+      </div>
 
-    <TextInput
-      v-if="searchScope === 'collections'"
-      id="search-content-collection-key"
-      type="text"
-      placeholder="collection_key_1, collection_key_2, etc."
-      :required="true"
-      v-model="collectionKey"
-    >
-      <template v-slot:label>Collection Key</template>
-      <template v-slot:error v-if="showMissingCollectionKeyError"
-        >Please enter a collection key</template
+      <!-- Message if no page types or collection keys configured -->
+      <div
+        v-if="store.pageTypes.length === 0 && store.collectionKeys.length === 0"
+        class="search-content__empty-scopes"
       >
-    </TextInput>
+        <p>
+          No page types or collection keys configured. Configure them in API Configuration above.
+        </p>
+      </div>
+    </div>
 
     <!-- Search Term -->
     <TextInput
@@ -81,8 +98,9 @@
     <div v-if="results.length > 0" id="resultsContainer" class="search-content__results-container">
       <div class="search-content__summary">
         Found <strong>{{ results.length }}</strong>
-        {{ pluralize(results.length, getScopeItemName(), getScopeItemNamePlural()) }} containing
-        "<strong>{{ searchTerm }}</strong
+        {{ pluralize(results.length, 'item', 'items') }} containing "<strong>{{
+          searchTerm
+        }}</strong
         >" with <strong>{{ totalMatches }}</strong> total
         {{ pluralize(totalMatches, 'match', 'matches') }}
       </div>
@@ -139,17 +157,12 @@ import TextInput from '../TextInput.vue'
 import Btn from '../Btn.vue'
 import InfoBanner from '../InfoBanner.vue'
 import Chip from '../Chip.vue'
-import ComingSoon from '../ComingSoon.vue'
 import { searchContent } from '@/features/searchContent'
 import type { AsyncReturnType } from 'type-fest'
 
 const store = useStore()
-const searchScope = ref<'pages' | 'blog' | 'collections'>('pages')
-const pageType = ref('')
-const collectionKey = ref('')
+const includeBlog = ref(store.selectedScopes.blog)
 const searchTerm = ref('')
-const showMissingPageTypeError = ref(false)
-const showMissingCollectionKeyError = ref(false)
 const showMissingSearchTermError = ref(false)
 const isLoading = ref(false)
 const statusMessage = ref('')
@@ -184,11 +197,7 @@ function resetSearch(): void {
   failedResource.value = null
   failedError.value = null
   statusMessage.value = ''
-  pageType.value = ''
-  collectionKey.value = ''
   searchTerm.value = ''
-  showMissingPageTypeError.value = false
-  showMissingCollectionKeyError.value = false
   showMissingSearchTermError.value = false
 }
 
@@ -202,50 +211,31 @@ function setStatus(
   isLoading.value = loading
 }
 
-function getScopeItemName(): string {
-  switch (searchScope.value) {
-    case 'pages':
-      return 'page'
-    case 'blog':
-      return 'blog post'
-    case 'collections':
-      return 'collection item'
-    default:
-      return 'item'
-  }
-}
-
-function getScopeItemNamePlural(): string {
-  switch (searchScope.value) {
-    case 'pages':
-      return 'pages'
-    case 'blog':
-      return 'blog posts'
-    case 'collections':
-      return 'collection items'
-    default:
-      return 'items'
-  }
-}
-
 function getResultSourceBadge(
   result: AsyncReturnType<typeof searchContent>['results'][number],
 ): string {
-  if (searchScope.value === 'pages' && result.sourceType) {
-    return `Page (${result.sourceType})`
-  } else if (searchScope.value === 'collections' && result.sourceType) {
-    return `Collection (${result.sourceType})`
-  } else if (searchScope.value === 'blog') {
+  if (result.sourceType === 'Blog') {
     return 'Blog'
   }
-  return 'Unknown'
+  return `${result.sourceType}`
 }
 
-function parseCommaSeparatedInput(input: string): string[] {
-  return input
-    .split(',')
-    .map((item) => item.trim())
-    .filter((item) => item.length > 0)
+function togglePageType(pageType: string): void {
+  const index = store.selectedScopes.pageTypes.indexOf(pageType)
+  if (index > -1) {
+    store.selectedScopes.pageTypes.splice(index, 1)
+  } else {
+    store.selectedScopes.pageTypes.push(pageType)
+  }
+}
+
+function toggleCollectionKey(collectionKey: string): void {
+  const index = store.selectedScopes.collectionKeys.indexOf(collectionKey)
+  if (index > -1) {
+    store.selectedScopes.collectionKeys.splice(index, 1)
+  } else {
+    store.selectedScopes.collectionKeys.push(collectionKey)
+  }
 }
 
 // Main search execution
@@ -264,34 +254,23 @@ async function executeSearch(): Promise<void> {
   }
 
   showMissingSearchTermError.value = !searchTerm.value
-  showMissingPageTypeError.value = searchScope.value === 'pages' && !pageType.value
-  showMissingCollectionKeyError.value = searchScope.value === 'collections' && !collectionKey.value
 
-  if (
-    showMissingSearchTermError.value ||
-    showMissingPageTypeError.value ||
-    showMissingCollectionKeyError.value
-  )
-    return
+  if (showMissingSearchTermError.value) return
 
   isLoading.value = true
   setStatus('Searching...', 'info', true)
 
   try {
-    const pageTypesArray =
-      searchScope.value === 'pages' ? parseCommaSeparatedInput(pageType.value) : undefined
-    const collectionKeysArray =
-      searchScope.value === 'collections'
-        ? parseCommaSeparatedInput(collectionKey.value)
-        : undefined
+    // Update the store with the current selection
+    store.selectedScopes.blog = includeBlog.value
 
     const searchResponse = await searchContent(
-      searchScope.value,
       searchTermValue,
       token,
       store.includePreview,
-      pageTypesArray,
-      collectionKeysArray,
+      store.selectedScopes.pageTypes,
+      store.selectedScopes.collectionKeys,
+      includeBlog.value,
     )
 
     if (!searchResponse.success) {
@@ -305,13 +284,13 @@ async function executeSearch(): Promise<void> {
 
     if (searchResponse.results.length === 0) {
       setStatus(
-        `No matches found for "${searchTermValue}" in ${searchResponse.totalItems} ${pluralize(searchResponse.totalItems!, getScopeItemName(), getScopeItemNamePlural())}`,
+        `No matches found for "${searchTermValue}" in ${searchResponse.totalItems} selected items`,
         'info',
         false,
       )
     } else {
       setStatus(
-        `Found ${searchResponse.results.length} ${pluralize(searchResponse.results.length, getScopeItemName(), getScopeItemNamePlural())} with matches out of ${searchResponse.totalItems} total ${pluralize(searchResponse.totalItems!, getScopeItemName(), getScopeItemNamePlural())}`,
+        `Found ${searchResponse.results.length} items with matches out of ${searchResponse.totalItems} total selected items`,
         'success',
         false,
       )
@@ -339,44 +318,55 @@ function getResultMatchCount(
 
 <style lang="scss" scoped>
 .search-content {
-  // Scope selection
-  &__scope-selection {
-    margin-bottom: 1rem;
+  // Scopes selection
+  &__scopes-selection {
+    margin-bottom: 1.5rem;
   }
 
-  &__scope-label {
+  &__scopes-label {
     display: block;
     font-weight: 500;
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.75rem;
     color: var(--text-primary);
     font-size: 0.9375rem;
   }
 
-  &__scope-options {
-    display: flex;
-    gap: 1.5rem;
-    flex-wrap: wrap;
-  }
-
-  &__radio-option {
+  &__checkbox-option {
     display: flex;
     align-items: center;
     gap: 0.5rem;
     cursor: pointer;
     font-size: 0.9375rem;
+    margin-bottom: 0.5rem;
 
-    input[type='radio'] {
-      cursor: pointer;
-    }
-
-    &--disabled {
+    &:disabled {
       opacity: 0.5;
       cursor: not-allowed;
-
-      input[type='radio'] {
-        cursor: not-allowed;
-      }
     }
+  }
+
+  &__scope-group {
+    margin-top: 1rem;
+    margin-left: 1rem;
+    border-left: 2px solid var(--butter-border);
+    padding-left: 1rem;
+  }
+
+  &__scope-group-title {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    margin-bottom: 0.5rem;
+    text-transform: uppercase;
+  }
+
+  &__empty-scopes {
+    color: var(--text-secondary);
+    font-size: 0.9375rem;
+    margin-top: 1rem;
+    padding: 1rem;
+    background-color: var(--butter-light-gray);
+    border-radius: 6px;
   }
 
   // Source badge
@@ -503,11 +493,6 @@ function getResultMatchCount(
     margin-top: 0;
     margin-bottom: 0.5rem;
     font-weight: 600;
-  }
-
-  &__failed-items-list {
-    margin-left: 1.5rem;
-    color: #b42318;
   }
 }
 </style>
