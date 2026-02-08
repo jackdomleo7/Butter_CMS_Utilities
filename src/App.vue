@@ -35,9 +35,82 @@
       </div>
 
       <label class="app__checkbox-label">
-        <input type="checkbox" v-model="store.includePreview" class="app__checkbox-input" />
+        <input
+          type="checkbox"
+          v-model="store.includePreview"
+          class="app__checkbox-input"
+          aria-label="Include preview content in API requests"
+        />
         <span>Include draft content in search results</span>
       </label>
+
+      <!-- Page Types Section -->
+      <div class="app__config-section">
+        <h3 class="app__config-title">Page Types</h3>
+        <form @submit.prevent="addPageType" class="app__config-form">
+          <TextInput
+            id="page-type-input"
+            type="text"
+            v-model="pageTypeInput"
+            root-class="app__config-input"
+          >
+            <template v-slot:label>Add Page Type</template>
+          </TextInput>
+          <Btn v-if="pageTypeInput" type="submit" status="secondary" class="app__form-button"
+            >Add</Btn
+          >
+        </form>
+        <ul v-if="store.pageTypes.length > 0" class="app__items-list">
+          <li v-for="pageType in store.pageTypes" :key="pageType">
+            <Chip class="app__item-chip">
+              {{ pageType }}
+              <button
+                type="button"
+                @click="removePageType(pageType)"
+                class="app__chip-remove"
+                :aria-label="`Remove ${pageType}`"
+              >
+                ✕
+              </button>
+            </Chip>
+          </li>
+        </ul>
+        <p v-else class="app__empty-message">No page types configured</p>
+      </div>
+
+      <!-- Collection Keys Section -->
+      <div class="app__config-section">
+        <h3 class="app__config-title">Collection Keys</h3>
+        <form @submit.prevent="addCollectionKey" class="app__config-form">
+          <TextInput
+            id="collection-key-input"
+            type="text"
+            v-model="collectionKeyInput"
+            root-class="app__config-input"
+          >
+            <template v-slot:label>Add Collection Key</template>
+          </TextInput>
+          <Btn v-if="collectionKeyInput" type="submit" status="secondary" class="app__form-button"
+            >Add</Btn
+          >
+        </form>
+        <ul v-if="store.collectionKeys.length > 0" class="app__items-list">
+          <li v-for="collectionKey in store.collectionKeys" :key="collectionKey">
+            <Chip class="app__item-chip">
+              {{ collectionKey }}
+              <button
+                type="button"
+                @click="removeCollectionKey(collectionKey)"
+                class="app__chip-remove"
+                :aria-label="`Remove ${collectionKey}`"
+              >
+                ✕
+              </button>
+            </Chip>
+          </li>
+        </ul>
+        <p v-else class="app__empty-message">No collection keys configured</p>
+      </div>
     </UtilitySection>
 
     <h2 style="font-weight: 500">Utilities</h2>
@@ -52,6 +125,7 @@
 </template>
 
 <script setup lang="ts">
+import { ref } from 'vue'
 import { useStore } from './stores/index'
 import Header from './components/Header.vue'
 import Footer from './components/Footer.vue'
@@ -59,13 +133,41 @@ import WhatsNew from './components/WhatsNew.vue'
 import InfoBanner from './components/InfoBanner.vue'
 import UtilitySection from './components/UtilitySection.vue'
 import TextInput from './components/TextInput.vue'
+import Btn from './components/Btn.vue'
+import Chip from './components/Chip.vue'
 import SearchContent from './components/Features/SearchContent.vue'
 import ComingSoon from './components/ComingSoon.vue'
 
 const store = useStore()
+const pageTypeInput = ref('')
+const collectionKeyInput = ref('')
 
 function toggleTokenLock(): void {
   store.lockToken = !store.lockToken
+}
+
+function addPageType(): void {
+  const trimmed = pageTypeInput.value.trim()
+  if (trimmed && !store.pageTypes.includes(trimmed)) {
+    store.pageTypes = [...store.pageTypes, trimmed]
+    pageTypeInput.value = ''
+  }
+}
+
+function removePageType(pageType: string): void {
+  store.pageTypes = store.pageTypes.filter((p: string) => p !== pageType)
+}
+
+function addCollectionKey(): void {
+  const trimmed = collectionKeyInput.value.trim()
+  if (trimmed && !store.collectionKeys.includes(trimmed)) {
+    store.collectionKeys = [...store.collectionKeys, trimmed]
+    collectionKeyInput.value = ''
+  }
+}
+
+function removeCollectionKey(collectionKey: string): void {
+  store.collectionKeys = store.collectionKeys.filter((c: string) => c !== collectionKey)
 }
 </script>
 
@@ -81,7 +183,7 @@ main {
   max-width: 1200px;
   width: 100%;
   margin: 0 auto;
-  padding: 2rem 1.5rem;
+  padding: 2rem 1rem;
 }
 
 .app {
@@ -135,6 +237,78 @@ main {
     width: 1.25rem;
     height: 1.25rem;
     flex-shrink: 0;
+  }
+
+  &__config-section {
+    margin-top: 1.5rem;
+    padding: 1rem;
+    background-color: var(--butter-light-gray);
+    border-radius: 6px;
+    border-left: 3px solid var(--butter-border);
+  }
+
+  &__config-title {
+    font-size: 0.875rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    color: var(--text-secondary);
+    margin: 0 0 0.75rem 0;
+  }
+
+  &__items-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+    padding: 0;
+    list-style: none;
+  }
+
+  &__empty-message {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+    margin: 0 0 0.5rem 0;
+    font-style: italic;
+  }
+
+  &__config-form {
+    display: flex;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+    flex-direction: column;
+
+    @media (min-width: 450px) {
+      flex-direction: row;
+      align-items: flex-end;
+    }
+  }
+
+  &__config-input {
+    flex: 1;
+    min-width: 200px;
+  }
+
+  &__form-button {
+    min-width: unset;
+  }
+
+  &__item-chip {
+    padding-right: 0.25rem;
+  }
+
+  &__chip-remove {
+    margin-left: 0.5rem;
+    background: none;
+    border: none;
+    color: inherit;
+    cursor: pointer;
+    padding: 0 0.25rem;
+    opacity: 0.6;
+    transition: opacity 0.2s;
+
+    &:hover {
+      opacity: 1;
+    }
   }
 }
 </style>

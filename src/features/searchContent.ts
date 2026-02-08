@@ -128,12 +128,12 @@ function searchObject(
 }
 
 export async function searchContent(
-  scope: 'pages' | 'blog' | 'collections',
   searchString: string,
   token: string,
   preview: boolean,
-  pageTypes?: string[],
-  collectionKeys?: string[],
+  selectedPageTypes: string[],
+  selectedCollectionKeys: string[],
+  includeBlog: boolean,
 ): Promise<SearchResponse> {
   // Validate and normalize search input
   const trimmedSearch = searchString.trim()
@@ -142,6 +142,16 @@ export async function searchContent(
       success: true,
       results: [],
       totalItems: 0,
+    }
+  }
+
+  // Validate that at least one search scope is selected
+  if (!includeBlog && selectedPageTypes.length === 0 && selectedCollectionKeys.length === 0) {
+    return {
+      success: false,
+      results: [],
+      totalItems: null,
+      error: 'Please select at least one search scope (Blog, Page Type, or Collection Key)',
     }
   }
 
@@ -158,20 +168,27 @@ export async function searchContent(
     // Build items with source type tracking
     const itemsWithSource: Array<{ data: unknown; sourceType: string }> = []
 
-    if (scope === 'pages' && pageTypes && pageTypes.length > 0) {
-      for (const pageType of pageTypes) {
+    // Search pages if any page types are selected
+    if (selectedPageTypes.length > 0) {
+      for (const pageType of selectedPageTypes) {
         const pages = await getAllPages({ token, pageType, preview })
         pages.forEach((page) => {
           itemsWithSource.push({ data: page, sourceType: pageType })
         })
       }
-    } else if (scope === 'blog') {
+    }
+
+    // Search blog posts if enabled
+    if (includeBlog) {
       const posts = await getAllPosts({ token, preview })
       posts.forEach((post) => {
         itemsWithSource.push({ data: post, sourceType: 'Blog' })
       })
-    } else if (scope === 'collections' && collectionKeys && collectionKeys.length > 0) {
-      for (const collectionKey of collectionKeys) {
+    }
+
+    // Search collections if any collection keys are selected
+    if (selectedCollectionKeys.length > 0) {
+      for (const collectionKey of selectedCollectionKeys) {
         const collections = await getAllCollections({
           token,
           collectionType: collectionKey,
@@ -181,8 +198,6 @@ export async function searchContent(
           itemsWithSource.push({ data: collection, sourceType: collectionKey })
         })
       }
-    } else {
-      throw new Error('Invalid search scope or missing required parameter')
     }
 
     for (const { data: itemData, sourceType } of itemsWithSource) {

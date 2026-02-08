@@ -3,7 +3,18 @@ import { defineStore } from 'pinia'
 
 export const useStore = defineStore('store', () => {
   // Initialize config from localStorage or default object
-  const config = ref(
+  const config = ref<{
+    token: string
+    lockToken: boolean
+    includePreview: boolean
+    pageTypes: string[]
+    collectionKeys: string[]
+    selectedScopes: {
+      blog: boolean
+      pageTypes: string[]
+      collectionKeys: string[]
+    }
+  }>(
     (() => {
       const stored = localStorage.getItem('butter_cms_config')
       if (stored) {
@@ -13,7 +24,18 @@ export const useStore = defineStore('store', () => {
           console.warn('Failed to parse stored config, using defaults')
         }
       }
-      return { token: '', lockToken: false, includePreview: false }
+      return {
+        token: '',
+        lockToken: false,
+        includePreview: false,
+        pageTypes: [],
+        collectionKeys: [],
+        selectedScopes: {
+          blog: false,
+          pageTypes: [],
+          collectionKeys: [],
+        },
+      }
     })(),
   )
 
@@ -39,6 +61,27 @@ export const useStore = defineStore('store', () => {
     },
   })
 
+  const pageTypes = computed({
+    get: () => config.value.pageTypes ?? [],
+    set: (val: string[]) => {
+      config.value.pageTypes = val
+    },
+  })
+
+  const collectionKeys = computed({
+    get: () => config.value.collectionKeys ?? [],
+    set: (val: string[]) => {
+      config.value.collectionKeys = val
+    },
+  })
+
+  const selectedScopes = computed({
+    get: () => config.value.selectedScopes ?? { blog: false, pageTypes: [], collectionKeys: [] },
+    set: (val: { blog: boolean; pageTypes: string[]; collectionKeys: string[] }) => {
+      config.value.selectedScopes = val
+    },
+  })
+
   // Watch for config changes and save to localStorage
   watch(
     config,
@@ -48,5 +91,5 @@ export const useStore = defineStore('store', () => {
     { deep: true },
   )
 
-  return { token, lockToken, includePreview }
+  return { token, lockToken, includePreview, pageTypes, collectionKeys, selectedScopes }
 })
