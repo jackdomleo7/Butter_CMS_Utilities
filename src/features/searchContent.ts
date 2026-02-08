@@ -7,6 +7,7 @@ interface SearchResponse {
   results: Array<{
     title: string
     slug: string
+    sourceType?: string
     matches: Array<{ path: string; value: string; count: number }>
   }>
   totalItems: number | null
@@ -131,8 +132,8 @@ export async function searchContent(
   searchString: string,
   token: string,
   preview: boolean,
-  pageType?: string,
-  collectionKey?: string,
+  pageTypes?: string[],
+  collectionKeys?: string[],
 ): Promise<SearchResponse> {
   // Validate and normalize search input
   const trimmedSearch = searchString.trim()
@@ -147,36 +148,44 @@ export async function searchContent(
   const searchLower = trimmedSearch.toLowerCase()
 
   try {
-    let allItems: unknown[] = []
+    const searchResults: Array<{
+      title: string
+      slug: string
+      sourceType?: string
+      matches: Array<{ path: string; value: string; count: number }>
+    }> = []
 
-    if (scope === 'pages' && pageType) {
-      allItems = await getAllPages({
-        token,
-        pageType,
-        preview,
-      })
+    // Build items with source type tracking
+    const itemsWithSource: Array<{ data: unknown; sourceType: string }> = []
+
+    if (scope === 'pages' && pageTypes && pageTypes.length > 0) {
+      for (const pageType of pageTypes) {
+        const pages = await getAllPages({ token, pageType, preview })
+        pages.forEach((page) => {
+          itemsWithSource.push({ data: page, sourceType: pageType })
+        })
+      }
     } else if (scope === 'blog') {
-      allItems = await getAllPosts({
-        token,
-        preview,
+      const posts = await getAllPosts({ token, preview })
+      posts.forEach((post) => {
+        itemsWithSource.push({ data: post, sourceType: 'Blog' })
       })
-    } else if (scope === 'collections' && collectionKey) {
-      allItems = await getAllCollections({
-        token,
-        collectionType: collectionKey,
-        preview,
-      })
+    } else if (scope === 'collections' && collectionKeys && collectionKeys.length > 0) {
+      for (const collectionKey of collectionKeys) {
+        const collections = await getAllCollections({
+          token,
+          collectionType: collectionKey,
+          preview,
+        })
+        collections.forEach((collection) => {
+          itemsWithSource.push({ data: collection, sourceType: collectionKey })
+        })
+      }
     } else {
       throw new Error('Invalid search scope or missing required parameter')
     }
 
-    const searchResults: Array<{
-      title: string
-      slug: string
-      matches: Array<{ path: string; value: string; count: number }>
-    }> = []
-
-    for (const itemData of allItems) {
+    for (const { data: itemData, sourceType } of itemsWithSource) {
       const matchMap = searchObject(itemData, searchLower)
 
       if (matchMap.size > 0) {
@@ -210,6 +219,7 @@ export async function searchContent(
               (item.slug as string) ||
               'Untitled',
             slug: (item.slug as string) || 'N/A',
+            sourceType: sourceType,
             matches: validMatches,
           })
         }
@@ -217,7 +227,7 @@ export async function searchContent(
     }
 
     searchResults.sort((a, b) => a.slug.localeCompare(b.slug))
-    return { success: true, results: searchResults, totalItems: allItems.length }
+    return { success: true, results: searchResults, totalItems: itemsWithSource.length }
   } catch (error) {
     return {
       success: false,

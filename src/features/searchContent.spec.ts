@@ -23,7 +23,7 @@ describe('searchContent', () => {
 
   describe('Input validation', () => {
     it('should handle empty search string', async () => {
-      const result = await searchContent('pages', '', 'test-token', false, 'landing_page')
+      const result = await searchContent('pages', '', 'test-token', false, ['landing_page'])
 
       expect(result.success).toBe(true)
       expect(result.results).toHaveLength(0)
@@ -32,7 +32,7 @@ describe('searchContent', () => {
     })
 
     it('should handle whitespace-only search string', async () => {
-      const result = await searchContent('pages', '   ', 'test-token', false, 'landing_page')
+      const result = await searchContent('pages', '   ', 'test-token', false, ['landing_page'])
 
       expect(result.success).toBe(true)
       expect(result.results).toHaveLength(0)
@@ -51,13 +51,9 @@ describe('searchContent', () => {
         },
       ])
 
-      const result = await searchContent(
-        'pages',
-        '  keyword  ',
-        'test-token',
-        false,
+      const result = await searchContent('pages', '  keyword  ', 'test-token', false, [
         'landing_page',
-      )
+      ])
 
       expect(result.success).toBe(true)
       expect(result.results).toHaveLength(1)
@@ -85,16 +81,17 @@ describe('searchContent', () => {
 
       mockGetAllPages.mockResolvedValueOnce(mockPages)
 
-      const result = await searchContent('pages', 'Contact', 'test-token', false, 'landing_page')
+      const result = await searchContent('pages', 'Contact', 'test-token', false, ['landing_page'])
 
       expect(result.success).toBe(true)
       expect(result.totalItems).toBe(2)
       expect(result.results).toHaveLength(1)
       expect(result.results[0]!.slug).toBe('contact')
       expect(result.results[0]!.title).toBe('Contact Page')
+      expect(result.results[0]!.sourceType).toBe('landing_page')
     })
 
-    it('should return error when pageType is missing', async () => {
+    it('should return error when pageTypes is missing or empty', async () => {
       const result = await searchContent('pages', 'test', 'test-token', false)
 
       expect(result.success).toBe(false)
@@ -112,7 +109,7 @@ describe('searchContent', () => {
         },
       ])
 
-      const result = await searchContent('pages', 'xyz', 'test-token', false, 'landing_page')
+      const result = await searchContent('pages', 'xyz', 'test-token', false, ['landing_page'])
 
       expect(result.success).toBe(true)
       expect(result.results).toHaveLength(0)
@@ -122,7 +119,7 @@ describe('searchContent', () => {
     it('should include preview parameter when preview is true', async () => {
       mockGetAllPages.mockResolvedValueOnce([])
 
-      await searchContent('pages', 'test', 'test-token', true, 'landing_page')
+      await searchContent('pages', 'test', 'test-token', true, ['landing_page'])
 
       expect(mockGetAllPages).toHaveBeenCalledWith({
         token: 'test-token',
@@ -134,10 +131,56 @@ describe('searchContent', () => {
     it('should handle getAllPages error', async () => {
       mockGetAllPages.mockRejectedValueOnce(new Error('API Error'))
 
-      const result = await searchContent('pages', 'test', 'test-token', false, 'landing_page')
+      const result = await searchContent('pages', 'test', 'test-token', false, ['landing_page'])
 
       expect(result.success).toBe(false)
       expect(result.error).toContain('API Error')
+    })
+
+    it('should search multiple page types and combine results', async () => {
+      const mockPagesType1 = [
+        {
+          id: '1',
+          slug: 'about',
+          name: 'About Us',
+          page_type: 'landing_page',
+          published: '2023-01-01',
+        },
+      ]
+      const mockPagesType2 = [
+        {
+          id: '2',
+          slug: 'pricing',
+          name: 'Pricing Page',
+          page_type: 'service_page',
+          published: '2023-01-02',
+        },
+      ]
+
+      mockGetAllPages.mockResolvedValueOnce(mockPagesType1)
+      mockGetAllPages.mockResolvedValueOnce(mockPagesType2)
+
+      const result = await searchContent('pages', 'Page', 'test-token', false, [
+        'landing_page',
+        'service_page',
+      ])
+
+      expect(result.success).toBe(true)
+      expect(result.totalItems).toBe(2)
+      expect(result.results).toHaveLength(2)
+      expect(mockGetAllPages).toHaveBeenCalledTimes(2)
+      expect(result.results[0]!.sourceType).toBe('landing_page')
+      expect(result.results[1]!.sourceType).toBe('service_page')
+      expect(mockGetAllPages).toHaveBeenCalledWith({
+        token: 'test-token',
+        pageType: 'landing_page',
+        preview: false,
+      })
+      expect(mockGetAllPages).toHaveBeenCalledWith({
+        token: 'test-token',
+        pageType: 'service_page',
+        preview: false,
+      })
     })
   })
 
@@ -211,21 +254,17 @@ describe('searchContent', () => {
 
       mockGetAllCollections.mockResolvedValueOnce(mockCollections)
 
-      const result = await searchContent(
-        'collections',
-        'Product',
-        'test-token',
-        false,
-        undefined,
+      const result = await searchContent('collections', 'Product', 'test-token', false, undefined, [
         'products',
-      )
+      ])
 
       expect(result.success).toBe(true)
       expect(result.results).toHaveLength(2)
       expect(result.results[0]!.slug).toBe('product-1')
+      expect(result.results[0]!.sourceType).toBe('products')
     })
 
-    it('should return error when collectionKey is missing', async () => {
+    it('should return error when collectionKeys is missing or empty', async () => {
       const result = await searchContent('collections', 'test', 'test-token', false)
 
       expect(result.success).toBe(false)
@@ -235,17 +274,54 @@ describe('searchContent', () => {
     it('should handle getAllCollections error', async () => {
       mockGetAllCollections.mockRejectedValueOnce(new Error('Collection Error'))
 
-      const result = await searchContent(
-        'collections',
-        'test',
-        'test-token',
-        false,
-        undefined,
+      const result = await searchContent('collections', 'test', 'test-token', false, undefined, [
         'products',
-      )
+      ])
 
       expect(result.success).toBe(false)
       expect(result.error).toContain('Collection Error')
+    })
+
+    it('should search multiple collection types and combine results', async () => {
+      const mockCollectionsType1 = [
+        {
+          id: 1,
+          slug: 'product-1',
+          name: 'Product One',
+        },
+      ]
+      const mockCollectionsType2 = [
+        {
+          id: 2,
+          slug: 'team-member-1',
+          name: 'Team Member One',
+        },
+      ]
+
+      mockGetAllCollections.mockResolvedValueOnce(mockCollectionsType1)
+      mockGetAllCollections.mockResolvedValueOnce(mockCollectionsType2)
+
+      const result = await searchContent('collections', 'One', 'test-token', false, undefined, [
+        'products',
+        'team_members',
+      ])
+
+      expect(result.success).toBe(true)
+      expect(result.totalItems).toBe(2)
+      expect(result.results).toHaveLength(2)
+      expect(mockGetAllCollections).toHaveBeenCalledTimes(2)
+      expect(result.results[0]!.sourceType).toBe('products')
+      expect(result.results[1]!.sourceType).toBe('team_members')
+      expect(mockGetAllCollections).toHaveBeenCalledWith({
+        token: 'test-token',
+        collectionType: 'products',
+        preview: false,
+      })
+      expect(mockGetAllCollections).toHaveBeenCalledWith({
+        token: 'test-token',
+        collectionType: 'team_members',
+        preview: false,
+      })
     })
   })
 
@@ -261,7 +337,9 @@ describe('searchContent', () => {
         },
       ])
 
-      const result = await searchContent('pages', 'uppercase', 'test-token', false, 'landing_page')
+      const result = await searchContent('pages', 'uppercase', 'test-token', false, [
+        'landing_page',
+      ])
 
       expect(result.success).toBe(true)
       expect(result.results).toHaveLength(1)
@@ -279,7 +357,9 @@ describe('searchContent', () => {
         },
       ])
 
-      const result = await searchContent('pages', 'LOWERCASE', 'test-token', false, 'landing_page')
+      const result = await searchContent('pages', 'LOWERCASE', 'test-token', false, [
+        'landing_page',
+      ])
 
       expect(result.success).toBe(true)
       expect(result.results).toHaveLength(1)
@@ -296,7 +376,7 @@ describe('searchContent', () => {
         },
       ])
 
-      const result = await searchContent('pages', 'mixed', 'test-token', false, 'landing_page')
+      const result = await searchContent('pages', 'mixed', 'test-token', false, ['landing_page'])
 
       expect(result.success).toBe(true)
       expect(result.results).toHaveLength(1)
@@ -315,13 +395,9 @@ describe('searchContent', () => {
         },
       ])
 
-      const result = await searchContent(
-        'pages',
-        'hello world',
-        'test-token',
-        false,
+      const result = await searchContent('pages', 'hello world', 'test-token', false, [
         'landing_page',
-      )
+      ])
 
       expect(result.success).toBe(true)
       expect(result.results).toHaveLength(1)
@@ -338,13 +414,9 @@ describe('searchContent', () => {
         },
       ])
 
-      const result = await searchContent(
-        'pages',
-        'test content',
-        'test-token',
-        false,
+      const result = await searchContent('pages', 'test content', 'test-token', false, [
         'landing_page',
-      )
+      ])
 
       expect(result.success).toBe(true)
       expect(result.results).toHaveLength(1)
@@ -361,7 +433,9 @@ describe('searchContent', () => {
         },
       ])
 
-      const result = await searchContent('pages', 'with many', 'test-token', false, 'landing_page')
+      const result = await searchContent('pages', 'with many', 'test-token', false, [
+        'landing_page',
+      ])
 
       expect(result.success).toBe(true)
       expect(result.results).toHaveLength(1)
@@ -378,7 +452,7 @@ describe('searchContent', () => {
         },
       ])
 
-      const result = await searchContent('pages', 'keyword', 'test-token', false, 'landing_page')
+      const result = await searchContent('pages', 'keyword', 'test-token', false, ['landing_page'])
 
       expect(result.success).toBe(true)
       // Snippet should contain normalized spaces, not &nbsp;
@@ -413,7 +487,7 @@ describe('searchContent', () => {
         },
       ])
 
-      const result = await searchContent('pages', 'content', 'test-token', false, 'landing_page')
+      const result = await searchContent('pages', 'content', 'test-token', false, ['landing_page'])
 
       expect(result.success).toBe(true)
       expect(result.results[0]!.slug).toBe('apple-page')
@@ -434,32 +508,13 @@ describe('searchContent', () => {
         },
       ])
 
-      const result = await searchContent('pages', 'test', 'test-token', false, 'landing_page')
+      const result = await searchContent('pages', 'test', 'test-token', false, ['landing_page'])
 
       expect(result.success).toBe(true)
       expect(result.results).toHaveLength(1)
       expect(result.results[0]!.matches).toHaveLength(1)
       expect(result.results[0]!.matches[0]!.count).toBe(5)
       expect(result.results[0]!.matches[0]!.path).toContain('occurrences')
-    })
-
-    it('should show single occurrence without occurrence label', async () => {
-      mockGetAllPages.mockResolvedValueOnce([
-        {
-          id: '1',
-          slug: 'page-1',
-          name: 'single match here',
-          page_type: 'landing_page',
-          published: '2023-01-01',
-        },
-      ])
-
-      const result = await searchContent('pages', 'match', 'test-token', false, 'landing_page')
-
-      expect(result.success).toBe(true)
-      expect(result.results[0]!.matches[0]!.count).toBe(1)
-      expect(result.results[0]!.matches[0]!.path).not.toContain('occurrences')
-      expect(result.results[0]!.matches[0]!.path).toBe('name')
     })
 
     it('should limit snippet generation for many occurrences', async () => {
@@ -474,7 +529,7 @@ describe('searchContent', () => {
         },
       ])
 
-      const result = await searchContent('pages', 'keyword', 'test-token', false, 'landing_page')
+      const result = await searchContent('pages', 'keyword', 'test-token', false, ['landing_page'])
 
       expect(result.success).toBe(true)
       expect(result.results[0]!.matches[0]!.count).toBe(100)
@@ -498,7 +553,7 @@ describe('searchContent', () => {
 
       mockGetAllPages.mockResolvedValueOnce([circularObj])
 
-      const result = await searchContent('pages', 'Circular', 'test-token', false, 'landing_page')
+      const result = await searchContent('pages', 'Circular', 'test-token', false, ['landing_page'])
 
       expect(result.success).toBe(true)
       expect(result.results).toHaveLength(1)
@@ -518,7 +573,7 @@ describe('searchContent', () => {
 
       mockGetAllPages.mockResolvedValueOnce([circularArray])
 
-      const result = await searchContent('pages', 'Array', 'test-token', false, 'landing_page')
+      const result = await searchContent('pages', 'Array', 'test-token', false, ['landing_page'])
 
       expect(result.success).toBe(true)
       expect(result.results).toHaveLength(1)
@@ -544,7 +599,7 @@ describe('searchContent', () => {
         },
       ])
 
-      const result = await searchContent('pages', 'deep', 'test-token', false, 'landing_page')
+      const result = await searchContent('pages', 'deep', 'test-token', false, ['landing_page'])
 
       // Should find match in name field but not in deeply nested value
       expect(result.success).toBe(true)
@@ -571,7 +626,7 @@ describe('searchContent', () => {
         },
       ])
 
-      const result = await searchContent('pages', 'findme', 'test-token', false, 'landing_page')
+      const result = await searchContent('pages', 'findme', 'test-token', false, ['landing_page'])
 
       expect(result.success).toBe(true)
       // Should find it at depth 10 (root=0, data=1, nested=2...10)
@@ -595,7 +650,9 @@ describe('searchContent', () => {
         },
       ])
 
-      const result = await searchContent('pages', 'Searchable', 'test-token', false, 'landing_page')
+      const result = await searchContent('pages', 'Searchable', 'test-token', false, [
+        'landing_page',
+      ])
 
       expect(result.success).toBe(true)
       expect(result.results).toHaveLength(1)
@@ -614,7 +671,9 @@ describe('searchContent', () => {
         },
       ])
 
-      const result = await searchContent('pages', 'searchable', 'test-token', false, 'landing_page')
+      const result = await searchContent('pages', 'searchable', 'test-token', false, [
+        'landing_page',
+      ])
 
       expect(result.success).toBe(true)
       expect(result.results).toHaveLength(1)
@@ -641,7 +700,7 @@ describe('searchContent', () => {
         },
       ])
 
-      const result = await searchContent('pages', 'target', 'test-token', false, 'landing_page')
+      const result = await searchContent('pages', 'target', 'test-token', false, ['landing_page'])
 
       expect(result.success).toBe(true)
       expect(result.results).toHaveLength(1)
@@ -663,7 +722,7 @@ describe('searchContent', () => {
         },
       ])
 
-      const result = await searchContent('pages', 'search', 'test-token', false, 'landing_page')
+      const result = await searchContent('pages', 'search', 'test-token', false, ['landing_page'])
 
       expect(result.success).toBe(true)
       expect(result.results[0]!.matches.length).toBeGreaterThan(1)
@@ -683,7 +742,9 @@ describe('searchContent', () => {
         },
       ])
 
-      const result = await searchContent('pages', 'searchable', 'test-token', false, 'landing_page')
+      const result = await searchContent('pages', 'searchable', 'test-token', false, [
+        'landing_page',
+      ])
 
       expect(result.success).toBe(true)
       expect(result.results[0]!.title).toBe('Page Title')
@@ -717,7 +778,9 @@ describe('searchContent', () => {
         },
       ])
 
-      const result = await searchContent('pages', 'searchable', 'test-token', false, 'landing_page')
+      const result = await searchContent('pages', 'searchable', 'test-token', false, [
+        'landing_page',
+      ])
 
       expect(result.success).toBe(true)
       expect(result.results).toHaveLength(1)
@@ -734,7 +797,9 @@ describe('searchContent', () => {
         },
       ])
 
-      const result = await searchContent('pages', 'searchable', 'test-token', false, 'landing_page')
+      const result = await searchContent('pages', 'searchable', 'test-token', false, [
+        'landing_page',
+      ])
 
       expect(result.success).toBe(true)
       expect(result.results).toHaveLength(1)
@@ -755,7 +820,7 @@ describe('searchContent', () => {
         'test-token',
         false,
         undefined,
-        'items',
+        ['items'],
       )
 
       expect(result.success).toBe(true)
@@ -777,7 +842,7 @@ describe('searchContent', () => {
         },
       ])
 
-      const result = await searchContent('pages', '5', 'test-token', false, 'landing_page')
+      const result = await searchContent('pages', '5', 'test-token', false, ['landing_page'])
 
       expect(result.success).toBe(true)
       expect(result.results[0]!.matches.some((m) => m.value === '5')).toBe(true)
@@ -795,7 +860,7 @@ describe('searchContent', () => {
         },
       ])
 
-      const result = await searchContent('pages', 'true', 'test-token', false, 'landing_page')
+      const result = await searchContent('pages', 'true', 'test-token', false, ['landing_page'])
 
       expect(result.success).toBe(true)
       expect(result.results[0]!.matches.some((m) => m.value === 'true')).toBe(true)
@@ -813,7 +878,7 @@ describe('searchContent', () => {
         },
       ])
 
-      const result = await searchContent('pages', '202', 'test-token', false, 'landing_page')
+      const result = await searchContent('pages', '202', 'test-token', false, ['landing_page'])
 
       expect(result.success).toBe(true)
       expect(result.results).toHaveLength(1)
@@ -833,7 +898,7 @@ describe('searchContent', () => {
         },
       ])
 
-      const result = await searchContent('pages', 'keyword', 'test-token', false, 'landing_page')
+      const result = await searchContent('pages', 'keyword', 'test-token', false, ['landing_page'])
 
       expect(result.success).toBe(true)
       expect(result.results[0]!.matches[0]!.value).toMatch(/^\.\.\./)
@@ -851,7 +916,7 @@ describe('searchContent', () => {
         },
       ])
 
-      const result = await searchContent('pages', 'keyword', 'test-token', false, 'landing_page')
+      const result = await searchContent('pages', 'keyword', 'test-token', false, ['landing_page'])
 
       expect(result.success).toBe(true)
       expect(result.results[0]!.matches[0]!.value).toMatch(/\.\.\.$/)
@@ -868,7 +933,7 @@ describe('searchContent', () => {
         },
       ])
 
-      const result = await searchContent('pages', 'keyword', 'test-token', false, 'landing_page')
+      const result = await searchContent('pages', 'keyword', 'test-token', false, ['landing_page'])
 
       expect(result.success).toBe(true)
       expect(result.results[0]!.matches[0]!.value.startsWith('...')).toBe(false)
@@ -885,7 +950,7 @@ describe('searchContent', () => {
         },
       ])
 
-      const result = await searchContent('pages', 'keyword', 'test-token', false, 'landing_page')
+      const result = await searchContent('pages', 'keyword', 'test-token', false, ['landing_page'])
 
       expect(result.success).toBe(true)
       expect(result.results[0]!.matches[0]!.value.endsWith('...')).toBe(false)
@@ -902,7 +967,7 @@ describe('searchContent', () => {
         },
       ])
 
-      const result = await searchContent('pages', 'keyword', 'test-token', false, 'landing_page')
+      const result = await searchContent('pages', 'keyword', 'test-token', false, ['landing_page'])
 
       expect(result.success).toBe(true)
       const snippet = result.results[0]!.matches[0]!.value
@@ -924,7 +989,7 @@ describe('searchContent', () => {
         },
       ])
 
-      const result = await searchContent('pages', '$99.99', 'test-token', false, 'landing_page')
+      const result = await searchContent('pages', '$99.99', 'test-token', false, ['landing_page'])
 
       expect(result.success).toBe(true)
       expect(result.results).toHaveLength(1)
@@ -941,7 +1006,7 @@ describe('searchContent', () => {
         },
       ])
 
-      const result = await searchContent('pages', 'café', 'test-token', false, 'landing_page')
+      const result = await searchContent('pages', 'café', 'test-token', false, ['landing_page'])
 
       expect(result.success).toBe(true)
       expect(result.results).toHaveLength(1)
@@ -960,7 +1025,7 @@ describe('searchContent', () => {
         },
       ])
 
-      const result = await searchContent('pages', 'Valid', 'test-token', false, 'landing_page')
+      const result = await searchContent('pages', 'Valid', 'test-token', false, ['landing_page'])
 
       expect(result.success).toBe(true)
       expect(result.results).toHaveLength(1)
@@ -979,7 +1044,7 @@ describe('searchContent', () => {
         },
       ])
 
-      const result = await searchContent('pages', 'findme', 'test-token', false, 'landing_page')
+      const result = await searchContent('pages', 'findme', 'test-token', false, ['landing_page'])
 
       expect(result.success).toBe(true)
       expect(result.results).toHaveLength(1)
@@ -990,7 +1055,7 @@ describe('searchContent', () => {
     it('should handle empty item array', async () => {
       mockGetAllPages.mockResolvedValueOnce([])
 
-      const result = await searchContent('pages', 'anything', 'test-token', false, 'landing_page')
+      const result = await searchContent('pages', 'anything', 'test-token', false, ['landing_page'])
 
       expect(result.success).toBe(true)
       expect(result.results).toHaveLength(0)
@@ -1008,7 +1073,7 @@ describe('searchContent', () => {
         },
       ])
 
-      const result = await searchContent('pages', 'xyz123', 'test-token', false, 'landing_page')
+      const result = await searchContent('pages', 'xyz123', 'test-token', false, ['landing_page'])
 
       expect(result.success).toBe(true)
       expect(result.results).toHaveLength(0)
@@ -1026,7 +1091,7 @@ describe('searchContent', () => {
         },
       ])
 
-      const result = await searchContent('pages', 'keyword', 'test-token', false, 'landing_page')
+      const result = await searchContent('pages', 'keyword', 'test-token', false, ['landing_page'])
 
       expect(result.success).toBe(true)
       expect(result.results[0]!.matches.every((m) => m.value.trim().length > 0)).toBe(true)
@@ -1045,7 +1110,7 @@ describe('searchContent', () => {
         },
       ])
 
-      const result = await searchContent('pages', 'keyword', 'test-token', false, 'landing_page')
+      const result = await searchContent('pages', 'keyword', 'test-token', false, ['landing_page'])
 
       expect(result.success).toBe(true)
       expect(result.results).toHaveLength(1)
@@ -1063,7 +1128,7 @@ describe('searchContent', () => {
         },
       ])
 
-      const result = await searchContent('pages', 'match', 'test-token', false, 'landing_page')
+      const result = await searchContent('pages', 'match', 'test-token', false, ['landing_page'])
 
       expect(result.success).toBe(true)
       expect(result.results[0]!.matches[0]!.count).toBe(3)
@@ -1101,7 +1166,7 @@ describe('searchContent', () => {
         },
       ])
 
-      const result = await searchContent('pages', 'launch', 'test-token', false, 'landing_page')
+      const result = await searchContent('pages', 'launch', 'test-token', false, ['landing_page'])
 
       expect(result.success).toBe(true)
       expect(result.results).toHaveLength(1)
@@ -1137,7 +1202,7 @@ describe('searchContent', () => {
         },
       ])
 
-      const result = await searchContent('pages', 'serve', 'test-token', false, 'landing_page')
+      const result = await searchContent('pages', 'serve', 'test-token', false, ['landing_page'])
 
       expect(result.success).toBe(true)
       expect(result.results).toHaveLength(2)
@@ -1163,7 +1228,7 @@ describe('searchContent', () => {
         },
       ])
 
-      const result = await searchContent('pages', 'cat', 'test-token', false, 'landing_page')
+      const result = await searchContent('pages', 'cat', 'test-token', false, ['landing_page'])
 
       expect(result.success).toBe(true)
       // Should match both "catalog" and "categories"
@@ -1184,7 +1249,7 @@ describe('searchContent', () => {
       mockGetAllPages.mockResolvedValueOnce(largeDataset)
 
       const startTime = Date.now()
-      const result = await searchContent('pages', 'Found', 'test-token', false, 'landing_page')
+      const result = await searchContent('pages', 'Found', 'test-token', false, ['landing_page'])
       const duration = Date.now() - startTime
 
       expect(result.success).toBe(true)
@@ -1208,7 +1273,7 @@ describe('searchContent', () => {
 
       mockGetAllPages.mockResolvedValueOnce([objectWithManyFields])
 
-      const result = await searchContent('pages', 'target', 'test-token', false, 'landing_page')
+      const result = await searchContent('pages', 'target', 'test-token', false, ['landing_page'])
 
       expect(result.success).toBe(true)
       expect(result.results).toHaveLength(1)

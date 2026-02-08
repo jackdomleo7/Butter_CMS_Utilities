@@ -31,6 +31,7 @@
       id="search-content-page-type"
       type="text"
       :required="true"
+      placeholder="page_type_1, page_type_2, etc."
       v-model="pageType"
     >
       <template v-slot:label>Page Type</template>
@@ -41,6 +42,7 @@
       v-if="searchScope === 'collections'"
       id="search-content-collection-key"
       type="text"
+      placeholder="collection_key_1, collection_key_2, etc."
       :required="true"
       v-model="collectionKey"
     >
@@ -94,7 +96,7 @@
           <div class="search-content__result-header search-content__result-header--desktop">
             <div>
               <div class="search-content__result-title-wrapper">
-                <Chip class="search-content__source-badge">{{ getScopeBadgeText() }}</Chip>
+                <Chip class="search-content__source-badge">{{ getResultSourceBadge(result) }}</Chip>
                 <span class="search-content__result-title">{{ result.title }}</span>
               </div>
               <div class="search-content__result-slug">{{ result.slug }}</div>
@@ -226,17 +228,24 @@ function getScopeItemNamePlural(): string {
   }
 }
 
-function getScopeBadgeText(): string {
-  switch (searchScope.value) {
-    case 'pages':
-      return `Page (${pageType.value})`
-    case 'blog':
-      return 'Blog'
-    case 'collections':
-      return `Collection (${collectionKey.value})`
-    default:
-      return 'Unknown'
+function getResultSourceBadge(
+  result: AsyncReturnType<typeof searchContent>['results'][number],
+): string {
+  if (searchScope.value === 'pages' && result.sourceType) {
+    return `Page (${result.sourceType})`
+  } else if (searchScope.value === 'collections' && result.sourceType) {
+    return `Collection (${result.sourceType})`
+  } else if (searchScope.value === 'blog') {
+    return 'Blog'
   }
+  return 'Unknown'
+}
+
+function parseCommaSeparatedInput(input: string): string[] {
+  return input
+    .split(',')
+    .map((item) => item.trim())
+    .filter((item) => item.length > 0)
 }
 
 // Main search execution
@@ -269,13 +278,20 @@ async function executeSearch(): Promise<void> {
   setStatus('Searching...', 'info', true)
 
   try {
+    const pageTypesArray =
+      searchScope.value === 'pages' ? parseCommaSeparatedInput(pageType.value) : undefined
+    const collectionKeysArray =
+      searchScope.value === 'collections'
+        ? parseCommaSeparatedInput(collectionKey.value)
+        : undefined
+
     const searchResponse = await searchContent(
       searchScope.value,
       searchTermValue,
       token,
       store.includePreview,
-      pageType.value.trim() || undefined,
-      collectionKey.value.trim() || undefined,
+      pageTypesArray,
+      collectionKeysArray,
     )
 
     if (!searchResponse.success) {
