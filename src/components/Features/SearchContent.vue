@@ -4,8 +4,8 @@
     description="Search through pages, blog posts, or collections for content matching your search term. Results will highlight exactly where matches were found."
   >
     <!-- Search Scopes Selection -->
-    <div class="search-content__scopes-selection">
-      <label class="search-content__scopes-label">Search Scopes</label>
+    <fieldset class="search-content__scopes-selection">
+      <legend class="search-content__scopes-label">Search Scopes</legend>
 
       <!-- Blog Checkbox -->
       <label class="search-content__checkbox-option">
@@ -21,41 +21,45 @@
       <!-- Page Types Checkboxes -->
       <div v-if="store.pageTypes.length > 0" class="search-content__scope-group">
         <div class="search-content__scope-group-title">Page Types</div>
-        <label
-          v-for="pageType in store.pageTypes"
-          :key="pageType"
-          class="search-content__checkbox-option"
-        >
-          <input
-            type="checkbox"
-            :value="pageType"
-            :checked="store.selectedScopes.pageTypes.includes(pageType)"
-            @change="togglePageType(pageType)"
-            :disabled="hasResults"
-            :aria-label="`Include ${pageType} pages in search`"
-          />
-          <span>{{ pageType }}</span>
-        </label>
+        <div class="search-content__scope-options">
+          <label
+            v-for="pageType in store.pageTypes"
+            :key="pageType"
+            class="search-content__checkbox-option"
+          >
+            <input
+              type="checkbox"
+              :value="pageType"
+              :checked="store.selectedScopes.pageTypes.includes(pageType)"
+              @change="togglePageType(pageType)"
+              :disabled="hasResults"
+              :aria-label="`Include ${pageType} pages in search`"
+            />
+            <span>{{ pageType }}</span>
+          </label>
+        </div>
       </div>
 
       <!-- Collection Keys Checkboxes -->
       <div v-if="store.collectionKeys.length > 0" class="search-content__scope-group">
         <div class="search-content__scope-group-title">Collection Keys</div>
-        <label
-          v-for="collectionKey in store.collectionKeys"
-          :key="collectionKey"
-          class="search-content__checkbox-option"
-        >
-          <input
-            type="checkbox"
-            :value="collectionKey"
-            :checked="store.selectedScopes.collectionKeys.includes(collectionKey)"
-            @change="toggleCollectionKey(collectionKey)"
-            :disabled="hasResults"
-            :aria-label="`Include ${collectionKey} collection in search`"
-          />
-          <span>{{ collectionKey }}</span>
-        </label>
+        <div class="search-content__scope-options">
+          <label
+            v-for="collectionKey in store.collectionKeys"
+            :key="collectionKey"
+            class="search-content__checkbox-option"
+          >
+            <input
+              type="checkbox"
+              :value="collectionKey"
+              :checked="store.selectedScopes.collectionKeys.includes(collectionKey)"
+              @change="toggleCollectionKey(collectionKey)"
+              :disabled="hasResults"
+              :aria-label="`Include ${collectionKey} collection in search`"
+            />
+            <span>{{ collectionKey }}</span>
+          </label>
+        </div>
       </div>
 
       <!-- Message if no page types or collection keys configured -->
@@ -67,7 +71,7 @@
           No page types or collection keys configured. Configure them in API Configuration above.
         </p>
       </div>
-    </div>
+    </fieldset>
 
     <!-- Search Term -->
     <TextInput
@@ -85,7 +89,7 @@
       {{ isLoading ? 'Searching...' : 'Search' }}
     </Btn>
 
-    <Btn v-if="hasResults || statusMessage" type="reset" status="secondary" @click="resetSearch">
+    <Btn v-if="hasResults || statusMessage" type="reset" status="tertiary" @click="resetSearch">
       Reset
     </Btn>
 
@@ -320,7 +324,9 @@ function getResultMatchCount(
 .search-content {
   // Scopes selection
   &__scopes-selection {
-    margin-bottom: 1.5rem;
+    margin: 0 0 1.5rem 0;
+    padding: 0;
+    border: 0;
   }
 
   &__scopes-label {
@@ -337,17 +343,19 @@ function getResultMatchCount(
     gap: 0.5rem;
     cursor: pointer;
     font-size: 0.9375rem;
-    margin-bottom: 0.5rem;
 
     &:disabled {
       opacity: 0.5;
       cursor: not-allowed;
     }
+
+    input {
+      cursor: inherit;
+    }
   }
 
   &__scope-group {
-    margin-top: 1rem;
-    margin-left: 1rem;
+    margin-top: 1.5rem;
     border-left: 2px solid var(--butter-border);
     padding-left: 1rem;
   }
@@ -358,6 +366,12 @@ function getResultMatchCount(
     color: var(--text-secondary);
     margin-bottom: 0.5rem;
     text-transform: uppercase;
+  }
+
+  &__scope-options {
+    display: flex;
+    gap: 0.5rem 1rem;
+    flex-wrap: wrap;
   }
 
   &__empty-scopes {

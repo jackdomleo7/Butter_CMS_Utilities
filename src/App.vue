@@ -52,26 +52,29 @@
             id="page-type-input"
             type="text"
             v-model="pageTypeInput"
-            placeholder="Enter a page type and press Add"
             root-class="app__config-input"
           >
             <template v-slot:label>Add Page Type</template>
           </TextInput>
-          <button type="submit" class="app__form-button">Add</button>
+          <Btn v-if="pageTypeInput" type="submit" status="secondary" class="app__form-button"
+            >Add</Btn
+          >
         </form>
-        <div v-if="store.pageTypes.length > 0" class="app__items-list">
-          <Chip v-for="pageType in store.pageTypes" :key="pageType" class="app__item-chip">
-            {{ pageType }}
-            <button
-              type="button"
-              @click="removePageType(pageType)"
-              class="app__chip-remove"
-              :aria-label="`Remove ${pageType}`"
-            >
-              ✕
-            </button>
-          </Chip>
-        </div>
+        <ul v-if="store.pageTypes.length > 0" class="app__items-list">
+          <li v-for="pageType in store.pageTypes" :key="pageType">
+            <Chip class="app__item-chip">
+              {{ pageType }}
+              <button
+                type="button"
+                @click="removePageType(pageType)"
+                class="app__chip-remove"
+                :aria-label="`Remove ${pageType}`"
+              >
+                ✕
+              </button>
+            </Chip>
+          </li>
+        </ul>
         <p v-else class="app__empty-message">No page types configured</p>
       </div>
 
@@ -83,30 +86,29 @@
             id="collection-key-input"
             type="text"
             v-model="collectionKeyInput"
-            placeholder="Enter a collection key and press Add"
             root-class="app__config-input"
           >
             <template v-slot:label>Add Collection Key</template>
           </TextInput>
-          <button type="submit" class="app__form-button">Add</button>
-        </form>
-        <div v-if="store.collectionKeys.length > 0" class="app__items-list">
-          <Chip
-            v-for="collectionKey in store.collectionKeys"
-            :key="collectionKey"
-            class="app__item-chip"
+          <Btn v-if="collectionKeyInput" type="submit" status="secondary" class="app__form-button"
+            >Add</Btn
           >
-            {{ collectionKey }}
-            <button
-              type="button"
-              @click="removeCollectionKey(collectionKey)"
-              class="app__chip-remove"
-              :aria-label="`Remove ${collectionKey}`"
-            >
-              ✕
-            </button>
-          </Chip>
-        </div>
+        </form>
+        <ul v-if="store.collectionKeys.length > 0" class="app__items-list">
+          <li v-for="collectionKey in store.collectionKeys" :key="collectionKey">
+            <Chip class="app__item-chip">
+              {{ collectionKey }}
+              <button
+                type="button"
+                @click="removeCollectionKey(collectionKey)"
+                class="app__chip-remove"
+                :aria-label="`Remove ${collectionKey}`"
+              >
+                ✕
+              </button>
+            </Chip>
+          </li>
+        </ul>
         <p v-else class="app__empty-message">No collection keys configured</p>
       </div>
     </UtilitySection>
@@ -131,6 +133,7 @@ import WhatsNew from './components/WhatsNew.vue'
 import InfoBanner from './components/InfoBanner.vue'
 import UtilitySection from './components/UtilitySection.vue'
 import TextInput from './components/TextInput.vue'
+import Btn from './components/Btn.vue'
 import Chip from './components/Chip.vue'
 import SearchContent from './components/Features/SearchContent.vue'
 import ComingSoon from './components/ComingSoon.vue'
@@ -180,7 +183,7 @@ main {
   max-width: 1200px;
   width: 100%;
   margin: 0 auto;
-  padding: 2rem 1.5rem;
+  padding: 2rem 1rem;
 }
 
 .app {
@@ -257,6 +260,8 @@ main {
     flex-wrap: wrap;
     gap: 0.5rem;
     margin-bottom: 0.75rem;
+    padding: 0;
+    list-style: none;
   }
 
   &__empty-message {
@@ -270,7 +275,12 @@ main {
     display: flex;
     gap: 0.75rem;
     margin-bottom: 1rem;
-    align-items: flex-end;
+    flex-direction: column;
+
+    @media (min-width: 450px) {
+      flex-direction: row;
+      align-items: flex-end;
+    }
   }
 
   &__config-input {
@@ -279,28 +289,10 @@ main {
   }
 
   &__form-button {
-    padding: 0.625rem 1rem;
-    background-color: var(--text-primary);
-    color: white;
-    border: none;
-    border-radius: 4px;
-    font-size: 0.875rem;
-    font-weight: 500;
-    cursor: pointer;
-    transition: background-color 0.2s;
-
-    &:hover {
-      background-color: var(--butter-dark);
-    }
-
-    &:active {
-      background-color: var(--butter-dark);
-      opacity: 0.8;
-    }
+    min-width: unset;
   }
 
   &__item-chip {
-    position: relative;
     padding-right: 0.25rem;
   }
 
@@ -310,7 +302,6 @@ main {
     border: none;
     color: inherit;
     cursor: pointer;
-    font-size: 1rem;
     padding: 0 0.25rem;
     opacity: 0.6;
     transition: opacity 0.2s;

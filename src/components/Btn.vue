@@ -30,7 +30,7 @@ withDefaults(
      */
     href?: string
     disabled?: boolean
-    status?: 'secondary'
+    status?: 'secondary' | 'tertiary'
   }>(),
   {
     tag: 'button',
@@ -56,7 +56,7 @@ withDefaults(
   color: var(--btn-color);
   text-decoration: none;
   padding: 0.75rem 1rem;
-  border-radius: 0.5rem;
+  border-radius: 0.3125rem;
   cursor: pointer;
   outline-offset: 4px;
   height: var(--btn-height);
@@ -73,6 +73,14 @@ withDefaults(
   position: relative;
 
   &--secondary {
+    --btn-background-color: var(--text-primary);
+    --btn-border-color: var(--text-primary);
+    --btn-color: #fff;
+    --btn-hover-background-color: var(--butter-dark);
+    --btn-hover-border-color: var(--butter-dark);
+  }
+
+  &--tertiary {
     --btn-background-color: #fff;
     --btn-border-color: var(--butter-yellow);
     --btn-color: var(--butter-dark);
