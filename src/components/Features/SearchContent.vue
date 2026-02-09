@@ -115,10 +115,8 @@
     <!-- Results -->
     <div v-if="results.length > 0" id="resultsContainer" class="search-content__results-container">
       <div class="search-content__summary">
-        Found <strong>{{ results.length }}</strong>
-        {{ pluralize(results.length, 'item', 'items') }} containing "<strong>{{
-          searchTerm
-        }}</strong
+        Found <strong>{{ results.length }}</strong> {{ pluralize(results.length, 'item', 'items') }}
+        {{ negateSearch ? 'NOT' : '' }} containing "<strong>{{ searchTerm }}</strong
         >" with <strong>{{ totalMatches }}</strong> total
         {{ pluralize(totalMatches, 'match', 'matches') }}
       </div>
@@ -304,17 +302,15 @@ async function executeSearch(): Promise<void> {
 
     totalItems.value = searchResponse.totalItems!
 
-    const modeText = negateSearch.value ? 'NOT containing' : 'containing'
-
     if (searchResponse.results.length === 0) {
       setStatus(
-        `No items ${modeText} "${searchTermValue}" found in ${searchResponse.totalItems} selected items`,
+        `No items ${negateSearch.value ? 'NOT' : ''} containing "${searchTermValue}" found in ${searchResponse.totalItems} selected items`,
         'info',
         false,
       )
     } else {
       setStatus(
-        `Found ${searchResponse.results.length} items ${modeText} "${searchTermValue}" out of ${searchResponse.totalItems} total selected items`,
+        `Found ${searchResponse.results.length} items ${negateSearch.value ? 'NOT' : ''} containing "${searchTermValue}" out of ${searchResponse.totalItems} total selected items`,
         'success',
         false,
       )
