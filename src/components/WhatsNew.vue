@@ -41,6 +41,14 @@ const showModal = ref<boolean>(false)
 
 const features: Feature[] = [
   {
+    id: 'api-config-delete-keys',
+    type: 'bugfix',
+    title: 'Deleting page types or collection keys may have caused errors when searching content',
+    description:
+      'If you deleted a page type or a collection key from the API Configuration section, you may have encountered errors when searching content that belonged to those page types or collection keys because they were still included in the search scope if you had them selected when you deleted them. This has now been fixed so that deleting page types or collection keys will no longer cause errors in the Search Content utility.',
+    utcDatetimeAdded: new Date('2026-02-10T20:45:00Z'),
+  },
+  {
     id: 'search-content-negate',
     type: 'improvement',
     title: 'Ability to negate search in Search Content to find items NOT containing search term',

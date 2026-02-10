@@ -91,5 +91,29 @@ export const useStore = defineStore('store', () => {
     { deep: true },
   )
 
+  // Watch for changes in pageTypes and collectionKeys to clean up selectedScopes
+  watch(
+    () => ({ pageTypes: config.value.pageTypes, collectionKeys: config.value.collectionKeys }),
+    (newValues) => {
+      const cleanedPageTypes = config.value.selectedScopes.pageTypes.filter((pt) =>
+        newValues.pageTypes.includes(pt),
+      )
+      const cleanedCollectionKeys = config.value.selectedScopes.collectionKeys.filter((ck) =>
+        newValues.collectionKeys.includes(ck),
+      )
+
+      if (
+        cleanedPageTypes.length !== config.value.selectedScopes.pageTypes.length ||
+        cleanedCollectionKeys.length !== config.value.selectedScopes.collectionKeys.length
+      ) {
+        config.value.selectedScopes = {
+          ...config.value.selectedScopes,
+          pageTypes: cleanedPageTypes,
+          collectionKeys: cleanedCollectionKeys,
+        }
+      }
+    },
+  )
+
   return { token, lockToken, includePreview, pageTypes, collectionKeys, selectedScopes }
 })
