@@ -16,7 +16,7 @@ I did have to convert the project to Vue from static HTML/JS/CSS files though so
 Important: All utilities run entirely in your browser. No API tokens or data are stored, cached, or transmitted to any third-party servers. Your Butter CMS token is used only for direct API calls to the official Butter CMS API.
 
 ## 🚀 Usage
-Simply visit the GitHub Pages site (https://jackdomleo7.github.io/Butter_CMS_Utilities/) and use the utilities with your Butter CMS API token.
+Simply visit the GitHub Pages site (https://buttercmsutilities.jackdomleo.dev/) and use the utilities with your Butter CMS API token.
 
 ## 🛠️ Current Utilities
 
