@@ -134,8 +134,8 @@ function getNewFeatures(): Feature[] {
   const lastVisit = getLastVisitDate()
 
   if (!lastVisit) {
-    // First visit, show all features
-    return features
+    // First visit, user does not need to see the recent changes
+    return []
   }
 
   // Filter features newer than last visit
