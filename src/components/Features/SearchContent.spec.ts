@@ -191,6 +191,31 @@ describe('SearchContent.vue', () => {
       expect(toggle.props('disabled')).toBe(true)
     })
 
+    it('should disable text input when results exist', async () => {
+      mockSearchContent.mockResolvedValue({
+        success: true,
+        results: [{ title: 'Test', slug: 'test', sourceType: 'Blog', matches: [] }],
+        totalItems: 1,
+        failedScopes: [],
+      })
+
+      const wrapper = mountComponent()
+      const store = useStore()
+      store.token = 'test-token'
+      store.selectedScopes.blog = true
+
+      await wrapper.find('#search-content-search-term').setValue('test')
+      await wrapper
+        .findAll('button')
+        .find((btn) => btn.text() === 'Search')
+        ?.trigger('click')
+      await flushPromises()
+      await nextTick()
+
+      const input = wrapper.find('#search-content-search-term')
+      expect(input.attributes('disabled')).toBeDefined()
+    })
+
     it('should show correct off-label', () => {
       const wrapper = mountComponent()
       const toggle = wrapper.findComponent({ name: 'Toggle' })

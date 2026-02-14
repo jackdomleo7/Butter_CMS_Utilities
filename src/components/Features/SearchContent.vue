@@ -25,6 +25,7 @@
       id="search-content-search-term"
       type="text"
       :required="true"
+      :disabled="hasResults"
       v-model="searchTerm"
       @keypress.enter="executeSearch"
     >
