@@ -41,6 +41,15 @@ const showModal = ref<boolean>(false)
 
 const features: Feature[] = [
   {
+    id: 'api-config-multi-input',
+    type: 'improvement',
+    title:
+      'Ability to add multiple page types or collection keys at once to the API Configuration by comma-separating them',
+    description:
+      'You can now add multiple page types or collection keys at once in the API Configuration section by separating them with commas. This makes it easier to manage your content structure without having to add each item individually. You can even paste a comma separated string!',
+    utcDatetimeAdded: new Date('2026-02-14T14:30:00Z'),
+  },
+  {
     id: 'complete-ui-redesign',
     type: 'improvement',
     title: 'Complete UI/UX redesign',

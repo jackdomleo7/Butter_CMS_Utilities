@@ -63,9 +63,9 @@
             type="text"
             v-model="pageTypeInput"
             root-class="api-config__input"
-            placeholder="e.g. landing_page"
+            placeholder="e.g. landing_page, about_page, contact_page"
           >
-            <template v-slot:label>Add Page Type</template>
+            <template v-slot:label>Add Page Type (comma-separated for multiple)</template>
           </TextInput>
           <Btn v-if="pageTypeInput" type="submit" status="secondary" class="api-config__button"
             >Add</Btn
@@ -90,9 +90,9 @@
             type="text"
             v-model="collectionKeyInput"
             root-class="api-config__input"
-            placeholder="e.g. recipes"
+            placeholder="e.g. recipes, destinations, products"
           >
-            <template v-slot:label>Add Collection Key</template>
+            <template v-slot:label>Add Collection Key (comma-separated for multiple)</template>
           </TextInput>
           <Btn v-if="collectionKeyInput" type="submit" status="secondary" class="api-config__button"
             >Add</Btn
@@ -137,9 +137,13 @@ function toggleTokenLock(): void {
 }
 
 function addPageType(): void {
-  const trimmed = pageTypeInput.value.trim()
-  if (trimmed && !store.pageTypes.includes(trimmed)) {
-    store.pageTypes = [...store.pageTypes, trimmed]
+  const values = pageTypeInput.value
+    .split(',')
+    .map((v) => v.trim())
+    .filter((v) => v && !store.pageTypes.includes(v))
+
+  if (values.length > 0) {
+    store.pageTypes = [...store.pageTypes, ...values]
     pageTypeInput.value = ''
   }
 }
@@ -149,9 +153,13 @@ function removePageType(pageType: string): void {
 }
 
 function addCollectionKey(): void {
-  const trimmed = collectionKeyInput.value.trim()
-  if (trimmed && !store.collectionKeys.includes(trimmed)) {
-    store.collectionKeys = [...store.collectionKeys, trimmed]
+  const values = collectionKeyInput.value
+    .split(',')
+    .map((v) => v.trim())
+    .filter((v) => v && !store.collectionKeys.includes(v))
+
+  if (values.length > 0) {
+    store.collectionKeys = [...store.collectionKeys, ...values]
     collectionKeyInput.value = ''
   }
 }

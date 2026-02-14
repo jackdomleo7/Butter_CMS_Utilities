@@ -465,6 +465,156 @@ describe('ApiConfiguration.vue', () => {
     })
   })
 
+  describe('Comma-Separated Values', () => {
+    describe('Page Types', () => {
+      it('adds multiple page types when separated by commas', async () => {
+        const wrapper = mount(ApiConfiguration)
+        getVm(wrapper).store.pageTypes = []
+        getVm(wrapper).pageTypeInput = 'landing_page,product_page,about_page'
+        await wrapper.vm.$nextTick()
+        const form = wrapper.findAll('form')[0]!
+        await form.trigger('submit')
+        expect(getVm(wrapper).store.pageTypes).toContain('landing_page')
+        expect(getVm(wrapper).store.pageTypes).toContain('product_page')
+        expect(getVm(wrapper).store.pageTypes).toContain('about_page')
+        expect(getVm(wrapper).store.pageTypes.length).toBe(3)
+      })
+
+      it('trims whitespace from each comma-separated page type', async () => {
+        const wrapper = mount(ApiConfiguration)
+        getVm(wrapper).store.pageTypes = []
+        getVm(wrapper).pageTypeInput = '  landing_page  , product_page ,  about_page  '
+        await wrapper.vm.$nextTick()
+        const form = wrapper.findAll('form')[0]!
+        await form.trigger('submit')
+        expect(getVm(wrapper).store.pageTypes).toEqual([
+          'landing_page',
+          'product_page',
+          'about_page',
+        ])
+      })
+
+      it('filters out empty values in comma-separated page types', async () => {
+        const wrapper = mount(ApiConfiguration)
+        getVm(wrapper).store.pageTypes = []
+        getVm(wrapper).pageTypeInput = 'landing_page,,product_page,  ,about_page'
+        await wrapper.vm.$nextTick()
+        const form = wrapper.findAll('form')[0]!
+        await form.trigger('submit')
+        expect(getVm(wrapper).store.pageTypes).toEqual([
+          'landing_page',
+          'product_page',
+          'about_page',
+        ])
+        expect(getVm(wrapper).store.pageTypes.length).toBe(3)
+      })
+
+      it('does not add duplicate page types in comma-separated input', async () => {
+        const wrapper = mount(ApiConfiguration)
+        getVm(wrapper).store.pageTypes = ['landing_page']
+        getVm(wrapper).pageTypeInput = 'landing_page,product_page,landing_page'
+        await wrapper.vm.$nextTick()
+        const form = wrapper.findAll('form')[0]!
+        await form.trigger('submit')
+        expect(getVm(wrapper).store.pageTypes).toEqual(['landing_page', 'product_page'])
+        expect(getVm(wrapper).store.pageTypes.length).toBe(2)
+      })
+
+      it('handles mixed duplicates and new values in comma-separated input', async () => {
+        const wrapper = mount(ApiConfiguration)
+        getVm(wrapper).store.pageTypes = ['landing_page', 'contact_page']
+        getVm(wrapper).pageTypeInput = 'landing_page,product_page,about_page,contact_page'
+        await wrapper.vm.$nextTick()
+        const form = wrapper.findAll('form')[0]!
+        await form.trigger('submit')
+        expect(getVm(wrapper).store.pageTypes).toContain('landing_page')
+        expect(getVm(wrapper).store.pageTypes).toContain('contact_page')
+        expect(getVm(wrapper).store.pageTypes).toContain('product_page')
+        expect(getVm(wrapper).store.pageTypes).toContain('about_page')
+        expect(getVm(wrapper).store.pageTypes.length).toBe(4)
+      })
+
+      it('clears input after adding comma-separated page types', async () => {
+        const wrapper = mount(ApiConfiguration)
+        getVm(wrapper).pageTypeInput = 'landing_page,product_page,about_page'
+        await wrapper.vm.$nextTick()
+        const form = wrapper.findAll('form')[0]!
+        await form.trigger('submit')
+        expect(getVm(wrapper).pageTypeInput).toBe('')
+      })
+    })
+
+    describe('Collection Keys', () => {
+      it('adds multiple collection keys when separated by commas', async () => {
+        const wrapper = mount(ApiConfiguration)
+        getVm(wrapper).store.collectionKeys = []
+        getVm(wrapper).collectionKeyInput = 'recipes,articles,products'
+        await wrapper.vm.$nextTick()
+        const forms = wrapper.findAll('form')
+        await forms[1]!.trigger('submit')
+        expect(getVm(wrapper).store.collectionKeys).toContain('recipes')
+        expect(getVm(wrapper).store.collectionKeys).toContain('articles')
+        expect(getVm(wrapper).store.collectionKeys).toContain('products')
+        expect(getVm(wrapper).store.collectionKeys.length).toBe(3)
+      })
+
+      it('trims whitespace from each comma-separated collection key', async () => {
+        const wrapper = mount(ApiConfiguration)
+        getVm(wrapper).store.collectionKeys = []
+        getVm(wrapper).collectionKeyInput = '  recipes  , articles ,  products  '
+        await wrapper.vm.$nextTick()
+        const forms = wrapper.findAll('form')
+        await forms[1]!.trigger('submit')
+        expect(getVm(wrapper).store.collectionKeys).toEqual(['recipes', 'articles', 'products'])
+      })
+
+      it('filters out empty values in comma-separated collection keys', async () => {
+        const wrapper = mount(ApiConfiguration)
+        getVm(wrapper).store.collectionKeys = []
+        getVm(wrapper).collectionKeyInput = 'recipes,,articles,  ,products'
+        await wrapper.vm.$nextTick()
+        const forms = wrapper.findAll('form')
+        await forms[1]!.trigger('submit')
+        expect(getVm(wrapper).store.collectionKeys).toEqual(['recipes', 'articles', 'products'])
+        expect(getVm(wrapper).store.collectionKeys.length).toBe(3)
+      })
+
+      it('does not add duplicate collection keys in comma-separated input', async () => {
+        const wrapper = mount(ApiConfiguration)
+        getVm(wrapper).store.collectionKeys = ['recipes']
+        getVm(wrapper).collectionKeyInput = 'recipes,articles,recipes'
+        await wrapper.vm.$nextTick()
+        const forms = wrapper.findAll('form')
+        await forms[1]!.trigger('submit')
+        expect(getVm(wrapper).store.collectionKeys).toEqual(['recipes', 'articles'])
+        expect(getVm(wrapper).store.collectionKeys.length).toBe(2)
+      })
+
+      it('handles mixed duplicates and new values in comma-separated input', async () => {
+        const wrapper = mount(ApiConfiguration)
+        getVm(wrapper).store.collectionKeys = ['recipes', 'news']
+        getVm(wrapper).collectionKeyInput = 'recipes,articles,products,news'
+        await wrapper.vm.$nextTick()
+        const forms = wrapper.findAll('form')
+        await forms[1]!.trigger('submit')
+        expect(getVm(wrapper).store.collectionKeys).toContain('recipes')
+        expect(getVm(wrapper).store.collectionKeys).toContain('news')
+        expect(getVm(wrapper).store.collectionKeys).toContain('articles')
+        expect(getVm(wrapper).store.collectionKeys).toContain('products')
+        expect(getVm(wrapper).store.collectionKeys.length).toBe(4)
+      })
+
+      it('clears input after adding comma-separated collection keys', async () => {
+        const wrapper = mount(ApiConfiguration)
+        getVm(wrapper).collectionKeyInput = 'recipes,articles,products'
+        await wrapper.vm.$nextTick()
+        const forms = wrapper.findAll('form')
+        await forms[1]!.trigger('submit')
+        expect(getVm(wrapper).collectionKeyInput).toBe('')
+      })
+    })
+  })
+
   describe('Store Integration', () => {
     it('reads token from store', async () => {
       const wrapper = mount(ApiConfiguration)
