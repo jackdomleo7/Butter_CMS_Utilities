@@ -172,7 +172,6 @@ onMounted(() => {
 
   if (newFeatures.value.length > 0) {
     showModal.value = true
-    console.log('New features since last visit:', newFeatures.value)
   }
 
   updateLastVisitDate()
