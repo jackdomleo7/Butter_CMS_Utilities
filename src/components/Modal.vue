@@ -131,8 +131,16 @@ watch(
   box-shadow: 0 0.25rem 1.25rem rgba(0, 0, 0, 0.15);
   overflow-y: hidden;
 
+  @media (forced-colors: active) {
+    border: 2px solid CanvasText;
+  }
+
   &::backdrop {
     background: rgba(0, 0, 0, 0.5);
+
+    @media (forced-colors: active) {
+      background: rgba(0, 0, 0, 0.8);
+    }
   }
 
   &__content {

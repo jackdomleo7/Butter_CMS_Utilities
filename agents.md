@@ -26,36 +26,159 @@ pnpm run test:unit    # Run Vitest (add file path for specific tests)
 
 ## Core Coding Principles
 
-- **Always use `<script setup lang="ts">`** for Vue components
-- **PascalCase filenames** (e.g., `SearchItem.vue`)
-- **Props:** `defineProps<{ ... }>()` with full types; **Events:** `defineEmits<{ ... }>()` with camelCase names
-- **No `any`** - use `unknown` or interfaces from `@/types.ts`
-- **No Options API** - never use `data()`, `methods`, or `computed()` outside `<script setup>`
-- **Don't mutate props** - emit events to parent instead
-- **Reactivity:** `ref()` for primitives/arrays, `reactive()` only for complex objects, `computed()` for derived state
-- **Use `v-memo`** on `v-for` lists to prevent unnecessary re-renders
-- **Keep components focused** - single responsibility
+**Vue Components:**
+- Always use `<script setup lang="ts">` with Composition API
+- PascalCase filenames (e.g. `SearchContent.vue`)
+- Full prop types: `defineProps<{ ... }>()`
+- Emit events with camelCase names: `defineEmits<{ ... }>()`
+- Never mutate props - emit events to parent instead
+
+**TypeScript:**
+- Strict mode enabled - no `any` types
+- Use type inference where clear, explicit types for props/interfaces
+- Prefer `unknown` over `any` for truly dynamic values
+
+**Reactivity:**
+- `ref()` for primitives and arrays
+- `reactive()` only for complex objects
+- `computed()` for derived state
+- `v-memo` on `v-for` lists to optimize re-renders
+
+**Component Design:**
+- Single responsibility principle
+- Reuse existing components before creating new ones
+
+---
+
+## Design System
+
+All design tokens are defined in [_variables.scss](src/assets/styles/_variables.scss) and [_colors.scss](src/assets/styles/_colors.scss).
+
+**Use CSS custom properties (not SCSS variables):** `--font-size-*`, `--space-*`, `--gray-*`, `--text-*`, `--bg-*`, `--border-*`, `--radius-*`, `--shadow-*`, `--transition-*`
+
+**Font weights:** Hardcode directly: 400 (normal), 500 (medium), 600 (semibold)
+
+**Color strategy:**
+- Primary palette: Neutral grays (`--gray-50` through `--gray-900`)
+- Links: `--accent-blue` (#0505e5)
+- Highlights: `--accent-yellow` (#fbe700) - use sparingly
+- All text must meet WCAG AA contrast standards
+
+**SCSS:** Only use for breakpoints, mixins, or computed values where CSS custom properties can't work
+
+---
+
+## Component Library
+
+Always use existing components before creating new ones. Key components:
+
+- **Btn.vue** - Button with loading state, status variants (primary/secondary/tertiary)
+- **TextInput.vue** - Input with validation, native HTML icons (✘/✔)
+- **Toggle.vue** - Binary switch (role="switch") with keyboard support
+- **Accordion.vue** - Collapsible `<details>` with CSS Grid animation
+- **Card.vue** - Content wrapper with `skeleton` prop for loading states
+- **Chip.vue** - Badge/tag with optional close button
+- **InfoBanner.vue** - Status messages (info/warning/error/success)
+- **Modal.vue** - Dialog with focus trap, `aria-modal`
+- **ApiConfiguration.vue** - Accordion with token input, page types, collections, draft toggle
+
+### Component Patterns
+
+**Toggle vs Checkbox:**
+- Single binary choice (yes/no, on/off) → **Toggle**
+- Multiple independent selections → **Checkbox**
+- Example: Draft content = Toggle, Blog/Page Types = Checkboxes
+
+**Card Component:**
+- Skeleton loading: `<Card :skeleton="true" />` (show 3-5 during load)
+- Results: `<Card>` wrapper with content slot
+
+**Lazy Loading:**
+- Use `defineAsyncComponent()` for Card, Modal, WhatsNew (loaded conditionally)
+- SearchContent and ComingSoon are synchronous (rendered immediately)
 
 ---
 
 ## State Management
 
-Uses **Pinia** with **localStorage** for persistence:
-
+**Pinia** with **localStorage** persistence:
 1. App loads → hydrates from `localStorage.butter_cms_config`
-2. User updates config → Pinia watchers save changes to localStorage
-3. Components access via store computed properties
+2. User updates config → watchers save to localStorage
+3. Store has single `config` ref with deep watchers
 
-```typescript
-import { useStore } from '@/stores'
+**Important:** Maintain backwards compatibility for localStorage schemas
 
-const store = useStore()
-store.token = 'new_token'  // Auto-persists to localStorage
-```
+---
 
-Store structure: Single `config` ref with deep watchers. Cleans up `selectedScopes` when page types/collection keys are deleted.
+## Error Handling Pattern
 
-**Important:** Maintain backwards compatibility when adding new config properties—users may have old localStorage schemas.
+**Search Content:**
+- Try-catch per scope (blog/page type/collection)
+- Log failures: `console.error("Failed to fetch page type 'X':", error)`
+- Continue with successful scopes
+- Return `failedScopes` array for UI display
+- Only return `success: false` if ALL scopes fail
+
+Reference: [searchContent.ts](src/features/searchContent.ts)
+
+---
+
+## Branding & Content
+
+- **Tagline:** "I can't believe it's not Butter CMS!" (keep for personality)
+- **Tone:** Professional, helpful, concise
+- **Privacy:** Emphasize client-side execution, zero data collection
+- **No AI mentions** - removed for professional positioning
+
+---
+
+## Testing Patterns
+
+**General Guidelines:**
+- Aim for 90%+ test coverage
+- Focus on meaningful tests over coverage numbers
+- Test user interactions, not implementation details
+
+**TypeScript in Tests:**
+- Avoid explicit `any` types - use type inference
+- For component internals, create typed interfaces:
+  ```typescript
+  interface ComponentInstance extends ComponentPublicInstance {
+    store: ReturnType<typeof useStore>
+    internalProp: string
+  }
+  const getVm = (wrapper: ReturnType<typeof mount>) => 
+    wrapper.vm as ComponentInstance
+  ```
+
+**Non-Null Assertions:**
+- Use `!` when you're certain an element exists:
+  ```typescript
+  const button = wrapper.find('.my-button')!
+  ```
+- Only use when test context guarantees existence
+
+**Common Patterns:**
+- Test component rendering, props, events, and state
+- Use `await wrapper.vm.$nextTick()` after state changes
+- Mock external dependencies (APIs, localStorage, etc.)
+- Test accessibility attributes (aria-label, role, etc.)
+
+---
+
+## Quality Standards
+
+- **Accessibility:** WCAG AA 2.2, semantic HTML, proper ARIA, 24x24px minimum touch targets
+- **Test coverage:** 90%+ overall with focus on core business logic
+- **Component reuse:** Always use existing components before creating new HTML/CSS
+- **Design consistency:** Follow design system tokens consistently
+- **Functional minimalism:** Clean, focused UI prioritizing content legibility
+
+---
+
+## WhatsNew.vue Pattern
+
+Add new features to `features` array with `utcDatetimeAdded` timestamps. Modal auto-shows based on `butter_cms_last_visit` localStorage key.
 
 ---
 
@@ -65,41 +188,23 @@ Format: `<type>(<scope>): <subject>`
 
 Types: `feat`, `fix`, `refactor`, `perf`, `test`, `docs`, `style`, `chore`
 
-Examples:
-```
-feat(search): add filter by date range
-fix(store): persist collection keys to localStorage
-test(searchContent): add unit tests for filtering
-```
-
 ---
 
-## Quality Standards
-
-- **Accessibility:** Must be high—use semantic HTML and ARIA where appropriate
-- **@src/core coverage:** Minimum **98%+ unit test coverage** with meaningful tests covering multiple scenarios
-- **Component reuse:** Always use existing components from `@/components` (`Btn.vue`, `TextInput.vue`, `Modal.vue`, `InfoBanner.vue`, `Chip.vue`, etc) instead of creating new HTML/CSS
-- **WhatsNew.vue:** Displays changelog to users on revisit. Add new features to the `features` array with `utcDatetimeAdded` timestamps. Modal auto-shows only new items based on `butter_cms_last_visit` localStorage key.
-
----
-
-## For AI Agents: Auto-Update This File When You:
-
-- Add new core features
-- Change tech stack or major dependencies
-- Establish new coding conventions or patterns
-- Modify state management or API structure
-- Change project structure
-
-**Do NOT update for:** bug fixes, minor refactors, or individual component changes.
-
----
-
-## Before Submitting Changes
+## Before Submitting
 
 ```bash
-pnpm run typecheck  # Verify type safety
-pnpm run lint       # Fix linting issues
-pnpm run format     # Format code
-pnpm run test:unit  # Run tests (especially @src/core with 98%+ coverage)
+pnpm run typecheck  # Must pass with 0 errors
+pnpm run lint       # Must pass with 0 errors  
+pnpm run format     # Format all code
+pnpm run test:unit  # All tests must pass (585+ tests)
 ```
+
+**All commands must pass without errors.** Do not commit code with TypeScript or linting violations.
+
+---
+
+## For Maintainers
+
+Update this file when you: add core features/components, change tech stack, establish new patterns, modify state management, or update design system.
+
+**Do NOT update for:** bug fixes, minor refactors, or individual component changes.

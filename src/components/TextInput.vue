@@ -85,19 +85,16 @@ const emit = defineEmits<{
 </script>
 
 <style lang="scss">
-// Default vars
-$inputHeight: 2.5rem;
-
 .textinput {
   position: relative;
   display: flex;
   flex-direction: column;
 
   &__label {
-    margin-bottom: 0.5rem;
+    margin-bottom: var(--space-2);
     font-weight: 500;
     color: var(--text-primary);
-    font-size: 1rem;
+    font-size: var(--font-size-sm);
   }
 
   &__input-wrapper {
@@ -105,17 +102,37 @@ $inputHeight: 2.5rem;
   }
 
   &__input {
-    border: 1px solid var(--butter-border);
-    border-radius: 0.3125rem;
-    padding: 0.5rem;
-    font-size: inherit;
-    height: $inputHeight;
-    min-width: calc($inputHeight * 1.5);
+    border: 1px solid var(--border-base);
+    border-radius: var(--radius-md);
+    padding: var(--space-3);
+    font-size: var(--font-size-base);
+    height: 2.75rem;
+    min-width: 15rem;
     width: 100%;
+    color: var(--text-primary);
+    background-color: var(--bg-primary);
+
+    @media (prefers-reduced-motion: no-preference) {
+      transition: all var(--transition-fast);
+    }
+
+    @media (forced-colors: active) {
+      border: 2px solid CanvasText;
+
+      &:focus {
+        outline: 2px solid Highlight;
+      }
+    }
+
+    &::placeholder {
+      color: var(--text-tertiary);
+    }
 
     &:disabled,
     &:read-only {
-      background-color: #eee;
+      background-color: var(--bg-tertiary);
+      color: var(--text-secondary);
+      cursor: not-allowed;
     }
 
     &[aria-invalid='true'] {
@@ -135,16 +152,16 @@ $inputHeight: 2.5rem;
     }
 
     &:has(+ .textinput__validation-icon) {
-      padding-right: 2rem;
+      padding-right: 2.5rem;
     }
   }
 
   &__validation-icon {
     position: absolute;
     top: 50%;
-    right: 0.5rem;
+    right: var(--space-3);
     transform: translateY(-50%);
-    font-size: 1.25rem;
+    font-size: var(--font-size-lg);
     line-height: 0;
     user-select: none;
     pointer-events: none;
@@ -152,18 +169,19 @@ $inputHeight: 2.5rem;
 
   &__error,
   &__asterisk {
-    color: red;
+    color: var(--error);
+    font-weight: 600;
   }
 
   &__error,
   &__description {
-    margin-top: 0.5rem;
-    font-size: 0.875rem;
+    margin-top: var(--space-2);
+    font-size: var(--font-size-sm);
 
     :deep() {
       p,
       li {
-        margin-block: 0.375rem;
+        margin-block: var(--space-2);
 
         &:first-of-type {
           margin-top: 0;
@@ -180,6 +198,10 @@ $inputHeight: 2.5rem;
         list-style: none;
       }
     }
+  }
+
+  &__description {
+    color: var(--text-secondary);
   }
 }
 </style>

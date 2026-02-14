@@ -5,8 +5,10 @@
     :type="tag === 'button' ? type : undefined"
     class="btn"
     :class="status ? `btn--${status}` : ''"
-    :disabled="disabled"
+    :disabled="disabled || loading"
+    :aria-busy="loading"
   >
+    <span v-if="loading" class="btn__spinner" aria-hidden="true"></span>
     <slot />
   </component>
 </template>
@@ -30,6 +32,7 @@ withDefaults(
      */
     href?: string
     disabled?: boolean
+    loading?: boolean
     status?: 'secondary' | 'tertiary'
   }>(),
   {
@@ -37,26 +40,27 @@ withDefaults(
     type: 'button',
     href: undefined,
     disabled: false,
+    loading: false,
   },
 )
 </script>
 
 <style lang="scss">
 .btn {
-  --btn-font-size: 1rem;
-  --btn-background-color: var(--butter-yellow);
-  --btn-border-color: var(--butter-yellow);
-  --btn-color: var(--butter-dark);
-  --btn-hover-background-color: #e5a512;
-  --btn-hover-border-color: #e5a512;
-  --btn-height: calc(var(--btn-font-size) * 2.5);
+  --btn-font-size: var(--font-size-base);
+  --btn-background-color: var(--gray-900);
+  --btn-border-color: var(--gray-900);
+  --btn-color: var(--text-inverted);
+  --btn-hover-background-color: var(--gray-800);
+  --btn-hover-border-color: var(--gray-800);
+  --btn-height: 2.75rem;
 
   background-color: var(--btn-background-color);
   border: 2px solid var(--btn-border-color);
   color: var(--btn-color);
   text-decoration: none;
-  padding: 0.75rem 1rem;
-  border-radius: 0.3125rem;
+  padding: var(--space-3) var(--space-5);
+  border-radius: var(--radius-md);
   cursor: pointer;
   outline-offset: 4px;
   height: var(--btn-height);
@@ -68,34 +72,41 @@ withDefaults(
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 0.5rem;
+  gap: var(--space-2);
   user-select: none;
   position: relative;
 
+  @media (prefers-reduced-motion: no-preference) {
+    transition: all var(--transition-fast);
+  }
+
+  @media (forced-colors: active) {
+    border: 1px solid CanvasText;
+  }
+
   &--secondary {
-    --btn-background-color: var(--text-primary);
-    --btn-border-color: var(--text-primary);
-    --btn-color: #fff;
-    --btn-hover-background-color: var(--butter-dark);
-    --btn-hover-border-color: var(--butter-dark);
+    --btn-background-color: transparent;
+    --btn-border-color: var(--gray-300);
+    --btn-color: var(--text-primary);
+    --btn-hover-background-color: var(--bg-secondary);
+    --btn-hover-border-color: var(--gray-400);
   }
 
   &--tertiary {
-    --btn-background-color: #fff;
-    --btn-border-color: var(--butter-yellow);
-    --btn-color: var(--butter-dark);
-    --btn-hover-background-color: #fff8e8;
-    --btn-hover-border-color: var(--butter-yellow);
+    --btn-background-color: transparent;
+    --btn-border-color: transparent;
+    --btn-color: var(--text-primary);
+    --btn-hover-background-color: var(--bg-secondary);
+    --btn-hover-border-color: transparent;
   }
 
   &:disabled {
-    cursor: default;
-    opacity: 0.7;
+    cursor: not-allowed;
+    opacity: 0.6;
   }
 
   &:not(:disabled) {
-    &:hover,
-    &:active {
+    &:hover {
       background-color: var(--btn-hover-background-color);
       border-color: var(--btn-hover-border-color);
     }
@@ -105,6 +116,25 @@ withDefaults(
         transform: scale(0.98);
       }
     }
+  }
+
+  &__spinner {
+    display: inline-block;
+    width: 1rem;
+    height: 1rem;
+    border: 2px solid currentColor;
+    border-right-color: transparent;
+    border-radius: var(--radius-full);
+
+    @media (prefers-reduced-motion: no-preference) {
+      animation: spin 0.6s linear infinite;
+    }
+  }
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
   }
 }
 </style>

@@ -23,29 +23,29 @@ withDefaults(
 
 <style lang="scss">
 .utility-section {
-  margin-block: 2rem;
-  background-color: #fff;
-  border: 1px solid var(--butter-border);
-  border-radius: 0.5rem;
-  padding: 1.5rem;
+  margin-block: var(--space-8);
+  background-color: var(--bg-primary);
+  border: 1px solid var(--border-base);
+  border-radius: var(--radius-md);
+  padding: var(--space-6);
 
   &__title {
-    font-size: 1.5rem;
-    color: var(--butter-dark);
+    font-size: var(--font-size-2xl);
+    color: var(--text-primary);
     margin-top: 0;
-    margin-bottom: 1.5rem;
+    margin-bottom: var(--space-6);
     font-weight: 600;
   }
 
   &__description {
     color: var(--text-secondary);
-    margin-bottom: 3rem;
+    margin-bottom: var(--space-12);
   }
 
   &__content {
     display: flex;
     flex-direction: column;
-    gap: 1.5rem;
+    gap: var(--space-6);
   }
 }
 </style>

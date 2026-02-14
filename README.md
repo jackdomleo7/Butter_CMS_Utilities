@@ -1,30 +1,92 @@
-# Butter_CMS_Utilities
-An unofficial collection of client-side utilities for Butter CMS that I found myself needing but aren't available out of the box (yet).
+# Butter CMS Utilities
 
-## 🎯 Why This Exists
-While working with Butter CMS, I needed certain utilities for searching and managing content that surprisingly weren't provided by default. Rather than building these into a larger project or waiting for official tools, I created this simple, no-frills utility page.
+An unofficial collection of client-side utilities for Butter CMS. These tools fill gaps in the Butter CMS workflow that are not available out of the box.
 
-## 🤖 Why AI?
-I used AI to scaffold this project because:
+## 🎯 What This Is
 
-- I needed a quick, simple tool without the overhead of frameworks
-- AI helped me iterate faster on something that's meant to be functional, not fancy
-
-I did have to convert the project to Vue from static HTML/JS/CSS files though so it could scale. The HTML file after 1 feature was getting quite large.
+A simple, focused web application that provides utilities for working with Butter CMS content. All operations run entirely in your browser - no servers, no data collection, no third-party tracking.
 
 ## 🔒 Privacy & Security
-Important: All utilities run entirely in your browser. No API tokens or data are stored, cached, or transmitted to any third-party servers. Your Butter CMS token is used only for direct API calls to the official Butter CMS API.
+
+**Everything happens in your browser:**
+- No API tokens stored on servers
+- No usage analytics or tracking
+- No server-side logging
+- No data shared with third parties
+- Your Butter CMS token makes direct API calls to Butter CMS only
+- Settings stored locally in your browser's localStorage
+
+**Only requires a read-only API token.** This application never writes or modifies your Butter CMS content.
 
 ## 🚀 Usage
-Simply visit the GitHub Pages site (https://buttercmsutilities.jackdomleo.dev/) and use the utilities with your Butter CMS API token.
+
+1. Visit [buttercmsutilities.jackdomleo.dev](https://buttercmsutilities.jackdomleo.dev/)
+2. Enter your read-only Butter CMS API token
+3. Configure your page types and collection keys (optional, for search functionality)
+4. Use the utilities
+
+Your configuration is saved locally in your browser for convenience.
 
 ## 🛠️ Current Utilities
 
-- **Search Content** - Search for specific content across a given page type, a give collection type, or the entire blog engine
+### Search Content
+Search for specific content across your Butter CMS account:
+- Search across blog posts, page types, and collections simultaneously
+- Search for items containing OR NOT containing specific terms
+- See exactly where matches were found with context snippets
+- Highlighted matches for easy scanning
+- Include draft content or published only
 
-## 📝 License
+## 🔧 Development
+
+Built with:
+- **Vue 3** (Composition API with `<script setup>`)
+- **TypeScript** (Strict mode)
+- **Vite** for lightning-fast development
+- **Pinia** for state management
+- **SCSS** for styling
+- **Vitest** for unit testing
+
+### Setup
+
+```bash
+pnpm install
+pnpm run dev
+```
+
+### Commands
+
+```bash
+pnpm run build        # Build for production
+pnpm run typecheck    # TypeScript type checking
+pnpm run lint         # ESLint with auto-fixes
+pnpm run format       # Format with Prettier
+pnpm run test:unit    # Run unit tests
+```
+
+## 📝 Contributing
+
+Contributions welcome! Please ensure:
+
+```bash
+pnpm run typecheck  # Must pass with 0 errors
+pnpm run lint       # Must pass with 0 errors
+pnpm run format     # Format all code
+pnpm run test:unit  # All tests must pass
+```
+
+**Quality Standards:**
+- Test coverage: 90%+ (current: 94.8%)
+- TypeScript strict mode with no `any` types
+- Accessible (WCAG AA 2.2)
+- Follows existing component patterns
+
+See [agents.md](agents.md) for detailed coding guidelines.
+
+## 📄 License
+
 MIT - Feel free to use, modify, and share!
 
----
+## ⚠️ Disclaimer
 
-Note: This is an unofficial tool and is not affiliated with or endorsed by Butter CMS.
+This is an unofficial tool and is not affiliated with or endorsed by Butter CMS.
