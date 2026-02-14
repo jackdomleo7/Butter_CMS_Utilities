@@ -64,12 +64,16 @@
       class="search-content__results-container"
     >
       <div class="search-content__summary" aria-live="polite" aria-atomic="true">
-        Found {{ matchesSummary }} {{ negateSearch ? 'NOT' : '' }} containing "<strong>{{
-          searchTerm
-        }}</strong
-        >"
+        <template v-if="negateSearch">
+          Found {{ matchesSummary }} NOT containing "<strong>{{ searchTerm }}</strong
+          >"
+        </template>
+        <template v-else>
+          Found {{ matchesSummary }} containing "<strong>{{ searchTerm }}</strong
+          >"
+        </template>
       </div>
-      <div class="results-list">
+      <div class="search-content__results-list">
         <Card
           v-for="(result, index) in results"
           :key="index"
@@ -304,8 +308,11 @@ const matchesByScope = computed(() => {
 
   results.value.forEach((result) => {
     const sourceType = result.sourceType || 'Unknown'
-    const matchCount = result.matches.reduce((sum, m) => sum + (m.count || 1), 0)
-    scopeMap.set(sourceType, (scopeMap.get(sourceType) || 0) + matchCount)
+    // For exclusive search, count items; for inclusive search, count matches
+    const count = negateSearch.value
+      ? 1
+      : result.matches.reduce((sum, m) => sum + (m.count || 1), 0)
+    scopeMap.set(sourceType, (scopeMap.get(sourceType) || 0) + count)
   })
 
   return Array.from(scopeMap.entries())
@@ -314,14 +321,18 @@ const matchesByScope = computed(() => {
 })
 
 const matchesSummary = computed(() => {
-  const total = totalMatches.value
+  const total = negateSearch.value ? results.value.length : totalMatches.value
   if (matchesByScope.value.length === 0) return ''
 
   const scopeBreakdown = matchesByScope.value
     .map(({ scope, count }) => `${count} in ${scope}`)
     .join(', ')
 
-  return `${total} ${pluralize(total, 'match', 'matches')}: ${scopeBreakdown}`
+  const unit = negateSearch.value
+    ? pluralize(total, 'item', 'items')
+    : pluralize(total, 'match', 'matches')
+
+  return `${total} ${unit}: ${scopeBreakdown}`
 })
 
 function getResultMatchCount(
@@ -378,7 +389,7 @@ function getResultMatchCount(
   }
 
   // Results list
-  .results-list {
+  &__results-list {
     display: flex;
     flex-direction: column;
     gap: var(--space-5);

@@ -48,7 +48,7 @@
         >. Patterns detected:
         <strong>{{ patternsFound.join(', ') }}</strong>
       </div>
-      <div class="results-list">
+      <div class="audit-content__results-list">
         <Card
           v-for="(result, index) in results"
           :key="index"
@@ -241,7 +241,6 @@ const issuesSummary = computed(() => {
 
 <style lang="scss" scoped>
 .audit-content {
-  // Info banner
   &__info {
     margin-bottom: var(--space-6);
 
@@ -254,7 +253,6 @@ const issuesSummary = computed(() => {
     }
   }
 
-  // Loading skeleton
   &__loading {
     display: flex;
     flex-direction: column;
@@ -281,7 +279,6 @@ const issuesSummary = computed(() => {
     margin-bottom: var(--space-6);
   }
 
-  // Result cards
   &__result-card {
     margin-bottom: var(--space-4);
     border-left: 3px solid var(--accent-blue);
@@ -323,11 +320,15 @@ const issuesSummary = computed(() => {
     word-break: break-all;
   }
 
+  &__results-list {
+    display: flex;
+    flex-direction: column;
+  }
+
   &__issue-count {
     flex-shrink: 0;
   }
 
-  // Issues list
   &__issues-list {
     display: flex;
     flex-direction: column;
@@ -380,14 +381,8 @@ const issuesSummary = computed(() => {
     }
   }
 
-  // No issues message
   &__no-issues {
     margin-top: var(--space-6);
   }
-}
-
-.results-list {
-  display: flex;
-  flex-direction: column;
 }
 </style>
