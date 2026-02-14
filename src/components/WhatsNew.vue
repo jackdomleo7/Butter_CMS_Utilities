@@ -46,8 +46,8 @@ const features: Feature[] = [
     type: 'improvement',
     title: 'Complete UI/UX redesign',
     description:
-      'The entire application has been redesigned with a focus on clean, functional minimalism and content legibility. Apologies to anyone who felt like they need to wear sunglasses to use the previous design because of all the yellow. The new design also contains various accessibility improvements.',
-    utcDatetimeAdded: new Date('2026-02-14T13:30:00Z'),
+      "To celebrate Valentine's Day, I put all my love into a complete UI/UX redesign. The entire application has been redesigned with a focus on clean, functional minimalism and content legibility. Apologies to anyone who felt like they needed to wear sunglasses to use the previous design because of all the yellow. The new design also contains various accessibility improvements.",
+    utcDatetimeAdded: new Date('2026-02-14T13:45:00Z'),
   },
   {
     id: 'api-config-delete-keys',
