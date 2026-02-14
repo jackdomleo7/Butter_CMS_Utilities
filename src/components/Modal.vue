@@ -6,6 +6,7 @@
     aria-modal="true"
     :aria-labelledby="`${id}-heading`"
     :aria-describedby="`${id}-description`"
+    tabindex="-1"
     @cancel="emit('close')"
     @click="handleBackdropClick"
   >
@@ -97,11 +98,8 @@ watch(
       modal.value.showModal()
       document.body.style.overflow = 'hidden'
 
-      // Focus the first focusable element
-      const focusableElements = getFocusableElements()
-      if (focusableElements.length > 0) {
-        focusableElements[0]?.focus()
-      }
+      // Focus the dialog element itself for screen reader announcement
+      modal.value.focus()
 
       // Add keydown listener for focus trap
       modal.value.addEventListener('keydown', handleKeyDown)

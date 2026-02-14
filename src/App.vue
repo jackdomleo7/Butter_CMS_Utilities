@@ -23,15 +23,13 @@
 </template>
 
 <script setup lang="ts">
-import { defineAsyncComponent } from 'vue'
 import Header from './components/Header.vue'
 import Footer from './components/Footer.vue'
 import InfoBanner from './components/InfoBanner.vue'
 import ApiConfiguration from './components/ApiConfiguration.vue'
 import SearchContent from './components/Features/SearchContent.vue'
 import ComingSoon from './components/ComingSoon.vue'
-
-const WhatsNew = defineAsyncComponent(() => import('./components/WhatsNew.vue'))
+import WhatsNew from './components/WhatsNew.vue'
 </script>
 
 <style lang="scss" scoped>

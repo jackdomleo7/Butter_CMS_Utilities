@@ -25,10 +25,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, defineAsyncComponent } from 'vue'
+import { ref, onMounted } from 'vue'
 import InfoBanner from './InfoBanner.vue'
-
-const Modal = defineAsyncComponent(() => import('./Modal.vue'))
+import Modal from './Modal.vue'
 
 interface Feature {
   id: string
@@ -156,6 +155,7 @@ onMounted(() => {
 
   if (newFeatures.value.length > 0) {
     showModal.value = true
+    console.log('New features since last visit:', newFeatures.value)
   }
 
   updateLastVisitDate()
