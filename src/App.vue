@@ -11,25 +11,42 @@
 
     <ApiConfiguration />
 
-    <h2 class="app__utilities-title">Utilities</h2>
-    <SearchContent />
-    <ComingSoon>List all draft content</ComingSoon>
-    <ComingSoon
-      >WYSIWYG Analyzer: Search for unwanted meta HTML caused by copy and pasting</ComingSoon
-    >
+    <Tabs>
+      <template #tabs>
+        <Tab label="Search" icon="🔍" panel-id="search-panel" :index="0" />
+        <Tab label="Audit" icon="⚠️" panel-id="audit-panel" :index="1" />
+      </template>
+      <template #panels="{ activeTabIndex }">
+        <div id="search-panel" role="tabpanel" aria-labelledby="tab-0" v-if="activeTabIndex === 0">
+          <SearchContent />
+        </div>
+        <div
+          id="audit-panel"
+          role="tabpanel"
+          aria-labelledby="tab-1"
+          v-else-if="activeTabIndex === 1"
+        >
+          <AuditContent />
+        </div>
+      </template>
+    </Tabs>
   </main>
   <Footer />
   <WhatsNew />
 </template>
 
 <script setup lang="ts">
+import { defineAsyncComponent } from 'vue'
 import Header from './components/Header.vue'
 import Footer from './components/Footer.vue'
 import InfoBanner from './components/InfoBanner.vue'
 import ApiConfiguration from './components/ApiConfiguration.vue'
-import SearchContent from './components/Features/SearchContent.vue'
-import ComingSoon from './components/ComingSoon.vue'
+import Tabs from './components/Tabs.vue'
+import Tab from './components/Tab.vue'
 import WhatsNew from './components/WhatsNew.vue'
+
+const SearchContent = defineAsyncComponent(() => import('./components/Features/SearchContent.vue'))
+const AuditContent = defineAsyncComponent(() => import('./components/Features/AuditContent.vue'))
 </script>
 
 <style lang="scss" scoped>
@@ -49,13 +66,6 @@ main {
 .app {
   &__privacy-banner {
     margin-bottom: var(--space-8);
-  }
-
-  &__utilities-title {
-    font-size: var(--font-size-2xl);
-    font-weight: 600;
-    margin-bottom: var(--space-6);
-    color: var(--text-primary);
   }
 }
 </style>

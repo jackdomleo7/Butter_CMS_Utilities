@@ -1,5 +1,6 @@
-import { describe, it, expect, vi } from 'vitest'
-import { mount } from '@vue/test-utils'
+import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { mount, flushPromises } from '@vue/test-utils'
+import { createPinia, setActivePinia } from 'pinia'
 import App from './App.vue'
 
 // Mock Header to avoid favicon import issues in test environment
@@ -11,9 +12,15 @@ vi.mock('./components/Header.vue', () => ({
 }))
 
 describe('App.vue', () => {
+  beforeEach(() => {
+    localStorage.clear()
+    setActivePinia(createPinia())
+  })
+
   const createWrapper = () => {
     return mount(App, {
       global: {
+        plugins: [createPinia()],
         stubs: {
           Header: { name: 'Header', template: '<header>Header Stub</header>' },
           Footer: { name: 'Footer', template: '<footer>Footer Stub</footer>' },
@@ -30,9 +37,9 @@ describe('App.vue', () => {
             name: 'SearchContent',
             template: '<div class="search-content-stub">Search Content</div>',
           },
-          ComingSoon: {
-            name: 'ComingSoon',
-            template: '<div class="coming-soon-stub"><slot /></div>',
+          AuditContent: {
+            name: 'AuditContent',
+            template: '<div class="audit-content-stub">Audit Content</div>',
           },
           WhatsNew: {
             name: 'WhatsNew',
@@ -40,7 +47,6 @@ describe('App.vue', () => {
           },
         },
       },
-      shallow: true,
     })
   }
 
@@ -86,33 +92,97 @@ describe('App.vue', () => {
       expect(apiConfig.exists()).toBe(true)
     })
 
-    it('renders utilities title', () => {
+    it('renders Tabs component', () => {
       const wrapper = createWrapper()
-      expect(wrapper.text()).toContain('Utilities')
+      const tabs = wrapper.findComponent({ name: 'Tabs' })
+      expect(tabs.exists()).toBe(true)
     })
 
-    it('renders SearchContent component', () => {
+    it('renders Tab components for Search and Audit', () => {
+      const wrapper = createWrapper()
+      const tabComponents = wrapper.findAllComponents({ name: 'Tab' })
+      expect(tabComponents).toHaveLength(2)
+    })
+
+    it('renders SearchContent component within tabs', () => {
       const wrapper = createWrapper()
       const searchContent = wrapper.findComponent({ name: 'SearchContent' })
       expect(searchContent.exists()).toBe(true)
     })
 
-    it('renders ComingSoon components', () => {
+    it('renders AuditContent component within tabs', async () => {
       const wrapper = createWrapper()
-      const comingSoon = wrapper.findAllComponents({ name: 'ComingSoon' })
-      expect(comingSoon.length).toBeGreaterThanOrEqual(2)
-    })
+      await flushPromises()
 
-    it('displays coming soon utility descriptions', () => {
-      const wrapper = createWrapper()
-      expect(wrapper.text()).toContain('List all draft content')
-      expect(wrapper.text()).toContain('WYSIWYG Analyzer')
+      // Click the Audit tab to render the AuditContent
+      const tabs = wrapper.findAll('button[class*="tab"]')
+      const auditTab = tabs[1]
+      if (auditTab) {
+        await auditTab.trigger('click')
+        await flushPromises()
+      }
+
+      const auditContent = wrapper.findComponent({ name: 'AuditContent' })
+      expect(auditContent.exists()).toBe(true)
     })
 
     it('renders WhatsNew component', () => {
       const wrapper = createWrapper()
       const whatsNew = wrapper.findComponent({ name: 'WhatsNew' })
       expect(whatsNew.exists()).toBe(true)
+    })
+  })
+
+  describe('Tab Configuration', () => {
+    it('Search tab has correct props', () => {
+      const wrapper = createWrapper()
+      const tabs = wrapper.findAllComponents({ name: 'Tab' })
+      const searchTab = tabs[0]
+
+      expect(searchTab!.props('label')).toBe('Search')
+      expect(searchTab!.props('icon')).toBe('🔍')
+      expect(searchTab!.props('panelId')).toBe('search-panel')
+      expect(searchTab!.props('index')).toBe(0)
+    })
+
+    it('Audit tab has correct props', () => {
+      const wrapper = createWrapper()
+      const tabs = wrapper.findAllComponents({ name: 'Tab' })
+      const auditTab = tabs[1]
+
+      expect(auditTab!.props('label')).toBe('Audit')
+      expect(auditTab!.props('icon')).toBe('⚠️')
+      expect(auditTab!.props('panelId')).toBe('audit-panel')
+      expect(auditTab!.props('index')).toBe(1)
+    })
+  })
+
+  describe('Tab Panels', () => {
+    it('search panel has correct id and role', () => {
+      const wrapper = createWrapper()
+      const searchPanel = wrapper.find('#search-panel')
+
+      expect(searchPanel.exists()).toBe(true)
+      expect(searchPanel.attributes('role')).toBe('tabpanel')
+      expect(searchPanel.attributes('aria-labelledby')).toBe('tab-0')
+    })
+
+    it('audit panel has correct id and role', async () => {
+      const wrapper = createWrapper()
+      await flushPromises()
+
+      // Click the Audit tab to render the audit panel
+      const tabs = wrapper.findAll('button[class*="tab"]')
+      const auditTab = tabs[1]
+      if (auditTab) {
+        await auditTab.trigger('click')
+        await flushPromises()
+      }
+
+      const auditPanel = wrapper.find('#audit-panel')
+      expect(auditPanel.exists()).toBe(true)
+      expect(auditPanel.attributes('role')).toBe('tabpanel')
+      expect(auditPanel.attributes('aria-labelledby')).toBe('tab-1')
     })
   })
 
@@ -129,13 +199,13 @@ describe('App.vue', () => {
       expect(mainIndex).toBeLessThan(footerIndex)
     })
 
-    it('main contains privacy banner, api config, and utilities', () => {
+    it('main contains privacy banner, api config, and tabs', () => {
       const wrapper = createWrapper()
       const main = wrapper.find('main')
 
       expect(main.findComponent({ name: 'InfoBanner' }).exists()).toBe(true)
       expect(main.findComponent({ name: 'ApiConfiguration' }).exists()).toBe(true)
-      expect(main.findComponent({ name: 'SearchContent' }).exists()).toBe(true)
+      expect(main.findComponent({ name: 'Tabs' }).exists()).toBe(true)
     })
   })
 })

@@ -4,74 +4,9 @@
     :description="`Search through pages, blog posts, or collections for content ${negateSearch ? 'NOT' : ''} matching your search term. Results will highlight exactly where matches were ${negateSearch ? 'NOT' : ''} found.`"
   >
     <!-- Search Scopes Selection -->
-    <fieldset class="search-content__scopes-selection">
-      <legend class="search-content__scopes-label">Search Scopes</legend>
-
-      <!-- Blog Checkbox -->
-      <label class="search-content__checkbox-option">
-        <input
-          type="checkbox"
-          v-model="includeBlog"
-          :disabled="hasResults"
-          aria-label="Include blog posts in search"
-        />
-        <span>Blog</span>
-      </label>
-
-      <!-- Page Types Checkboxes -->
-      <div v-if="store.pageTypes.length > 0" class="search-content__scope-group">
-        <div class="search-content__scope-group-title">Page Types</div>
-        <div class="search-content__scope-options">
-          <label
-            v-for="pageType in store.pageTypes"
-            :key="pageType"
-            class="search-content__checkbox-option"
-          >
-            <input
-              type="checkbox"
-              :value="pageType"
-              :checked="store.selectedScopes.pageTypes.includes(pageType)"
-              @change="togglePageType(pageType)"
-              :disabled="hasResults"
-              :aria-label="`Include ${pageType} pages in search`"
-            />
-            <span>{{ pageType }}</span>
-          </label>
-        </div>
-      </div>
-
-      <!-- Collection Keys Checkboxes -->
-      <div v-if="store.collectionKeys.length > 0" class="search-content__scope-group">
-        <div class="search-content__scope-group-title">Collection Keys</div>
-        <div class="search-content__scope-options">
-          <label
-            v-for="collectionKey in store.collectionKeys"
-            :key="collectionKey"
-            class="search-content__checkbox-option"
-          >
-            <input
-              type="checkbox"
-              :value="collectionKey"
-              :checked="store.selectedScopes.collectionKeys.includes(collectionKey)"
-              @change="toggleCollectionKey(collectionKey)"
-              :disabled="hasResults"
-              :aria-label="`Include ${collectionKey} collection in search`"
-            />
-            <span>{{ collectionKey }}</span>
-          </label>
-        </div>
-      </div>
-
-      <!-- Message if no page types or collection keys configured -->
-      <div
-        v-if="store.pageTypes.length === 0 && store.collectionKeys.length === 0"
-        class="search-content__empty-scopes"
-      >
-        <p>
-          No page types or collection keys configured. Configure them in API Configuration above.
-        </p>
-      </div>
-    </fieldset>
+    <ScopeSelection :disabled="hasResults" aria-context="search">
+      <template #legend>Search Scopes</template>
+    </ScopeSelection>
 
     <!-- Negation Option -->
     <div class="search-content__negation-section">
@@ -103,21 +38,12 @@
       Reset
     </Btn>
 
-    <InfoBanner
-      v-if="statusMessage && !isLoading"
-      class="status-message"
-      :status="statusType"
-      role="alert"
-    >
+    <InfoBanner v-if="statusMessage && !isLoading" :status="statusType" role="alert">
       <div>{{ statusMessage }}</div>
     </InfoBanner>
 
     <!-- Partial Failure Warning -->
-    <InfoBanner
-      v-if="failedScopes.length > 0 && !isLoading"
-      class="status-message"
-      status="warning"
-    >
+    <InfoBanner v-if="failedScopes.length > 0 && !isLoading" status="warning">
       <strong>Partial failure:</strong> Failed to fetch {{ failedScopes.join(', ') }}. Showing
       results from successfully fetched scopes only.
     </InfoBanner>
@@ -188,6 +114,7 @@
 import { ref, computed, defineAsyncComponent } from 'vue'
 import { useStore } from '@/stores/index'
 import UtilitySection from '../UtilitySection.vue'
+import ScopeSelection from '../ScopeSelection.vue'
 import TextInput from '../TextInput.vue'
 import Btn from '../Btn.vue'
 import InfoBanner from '../InfoBanner.vue'
@@ -199,12 +126,6 @@ import type { AsyncReturnType } from 'type-fest'
 const Card = defineAsyncComponent(() => import('../Card.vue'))
 
 const store = useStore()
-const includeBlog = computed({
-  get: () => store.selectedScopes.blog,
-  set: (val: boolean) => {
-    store.selectedScopes = { ...store.selectedScopes, blog: val }
-  },
-})
 const searchTerm = ref('')
 const negateSearch = ref(false)
 const showMissingSearchTermError = ref(false)
@@ -266,24 +187,6 @@ function getResultSourceBadge(
   return `${result.sourceType}`
 }
 
-function togglePageType(pageType: string): void {
-  const index = store.selectedScopes.pageTypes.indexOf(pageType)
-  const newPageTypes =
-    index > -1
-      ? store.selectedScopes.pageTypes.filter((pt) => pt !== pageType)
-      : [...store.selectedScopes.pageTypes, pageType]
-  store.selectedScopes = { ...store.selectedScopes, pageTypes: newPageTypes }
-}
-
-function toggleCollectionKey(collectionKey: string): void {
-  const index = store.selectedScopes.collectionKeys.indexOf(collectionKey)
-  const newCollectionKeys =
-    index > -1
-      ? store.selectedScopes.collectionKeys.filter((ck) => ck !== collectionKey)
-      : [...store.selectedScopes.collectionKeys, collectionKey]
-  store.selectedScopes = { ...store.selectedScopes, collectionKeys: newCollectionKeys }
-}
-
 // Main search execution
 async function executeSearch(): Promise<void> {
   const token = store.token
@@ -314,7 +217,7 @@ async function executeSearch(): Promise<void> {
       store.includePreview,
       store.selectedScopes.pageTypes,
       store.selectedScopes.collectionKeys,
-      includeBlog.value,
+      store.selectedScopes.blog,
       negateSearch.value,
     )
 
@@ -390,21 +293,7 @@ function getResultMatchCount(
 
 <style lang="scss" scoped>
 .search-content {
-  // Scopes selection
-  &__scopes-selection {
-    margin: 0 0 var(--space-6) 0;
-    padding: 0;
-    border: 0;
-  }
-
-  &__scopes-label {
-    display: block;
-    font-weight: 500;
-    margin-bottom: var(--space-3);
-    color: var(--text-primary);
-    font-size: var(--font-size-sm);
-  }
-
+  // Negation section
   &__negation-section {
     margin: var(--space-2) 0;
     padding: var(--space-4);
@@ -418,63 +307,6 @@ function getResultMatchCount(
     margin-bottom: var(--space-3);
     color: var(--text-primary);
     font-size: var(--font-size-sm);
-  }
-
-  &__checkbox-option {
-    display: flex;
-    align-items: center;
-    gap: var(--space-2);
-    cursor: pointer;
-    font-size: var(--font-size-sm);
-
-    &:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-    }
-
-    input[type='checkbox'] {
-      cursor: inherit;
-      width: 1rem;
-      height: 1rem;
-      margin-top: 0.125rem;
-      flex-shrink: 0;
-      accent-color: var(--accent-blue);
-    }
-  }
-
-  &__scope-group {
-    margin-top: var(--space-5);
-    border-left: 2px solid var(--border-base);
-    padding-left: var(--space-4);
-  }
-
-  &__scope-group-title {
-    font-size: var(--font-size-xs);
-    font-weight: 600;
-    color: var(--text-secondary);
-    margin-bottom: var(--space-3);
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-  }
-
-  &__scope-options {
-    display: flex;
-    gap: var(--space-2) var(--space-4);
-    flex-wrap: wrap;
-  }
-
-  &__empty-scopes {
-    color: var(--text-secondary);
-    font-size: var(--font-size-sm);
-    margin-top: var(--space-4);
-    padding: var(--space-4);
-    background-color: var(--bg-secondary);
-    border-radius: var(--radius-md);
-    border: 1px solid var(--border-light);
-
-    p {
-      margin: 0;
-    }
   }
 
   // Loading skeleton
@@ -622,9 +454,5 @@ function getResultMatchCount(
     margin-bottom: var(--space-3);
     font-weight: 600;
   }
-}
-
-.status-message {
-  margin-top: var(--space-6);
 }
 </style>

@@ -22,6 +22,11 @@ describe('SearchContent.vue', () => {
             props: ['skeleton'],
             template: '<div class="card" :data-skeleton="skeleton"><slot /></div>',
           },
+          ScopeSelection: {
+            name: 'ScopeSelection',
+            props: ['disabled', 'ariaContext'],
+            template: '<div class="scope-selection"><slot name="legend" /></div>',
+          },
         },
       },
       ...options,
@@ -41,20 +46,11 @@ describe('SearchContent.vue', () => {
       expect(wrapper.text()).toContain('Search Content')
     })
 
-    it('should render search scopes fieldset', () => {
+    it('should render ScopeSelection component', () => {
       const wrapper = mountComponent()
-      const fieldset = wrapper.find('.search-content__scopes-selection')
-      expect(fieldset.exists()).toBe(true)
+      const scopeSelection = wrapper.find('.scope-selection')
+      expect(scopeSelection.exists()).toBe(true)
       expect(wrapper.text()).toContain('Search Scopes')
-    })
-
-    it('should render blog post checkbox', () => {
-      const wrapper = mountComponent()
-      const checkbox = wrapper.find(
-        'input[type="checkbox"][aria-label="Include blog posts in search"]',
-      )
-      expect(checkbox.exists()).toBe(true)
-      expect(wrapper.text()).toContain('Blog')
     })
 
     it('should render search term input', () => {
@@ -126,358 +122,7 @@ describe('SearchContent.vue', () => {
     })
   })
 
-  describe('Structure - Page Types', () => {
-    it('should render page types when configured in store', async () => {
-      const store = useStore()
-      store.pageTypes = ['landing_page', 'blog_page']
-      const wrapper = mountComponent()
-      await nextTick()
-
-      expect(wrapper.text()).toContain('Page Types')
-      expect(wrapper.text()).toContain('landing_page')
-      expect(wrapper.text()).toContain('blog_page')
-    })
-
-    it('should render page type checkboxes with correct aria-labels', async () => {
-      const store = useStore()
-      store.pageTypes = ['landing_page']
-      const wrapper = mountComponent()
-      await nextTick()
-
-      const checkbox = wrapper.find('input[aria-label="Include landing_page pages in search"]')
-      expect(checkbox.exists()).toBe(true)
-    })
-
-    it('should not render page types section when none configured', () => {
-      const wrapper = mountComponent()
-      const store = useStore()
-      store.pageTypes = []
-
-      expect(wrapper.text()).not.toContain('Page Types')
-    })
-  })
-
-  describe('Structure - Collections', () => {
-    it('should render collections when configured in store', async () => {
-      const store = useStore()
-      store.collectionKeys = ['items', 'products']
-      const wrapper = mountComponent()
-      await nextTick()
-
-      expect(wrapper.text()).toContain('Collection Keys')
-      expect(wrapper.text()).toContain('items')
-      expect(wrapper.text()).toContain('products')
-    })
-
-    it('should render collection checkboxes with correct aria-labels', async () => {
-      const store = useStore()
-      store.collectionKeys = ['items']
-      const wrapper = mountComponent()
-      await nextTick()
-
-      const checkbox = wrapper.find('input[aria-label="Include items collection in search"]')
-      expect(checkbox.exists()).toBe(true)
-    })
-
-    it('should not render collections section when none configured', () => {
-      const wrapper = mountComponent()
-      const store = useStore()
-      store.collectionKeys = []
-
-      expect(wrapper.text()).not.toContain('Collection Keys')
-    })
-  })
-
-  describe('Structure - Empty State', () => {
-    it('should show message when no page types or collections configured', () => {
-      const wrapper = mountComponent()
-      const store = useStore()
-      store.pageTypes = []
-      store.collectionKeys = []
-
-      expect(wrapper.find('.search-content__empty-scopes').exists()).toBe(true)
-      expect(wrapper.text()).toContain('No page types or collection keys configured')
-      expect(wrapper.text()).toContain('Configure them in API Configuration above')
-    })
-
-    it('should not show empty message when page types exist', async () => {
-      const store = useStore()
-      store.pageTypes = ['landing_page']
-      store.collectionKeys = []
-      const wrapper = mountComponent()
-      await nextTick()
-
-      expect(wrapper.find('.search-content__empty-scopes').exists()).toBe(false)
-    })
-
-    it('should not show empty message when collections exist', async () => {
-      const store = useStore()
-      store.pageTypes = []
-      store.collectionKeys = ['items']
-      const wrapper = mountComponent()
-      await nextTick()
-
-      expect(wrapper.find('.search-content__empty-scopes').exists()).toBe(false)
-    })
-  })
-
-  describe('Scope Selection - Blog', () => {
-    it('should have blog checkbox unchecked by default', () => {
-      const wrapper = mountComponent()
-      const checkbox = wrapper.find<HTMLInputElement>(
-        'input[aria-label="Include blog posts in search"]',
-      )
-      expect(checkbox.element.checked).toBe(false)
-    })
-
-    it('should update store when blog checkbox is toggled', async () => {
-      const wrapper = mountComponent()
-      const store = useStore()
-      const checkbox = wrapper.find('input[aria-label="Include blog posts in search"]')
-
-      await checkbox.setValue(true)
-      expect(store.selectedScopes.blog).toBe(true)
-
-      await checkbox.setValue(false)
-      expect(store.selectedScopes.blog).toBe(false)
-    })
-
-    it('should sync with store blog value', async () => {
-      const wrapper = mountComponent()
-      const store = useStore()
-      const checkbox = wrapper.find<HTMLInputElement>(
-        'input[aria-label="Include blog posts in search"]',
-      )
-
-      store.selectedScopes = { ...store.selectedScopes, blog: true }
-      await nextTick()
-
-      expect(checkbox.element.checked).toBe(true)
-    })
-
-    it('should disable blog checkbox when results exist', async () => {
-      mockSearchContent.mockResolvedValue({
-        success: true,
-        results: [{ title: 'Test', slug: 'test', sourceType: 'Blog', matches: [] }],
-        totalItems: 1,
-        failedScopes: [],
-      })
-
-      const wrapper = mountComponent()
-      const store = useStore()
-      store.token = 'test-token'
-      store.selectedScopes.blog = true
-
-      await wrapper.find('#search-content-search-term').setValue('test')
-      await wrapper
-        .findAll('button')
-        .find((btn) => btn.text() === 'Search')
-        ?.trigger('click')
-      await flushPromises()
-      await nextTick()
-
-      const checkbox = wrapper.find<HTMLInputElement>(
-        'input[aria-label="Include blog posts in search"]',
-      )
-      expect(checkbox.element.disabled).toBe(true)
-    })
-  })
-
-  describe('Scope Selection - Page Types', () => {
-    it('should not have page types selected by default', async () => {
-      const store = useStore()
-      store.pageTypes = ['landing_page', 'blog_page']
-      const wrapper = mountComponent()
-      await nextTick()
-
-      const checkboxes = wrapper.findAll('[aria-label*="pages in search"]')
-      checkboxes.forEach((checkbox) => {
-        expect((checkbox.element as HTMLInputElement).checked).toBe(false)
-      })
-    })
-
-    it('should toggle page type in store when checkbox is clicked', async () => {
-      const store = useStore()
-      store.pageTypes = ['landing_page']
-      const wrapper = mountComponent()
-      await nextTick()
-
-      const checkbox = wrapper.find('input[aria-label="Include landing_page pages in search"]')
-      await checkbox.setValue(true)
-
-      expect(store.selectedScopes.pageTypes).toContain('landing_page')
-    })
-
-    it('should remove page type from store when unchecked', async () => {
-      const wrapper = mountComponent()
-      const store = useStore()
-      store.pageTypes = ['landing_page']
-      store.selectedScopes.pageTypes = ['landing_page']
-      await nextTick()
-
-      const checkbox = wrapper.find('input[aria-label="Include landing_page pages in search"]')
-      await checkbox.setValue(false)
-
-      expect(store.selectedScopes.pageTypes).not.toContain('landing_page')
-    })
-
-    it('should handle multiple page types selection', async () => {
-      const store = useStore()
-      store.pageTypes = ['landing_page', 'blog_page', 'contact_page']
-      const wrapper = mountComponent()
-      await nextTick()
-
-      const checkbox1 = wrapper.find('input[aria-label="Include landing_page pages in search"]')
-      const checkbox2 = wrapper.find('input[aria-label="Include blog_page pages in search"]')
-
-      await checkbox1.setValue(true)
-      await checkbox2.setValue(true)
-
-      expect(store.selectedScopes.pageTypes).toContain('landing_page')
-      expect(store.selectedScopes.pageTypes).toContain('blog_page')
-      expect(store.selectedScopes.pageTypes).toHaveLength(2)
-    })
-
-    it('should disable page type checkboxes when results exist', async () => {
-      mockSearchContent.mockResolvedValue({
-        success: true,
-        results: [{ title: 'Test', slug: 'test', sourceType: 'landing_page', matches: [] }],
-        totalItems: 1,
-        failedScopes: [],
-      })
-
-      const wrapper = mountComponent()
-      const store = useStore()
-      store.token = 'test-token'
-      store.pageTypes = ['landing_page']
-      store.selectedScopes.pageTypes = ['landing_page']
-
-      await wrapper.find('#search-content-search-term').setValue('test')
-      await wrapper
-        .findAll('button')
-        .find((btn) => btn.text() === 'Search')
-        ?.trigger('click')
-      await flushPromises()
-      await nextTick()
-
-      const checkbox = wrapper.find<HTMLInputElement>(
-        'input[aria-label="Include landing_page pages in search"]',
-      )
-      expect(checkbox.element.disabled).toBe(true)
-    })
-
-    it('should sync with store pageTypes selection', async () => {
-      const wrapper = mountComponent()
-      const store = useStore()
-      store.pageTypes = ['landing_page']
-      store.selectedScopes.pageTypes = ['landing_page']
-      await nextTick()
-
-      const checkbox = wrapper.find<HTMLInputElement>(
-        'input[aria-label="Include landing_page pages in search"]',
-      )
-      expect(checkbox.element.checked).toBe(true)
-    })
-  })
-
-  describe('Scope Selection - Collections', () => {
-    it('should not have collections selected by default', async () => {
-      const store = useStore()
-      store.collectionKeys = ['items', 'products']
-      const wrapper = mountComponent()
-      await nextTick()
-
-      const checkboxes = wrapper.findAll('[aria-label*="collection in search"]')
-      checkboxes.forEach((checkbox) => {
-        expect((checkbox.element as HTMLInputElement).checked).toBe(false)
-      })
-    })
-
-    it('should toggle collection in store when checkbox is clicked', async () => {
-      const store = useStore()
-      store.collectionKeys = ['items']
-      const wrapper = mountComponent()
-      await nextTick()
-
-      const checkbox = wrapper.find('input[aria-label="Include items collection in search"]')
-      await checkbox.setValue(true)
-
-      expect(store.selectedScopes.collectionKeys).toContain('items')
-    })
-
-    it('should remove collection from store when unchecked', async () => {
-      const wrapper = mountComponent()
-      const store = useStore()
-      store.collectionKeys = ['items']
-      store.selectedScopes.collectionKeys = ['items']
-      await nextTick()
-
-      const checkbox = wrapper.find('input[aria-label="Include items collection in search"]')
-      await checkbox.setValue(false)
-
-      expect(store.selectedScopes.collectionKeys).not.toContain('items')
-    })
-
-    it('should handle multiple collections selection', async () => {
-      const store = useStore()
-      store.collectionKeys = ['items', 'products', 'services']
-      const wrapper = mountComponent()
-      await nextTick()
-
-      const checkbox1 = wrapper.find('input[aria-label="Include items collection in search"]')
-      const checkbox2 = wrapper.find('input[aria-label="Include products collection in search"]')
-
-      await checkbox1.setValue(true)
-      await checkbox2.setValue(true)
-
-      expect(store.selectedScopes.collectionKeys).toContain('items')
-      expect(store.selectedScopes.collectionKeys).toContain('products')
-      expect(store.selectedScopes.collectionKeys).toHaveLength(2)
-    })
-
-    it('should disable collection checkboxes when results exist', async () => {
-      mockSearchContent.mockResolvedValue({
-        success: true,
-        results: [{ title: 'Test', slug: 'test', sourceType: 'items', matches: [] }],
-        totalItems: 1,
-        failedScopes: [],
-      })
-
-      const wrapper = mountComponent()
-      const store = useStore()
-      store.token = 'test-token'
-      store.collectionKeys = ['items']
-      store.selectedScopes.collectionKeys = ['items']
-
-      await wrapper.find('#search-content-search-term').setValue('test')
-      await wrapper
-        .findAll('button')
-        .find((btn) => btn.text() === 'Search')
-        ?.trigger('click')
-      await flushPromises()
-      await nextTick()
-
-      const checkbox = wrapper.find<HTMLInputElement>(
-        'input[aria-label="Include items collection in search"]',
-      )
-      expect(checkbox.element.disabled).toBe(true)
-    })
-
-    it('should sync with store collectionKeys selection', async () => {
-      const wrapper = mountComponent()
-      const store = useStore()
-      store.collectionKeys = ['items']
-      store.selectedScopes.collectionKeys = ['items']
-      await nextTick()
-
-      const checkbox = wrapper.find<HTMLInputElement>(
-        'input[aria-label="Include items collection in search"]',
-      )
-      expect(checkbox.element.checked).toBe(true)
-    })
-  })
-
-  describe('Search Mode Toggle - Negation', () => {
+  describe('Functionality - Negation Toggle', () => {
     it('should render toggle component', () => {
       const wrapper = mountComponent()
       const toggle = wrapper.findComponent({ name: 'Toggle' })
@@ -2440,51 +2085,6 @@ describe('SearchContent.vue', () => {
       expect(resetBtn?.props('status')).toBe('tertiary')
     })
 
-    it('should re-enable checkboxes after reset', async () => {
-      mockSearchContent.mockResolvedValue({
-        success: true,
-        results: [
-          {
-            title: 'Test',
-            slug: 'test',
-            sourceType: 'Blog',
-            matches: [{ path: 'title', value: 'Test', count: 1 }],
-          },
-        ],
-        totalItems: 1,
-        failedScopes: [],
-      })
-
-      const wrapper = mountComponent()
-      const store = useStore()
-      store.token = 'test-token'
-      store.selectedScopes.blog = true
-
-      await wrapper.find('#search-content-search-term').setValue('test')
-      await wrapper
-        .findAll('button')
-        .find((btn) => btn.text() === 'Search')
-        ?.trigger('click')
-      await flushPromises()
-      await nextTick()
-
-      const checkboxBefore = wrapper.find<HTMLInputElement>(
-        'input[aria-label="Include blog posts in search"]',
-      )
-      expect(checkboxBefore.element.disabled).toBe(true)
-
-      await wrapper
-        .findAll('button')
-        .find((btn) => btn.text() === 'Reset')
-        ?.trigger('click')
-      await nextTick()
-
-      const checkboxAfter = wrapper.find<HTMLInputElement>(
-        'input[aria-label="Include blog posts in search"]',
-      )
-      expect(checkboxAfter.element.disabled).toBe(false)
-    })
-
     it('should re-enable toggle after reset', async () => {
       mockSearchContent.mockResolvedValue({
         success: true,
@@ -2528,44 +2128,6 @@ describe('SearchContent.vue', () => {
   })
 
   describe('Accessibility', () => {
-    it('should have fieldset with legend for scopes', () => {
-      const wrapper = mountComponent()
-      const fieldset = wrapper.find('fieldset.search-content__scopes-selection')
-      const legend = fieldset.find('legend')
-
-      expect(fieldset.exists()).toBe(true)
-      expect(legend.exists()).toBe(true)
-      expect(legend.text()).toBe('Search Scopes')
-    })
-
-    it('should have aria-label on blog checkbox', () => {
-      const wrapper = mountComponent()
-      const checkbox = wrapper.find(
-        'input[type="checkbox"][aria-label="Include blog posts in search"]',
-      )
-      expect(checkbox.exists()).toBe(true)
-    })
-
-    it('should have aria-label on page type checkboxes', async () => {
-      const store = useStore()
-      store.pageTypes = ['landing_page']
-      const wrapper = mountComponent()
-      await nextTick()
-
-      const checkbox = wrapper.find('input[aria-label="Include landing_page pages in search"]')
-      expect(checkbox.exists()).toBe(true)
-    })
-
-    it('should have aria-label on collection checkboxes', async () => {
-      const store = useStore()
-      store.collectionKeys = ['items']
-      const wrapper = mountComponent()
-      await nextTick()
-
-      const checkbox = wrapper.find('input[aria-label="Include items collection in search"]')
-      expect(checkbox.exists()).toBe(true)
-    })
-
     it('should have aria-live="polite" on results summary', async () => {
       mockSearchContent.mockResolvedValue({
         success: true,
@@ -2697,18 +2259,6 @@ describe('SearchContent.vue', () => {
       await flushPromises()
 
       expect(mockSearchContent).toHaveBeenCalled()
-    })
-
-    it('should have semantic HTML structure', () => {
-      const wrapper = mountComponent()
-
-      // Has fieldset/legend for grouping
-      expect(wrapper.find('fieldset').exists()).toBe(true)
-      expect(wrapper.find('legend').exists()).toBe(true)
-
-      // Labels for checkboxes
-      const labels = wrapper.findAll('label')
-      expect(labels.length).toBeGreaterThan(0)
     })
 
     it('should have proper heading hierarchy in result cards', async () => {
