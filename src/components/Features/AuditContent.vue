@@ -100,7 +100,7 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, computed, defineAsyncComponent } from 'vue'
+import { ref, shallowRef, computed, defineAsyncComponent } from 'vue'
 import { useStore } from '@/stores/index'
 import UtilitySection from '../UtilitySection.vue'
 import ScopeSelection from '../ScopeSelection.vue'
@@ -117,7 +117,8 @@ const store = useStore()
 const isLoading = ref(false)
 const statusMessage = ref('')
 const statusType = ref<'info' | 'success' | 'error' | 'warning'>('info')
-const results = ref<AsyncReturnType<typeof auditContent>['results']>([])
+// Use shallowRef for large results array - we replace it wholesale, never mutate deeply
+const results = shallowRef<AsyncReturnType<typeof auditContent>['results']>([])
 const failedScopes = ref<string[]>([])
 const totalIssues = ref(0)
 const patternsFound = ref<string[]>([])

@@ -40,6 +40,7 @@ pnpm run test:unit    # Run Vitest (add file path for specific tests)
 
 **Reactivity:**
 - `ref()` for primitives and arrays
+- `shallowRef()` for large arrays/objects that are always replaced wholesale, never mutated deeply (e.g., search result lists)
 - `reactive()` only for complex objects
 - `computed()` for derived state
 - `v-memo` on `v-for` lists to optimize re-renders
@@ -50,7 +51,27 @@ pnpm run test:unit    # Run Vitest (add file path for specific tests)
 
 ---
 
-## Design System
+## Performance Optimization
+
+**Shallow Reactivity for Large Collections:**
+- Use `shallowRef()` for large arrays/objects (e.g., search results, audit findings) that are always replaced wholesale, never mutated deeply
+- Example: `const results = shallowRef<Result[]>([]); results.value = largeArray` (safe)
+- Avoid: `results.value.push(item)` with shallowRef (won't trigger updates - use ref instead)
+- **Benefit:** Reduces reactivity overhead, faster renders, lower memory usage for datasets with 100+ items
+
+**Code Splitting & Lazy Loading:**
+- Use `defineAsyncComponent()` for components loaded conditionally or on-demand
+- Currently applied to: Card, SearchContent, AuditContent, WhatsNew
+- Keeps main bundle size minimal
+
+**List Rendering Optimization:**
+- Always use `v-memo` on `v-for` items when the list or dependencies might change frequently
+- Syntax: `v-memo="[item, dependency1, dependency2]"`
+- Prevents unnecessary child re-renders
+
+---
+
+
 
 All design tokens are defined in [_variables.scss](src/assets/styles/_variables.scss) and [_colors.scss](src/assets/styles/_colors.scss).
 

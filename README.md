@@ -75,12 +75,6 @@ pnpm run format     # Format all code
 pnpm run test:unit  # All tests must pass
 ```
 
-**Quality Standards:**
-- Test coverage: 90%+ (current: 94.8%)
-- TypeScript strict mode with no `any` types
-- Accessible (WCAG AA 2.2)
-- Follows existing component patterns
-
 See [agents.md](agents.md) for detailed coding guidelines.
 
 ## 📄 License
