@@ -132,6 +132,77 @@ describe('AuditContent.vue', () => {
       const resetButton = wrapper.findAll('button').find((btn) => btn.text() === 'Reset')
       expect(resetButton).toBeDefined()
     })
+
+    it('should not render reset button when there is only an error message', async () => {
+      const wrapper = mountComponent()
+      const store = useStore()
+      store.token = ''
+      store.selectedScopes.blog = true
+
+      await wrapper
+        .findAll('button')
+        .find((btn) => btn.text() === 'Run Audit')
+        ?.trigger('click')
+      await flushPromises()
+      await nextTick()
+
+      expect(wrapper.text()).toContain('Please enter your API token')
+      const resetButton = wrapper.findAll('button').find((btn) => btn.text() === 'Reset')
+      expect(resetButton).toBeUndefined()
+    })
+
+    it('should not render reset button when no issues found but no results displayed', async () => {
+      mockAuditContent.mockResolvedValue({
+        success: true,
+        results: [],
+        totalIssues: 0,
+        patternsFound: [],
+        failedScopes: [],
+      })
+
+      const wrapper = mountComponent()
+      const store = useStore()
+      store.token = 'test-token'
+      store.selectedScopes.blog = true
+
+      await wrapper
+        .findAll('button')
+        .find((btn) => btn.text() === 'Run Audit')
+        ?.trigger('click')
+      await flushPromises()
+      await nextTick()
+
+      expect(wrapper.text()).toContain('No HTML bloat detected')
+      const resetButton = wrapper.findAll('button').find((btn) => btn.text() === 'Reset')
+      expect(resetButton).toBeUndefined()
+    })
+
+    it('should not render reset button when audit fails', async () => {
+      mockAuditContent.mockResolvedValue({
+        success: false,
+        results: [],
+        totalIssues: 0,
+        patternsFound: [],
+        failedScopes: ['Blog'],
+        error: 'API token is invalid',
+      })
+
+      const wrapper = mountComponent()
+      const store = useStore()
+      store.token = 'invalid-token'
+      store.selectedScopes.blog = true
+
+      await wrapper
+        .findAll('button')
+        .find((btn) => btn.text() === 'Run Audit')
+        ?.trigger('click')
+      await flushPromises()
+      await nextTick()
+
+      expect(wrapper.text()).toContain('API token is invalid')
+      const resetButton = wrapper.findAll('button').find((btn) => btn.text() === 'Reset')
+      expect(resetButton).toBeUndefined()
+    })
   })
 
   describe('Functionality - Audit Execution', () => {

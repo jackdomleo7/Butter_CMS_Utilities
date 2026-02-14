@@ -115,6 +115,84 @@ describe('SearchContent.vue', () => {
       expect(resetButton).toBeDefined()
     })
 
+    it('should not render reset button when there is only an error message', async () => {
+      const wrapper = mountComponent()
+      const store = useStore()
+      store.token = ''
+      store.selectedScopes.blog = true
+
+      await wrapper.find('#search-content-search-term').setValue('test')
+      await submitSearchForm(wrapper)
+      await flushPromises()
+      await nextTick()
+
+      expect(wrapper.text()).toContain('Please enter your API token')
+      const resetButton = wrapper.findAll('button').find((btn) => btn.text() === 'Reset')
+      expect(resetButton).toBeUndefined()
+    })
+
+    it('should not render reset button when search term is missing', async () => {
+      const wrapper = mountComponent()
+      const store = useStore()
+      store.token = 'test-token'
+      store.selectedScopes.blog = true
+
+      await submitSearchForm(wrapper)
+      await flushPromises()
+      await nextTick()
+
+      expect(wrapper.text()).toContain('Please enter a search term')
+      const resetButton = wrapper.findAll('button').find((btn) => btn.text() === 'Reset')
+      expect(resetButton).toBeUndefined()
+    })
+
+    it('should not render reset button when no results found but no actual results displayed', async () => {
+      mockSearchContent.mockResolvedValue({
+        success: true,
+        results: [],
+        totalItems: 10,
+        failedScopes: [],
+      })
+
+      const wrapper = mountComponent()
+      const store = useStore()
+      store.token = 'test-token'
+      store.selectedScopes.blog = true
+
+      await wrapper.find('#search-content-search-term').setValue('test')
+      await submitSearchForm(wrapper)
+      await flushPromises()
+      await nextTick()
+
+      expect(wrapper.text()).toContain('No items')
+      const resetButton = wrapper.findAll('button').find((btn) => btn.text() === 'Reset')
+      expect(resetButton).toBeUndefined()
+    })
+
+    it('should not render reset button when search fails', async () => {
+      mockSearchContent.mockResolvedValue({
+        success: false,
+        results: [],
+        totalItems: 0,
+        failedScopes: ['Blog'],
+        error: 'API token is invalid',
+      })
+
+      const wrapper = mountComponent()
+      const store = useStore()
+      store.token = 'invalid-token'
+      store.selectedScopes.blog = true
+
+      await wrapper.find('#search-content-search-term').setValue('test')
+      await submitSearchForm(wrapper)
+      await flushPromises()
+      await nextTick()
+
+      expect(wrapper.text()).toContain('API token is invalid')
+      const resetButton = wrapper.findAll('button').find((btn) => btn.text() === 'Reset')
+      expect(resetButton).toBeUndefined()
+    })
+
     it('should render negation toggle section', () => {
       const wrapper = mountComponent()
       expect(wrapper.find('.search-content__negation-section').exists()).toBe(true)
@@ -1823,8 +1901,8 @@ describe('SearchContent.vue', () => {
     it('should clear status messages when reset is clicked', async () => {
       mockSearchContent.mockResolvedValue({
         success: true,
-        results: [],
-        totalItems: 0,
+        results: [{ title: 'Test', slug: 'test', sourceType: 'Blog', matches: [] }],
+        totalItems: 1,
         failedScopes: [],
       })
 
@@ -1839,7 +1917,7 @@ describe('SearchContent.vue', () => {
       await nextTick()
 
       const statusMessage = wrapper.text()
-      expect(statusMessage).toContain('No items')
+      expect(statusMessage).toContain('Found')
 
       await wrapper
         .findAll('button')
@@ -1854,8 +1932,8 @@ describe('SearchContent.vue', () => {
     it('should clear failed scopes when reset is clicked', async () => {
       mockSearchContent.mockResolvedValue({
         success: true,
-        results: [],
-        totalItems: 0,
+        results: [{ title: 'Test', slug: 'test', sourceType: 'Blog', matches: [] }],
+        totalItems: 1,
         failedScopes: ['landing_page'],
       })
 

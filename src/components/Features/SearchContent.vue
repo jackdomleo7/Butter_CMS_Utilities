@@ -37,7 +37,7 @@
 
       <Btn type="submit" v-if="!hasResults && !isLoading"> Search </Btn>
 
-      <Btn v-if="hasResults || statusMessage" type="reset" status="tertiary" @click="resetSearch">
+      <Btn v-if="results.length > 0" type="reset" status="tertiary" @click="resetSearch">
         Reset
       </Btn>
     </form>

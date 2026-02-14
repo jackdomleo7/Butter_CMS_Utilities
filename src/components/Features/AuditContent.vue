@@ -23,9 +23,7 @@
     <!-- Action Buttons -->
     <Btn @click="executeAudit" v-if="!hasResults && !isLoading"> Run Audit </Btn>
 
-    <Btn v-if="hasResults || statusMessage" type="reset" status="tertiary" @click="resetAudit">
-      Reset
-    </Btn>
+    <Btn v-if="results.length > 0" type="reset" status="tertiary" @click="resetAudit"> Reset </Btn>
 
     <!-- Status Message -->
     <InfoBanner v-if="statusMessage && !isLoading" :status="statusType" role="alert">
@@ -123,7 +121,7 @@ const failedScopes = ref<string[]>([])
 const totalIssues = ref(0)
 const patternsFound = ref<string[]>([])
 
-const hasResults = computed(() => results.value.length > 0 || statusMessage.value !== '')
+const hasResults = computed(() => results.value.length > 0)
 
 // Utility functions
 function pluralize(count: number, singular: string, plural: string): string {
