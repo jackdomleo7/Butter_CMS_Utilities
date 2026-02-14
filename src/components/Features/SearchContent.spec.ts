@@ -1456,6 +1456,66 @@ describe('SearchContent.vue', () => {
       const markCount = (matchValue.html().match(/<mark>/g) || []).length
       expect(markCount).toBe(3)
     })
+
+    it('should highlight normalized character variants', async () => {
+      mockSearchContent.mockResolvedValue({
+        success: true,
+        results: [
+          {
+            title: 'Test',
+            slug: 'test',
+            sourceType: 'Blog',
+            matches: [
+              { path: 'price', value: '£100 or £50', count: 2 },
+              { path: 'quote', value: '"Hello" and "World"', count: 2 },
+            ],
+          },
+        ],
+        totalItems: 1,
+        failedScopes: [],
+      })
+
+      const wrapper = mountComponent()
+      const store = useStore()
+      store.token = 'test-token'
+      store.selectedScopes.blog = true
+
+      // Search for £ - should highlight both £ symbols
+      await wrapper.find('#search-content-search-term').setValue('£')
+      await wrapper
+        .findAll('button')
+        .find((btn) => btn.text() === 'Search')
+        ?.trigger('click')
+      await flushPromises()
+      await nextTick()
+
+      const priceMatch = wrapper.findAll('.search-content__match-value')[0]
+      expect(priceMatch).toBeDefined()
+      const priceHtml = priceMatch!.html()
+      // Should highlight both £ symbols
+      expect(priceHtml).toContain('<mark>')
+      expect((priceHtml.match(/<mark>/g) || []).length).toBe(2)
+
+      // Reset and search for quotes
+      await wrapper.find('button[type="reset"]').trigger('click')
+      await nextTick()
+
+      // Search for " - should highlight both quote pairs
+      await wrapper.find('#search-content-search-term').setValue('"')
+      await wrapper
+        .findAll('button')
+        .find((btn) => btn.text() === 'Search')
+        ?.trigger('click')
+      await flushPromises()
+      await nextTick()
+
+      const quoteMatch = wrapper.findAll('.search-content__match-value')[1]
+      expect(quoteMatch).toBeDefined()
+      const quoteHtml = quoteMatch!.html()
+      // Should highlight all 4 quote marks
+      expect(quoteHtml).toContain('<mark>')
+      expect((quoteHtml.match(/<mark>/g) || []).length).toBe(4)
+    })
   })
 
   describe('Status Messages - Info Banner', () => {

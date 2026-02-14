@@ -1,6 +1,7 @@
 import { getAllPages } from '@/core/pages'
 import { getAllPosts } from '@/core/posts'
 import { getAllCollections } from '@/core/collections'
+import { normalizeWhitespace, createContextSnippet } from '@/utils/textNormalization'
 
 /**
  * Predefined patterns for detecting HTML bloat from various sources.
@@ -130,30 +131,6 @@ interface MatchAccumulator {
   snippets: string[]
   count: number
   positions?: number[] // Track match positions for deduplication
-}
-
-function normalizeWhitespace(str: string): string {
-  return str
-    .replace(/&nbsp;/gi, ' ')
-    .replace(/\u00A0/g, ' ')
-    .replace(/\s+/g, ' ')
-}
-
-function createContextSnippet(
-  normalizedText: string,
-  matchIndex: number,
-  matchLength: number,
-  contextSize = 100,
-): string {
-  const contextStart = Math.max(0, matchIndex - contextSize)
-  const contextEnd = Math.min(normalizedText.length, matchIndex + matchLength + contextSize)
-
-  let snippet = normalizedText.substring(contextStart, contextEnd)
-
-  if (contextStart > 0) snippet = '...' + snippet
-  if (contextEnd < normalizedText.length) snippet = snippet + '...'
-
-  return snippet
 }
 
 function searchObjectForPattern(

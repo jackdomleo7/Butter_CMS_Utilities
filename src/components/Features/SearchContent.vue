@@ -121,6 +121,7 @@ import InfoBanner from '../InfoBanner.vue'
 import Chip from '../Chip.vue'
 import Toggle from '../Toggle.vue'
 import { searchContent } from '@/features/searchContent'
+import { normalizeWhitespace } from '@/utils/textNormalization'
 import type { AsyncReturnType } from 'type-fest'
 
 const Card = defineAsyncComponent(() => import('../Card.vue'))
@@ -151,10 +152,44 @@ function escapeHtml(str: string): string {
   return div.innerHTML
 }
 
+/**
+ * Creates a regex pattern that matches a character and all its normalized variants.
+ * For example, '£' should match both '£' and '&pound;'.
+ */
+function createVariantPattern(char: string): string {
+  const variants: Record<string, string[]> = {
+    "'": ["'", '&apos;', '&#39;', '\u2018', '\u2019'],
+    '"': ['"', '&quot;', '\u201C', '\u201D'],
+    '-': ['-', '&ndash;', '&mdash;', '\u2013', '\u2014'],
+    '£': ['£', '&pound;'],
+    '€': ['€', '&euro;'],
+    '&': ['&', '&amp;'],
+    '<': ['<', '&lt;'],
+    '>': ['>', '&gt;'],
+    ' ': [' ', '&nbsp;', '\u00A0'],
+  }
+
+  // If this character has known variants, match any of them
+  if (variants[char]) {
+    const escapedVariants = variants[char].map((v) => v.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'))
+    return `(?:${escapedVariants.join('|')})`
+  }
+
+  // Otherwise, just escape and match the character itself
+  return char.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+}
+
 function highlightMatches(text: string, searchTerm: string): string {
   const escapedText = escapeHtml(text)
-  const escapedSearchTerm = searchTerm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
-  const regex = new RegExp(`(${escapedSearchTerm})`, 'gi')
+
+  // Normalize the search term to get the canonical form
+  const normalizedSearch = normalizeWhitespace(searchTerm.trim())
+
+  // Build a regex pattern that matches the search term and all its variant forms
+  const patternParts = Array.from(normalizedSearch).map(createVariantPattern)
+  const pattern = patternParts.join('')
+
+  const regex = new RegExp(`(${pattern})`, 'gi')
   return escapedText.replace(regex, '<mark>$1</mark>')
 }
 

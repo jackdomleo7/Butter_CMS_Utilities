@@ -41,6 +41,14 @@ const showModal = ref<boolean>(false)
 
 const features: Feature[] = [
   {
+    id: 'enhanced-text-normalization',
+    type: 'improvement',
+    title: 'Enhanced text normalization for search and audit',
+    description:
+      'Search and Audit utilities now normalize many more character variations for better matching. This includes HTML entities (<code>&amp;quot;</code>, <code>&amp;pound;</code>, <code>&amp;euro;</code>, <code>&amp;amp;</code>), fancy Unicode quotes (<code>"</code> <code>"</code> <code>\'</code> <code>\'</code>), and various dashes (<code>–</code> <code>—</code>). For example, searching for <code>"quote"</code> will now match <code>&amp;quot;quote&amp;quot;</code> and <code>"quote"</code>. The logic is also now shared between both utilities to reduce code duplication.',
+    utcDatetimeAdded: new Date('2026-02-14T18:30:00Z'),
+  },
+  {
     id: 'audit-html-bloat',
     type: 'feature',
     title: 'Audit HTML Bloat',
