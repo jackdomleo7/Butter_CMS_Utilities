@@ -17,38 +17,39 @@ withDefaults(
 
 <style lang="scss">
 .info-banner {
-  --info-banner-bg-color: #eff8ff;
-  --info-banner-border-color: #2e90fa;
-  --info-banner-text-color: #175cd3;
+  --info-banner-bg-color: var(--info-bg);
+  --info-banner-border-color: var(--info);
+  --info-banner-text-color: var(--text-primary);
 
   background-color: var(--info-banner-bg-color);
   border-left: 4px solid var(--info-banner-border-color);
   color: var(--info-banner-text-color);
-  padding: 1rem 1.25rem;
-  border-radius: 4px;
-  font-size: 1rem;
-  line-height: 1.5rem;
+  padding: var(--space-4) var(--space-5);
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-sm);
+  line-height: var(--line-height-relaxed);
 
   &--warning {
-    --info-banner-bg-color: #fef6e7;
+    --info-banner-bg-color: var(--warning-bg);
     --info-banner-border-color: var(--warning);
-    --info-banner-text-color: var(--text-secondary);
   }
 
   &--error {
-    --info-banner-bg-color: #fef3f2;
+    --info-banner-bg-color: var(--error-bg);
     --info-banner-border-color: var(--error);
-    --info-banner-text-color: #b42318;
   }
 
   &--success {
-    --info-banner-bg-color: #ecfdf3;
+    --info-banner-bg-color: var(--success-bg);
     --info-banner-border-color: var(--success);
-    --info-banner-text-color: #027a48;
   }
 
   p {
     margin: 0;
+  }
+
+  strong {
+    font-weight: 600;
   }
 }
 </style>

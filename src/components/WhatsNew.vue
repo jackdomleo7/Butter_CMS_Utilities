@@ -25,9 +25,10 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
-import Modal from './Modal.vue'
+import { ref, onMounted, defineAsyncComponent } from 'vue'
 import InfoBanner from './InfoBanner.vue'
+
+const Modal = defineAsyncComponent(() => import('./Modal.vue'))
 
 interface Feature {
   id: string
@@ -40,6 +41,14 @@ interface Feature {
 const showModal = ref<boolean>(false)
 
 const features: Feature[] = [
+  {
+    id: 'complete-ui-redesign',
+    type: 'improvement',
+    title: 'Complete UI/UX redesign',
+    description:
+      "To celebrate Valentine's Day, I put all my love into a complete UI/UX redesign. The entire application has been redesigned with a focus on clean, functional minimalism and content legibility. Apologies to anyone who felt like they needed to wear sunglasses to use the previous design because of all the yellow. The new design also contains various accessibility improvements.",
+    utcDatetimeAdded: new Date('2026-02-14T13:45:00Z'),
+  },
   {
     id: 'api-config-delete-keys',
     type: 'bugfix',
@@ -155,18 +164,29 @@ onMounted(() => {
 
 <style lang="scss" scoped>
 .whats-new-item {
+  margin-bottom: var(--space-4);
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+
   h3 {
     margin: 0;
-    font-size: 1rem;
+    font-size: var(--font-size-base);
+    font-weight: 600;
   }
 
   p {
-    margin-block: 0.5rem;
-    font-size: 0.875rem;
+    margin-block: var(--space-3);
+    font-size: var(--font-size-sm);
+    line-height: var(--line-height-relaxed);
   }
 
   small {
-    font-size: 0.75rem;
+    font-size: var(--font-size-xs);
+    color: var(--text-secondary);
+    display: block;
+    margin-top: var(--space-2);
   }
 }
 </style>

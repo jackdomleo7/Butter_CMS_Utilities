@@ -1,12 +1,56 @@
 :root {
-  --butter-yellow: #fdc824;
-  --butter-dark: #1d2939;
-  --butter-gray: #475467;
-  --butter-light-gray: #f9fafb;
-  --butter-border: #e4e7ec;
-  --text-primary: #101828;
-  --text-secondary: #475467;
-  --success: #12b76a;
-  --warning: #f79009;
-  --error: #f04438;
+  /* Neutral Colors - Primary Palette */
+  --gray-50: #f9fafb;
+  --gray-100: #f3f4f6;
+  --gray-200: #e5e7eb;
+  --gray-300: #d1d5db;
+  --gray-400: #9ca3af;
+  --gray-500: #6b7280;
+  --gray-600: #4b5563;
+  --gray-700: #374151;
+  --gray-800: #1f2937;
+  --gray-900: #111827;
+
+  /* Text Colors */
+  --text-primary: #111827;
+  --text-secondary: #4b5563;
+  --text-tertiary: #6b7280;
+  --text-inverted: #ffffff;
+
+  /* Background Colors */
+  --bg-primary: #ffffff;
+  --bg-secondary: #f9fafb;
+  --bg-tertiary: #f3f4f6;
+
+  /* Border Colors */
+  --border-light: #e5e7eb;
+  --border-base: #d1d5db;
+  --border-dark: #9ca3af;
+
+  /* Butter CMS Accent Colors (use sparingly) */
+  --accent-blue: #0505e5;
+  --accent-yellow: #fbe700;
+  --accent-charcoal: #1d2939;
+
+  /* Status Colors */
+  --success: #10b981;
+  --success-bg: #d1fae5;
+  --success-border: #6ee7b7;
+
+  --warning: #f59e0b;
+  --warning-bg: #fef3c7;
+  --warning-border: #fcd34d;
+
+  --error: #ef4444;
+  --error-bg: #fee2e2;
+  --error-border: #fca5a5;
+
+  --info: #3b82f6;
+  --info-bg: #dbeafe;
+  --info-border: #93c5fd;
+
+  /* Interactive States */
+  --color-focus: var(--accent-blue);
+  --color-link: var(--accent-blue);
+  --color-link-hover: #0404b8;
 }

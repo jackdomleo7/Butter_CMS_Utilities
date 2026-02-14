@@ -74,18 +74,16 @@
     </fieldset>
 
     <!-- Negation Option -->
-    <fieldset class="search-content__negation-section">
-      <legend class="search-content__negation-label">Search Mode</legend>
-      <label class="search-content__checkbox-option">
-        <input
-          type="checkbox"
-          v-model="negateSearch"
-          :disabled="hasResults"
-          aria-label="Negate search to find items NOT containing the search term"
-        />
-        <span>Show items NOT containing search term</span>
-      </label>
-    </fieldset>
+    <div class="search-content__negation-section">
+      <div class="search-content__negation-label">Search Mode</div>
+      <Toggle
+        id="search-mode-toggle"
+        v-model="negateSearch"
+        :disabled="hasResults"
+        off-label="Include matches (show items containing search term)"
+        on-label="Exclude matches (show items NOT containing search term)"
+      />
+    </div>
 
     <!-- Search Term -->
     <TextInput
@@ -99,43 +97,64 @@
       <template v-slot:error v-if="showMissingSearchTermError">Please enter a search term</template>
     </TextInput>
 
-    <Btn @click="executeSearch" v-if="!hasResults" :disabled="isLoading">
-      {{ isLoading ? 'Searching...' : 'Search' }}
-    </Btn>
+    <Btn @click="executeSearch" v-if="!hasResults && !isLoading"> Search </Btn>
 
     <Btn v-if="hasResults || statusMessage" type="reset" status="tertiary" @click="resetSearch">
       Reset
     </Btn>
 
-    <InfoBanner v-if="statusMessage" class="status-message" :status="statusType" role="alert">
-      <p v-if="isLoading" class="search-content__loading-text">{{ statusMessage }}</p>
-      <div v-else>{{ statusMessage }}</div>
+    <InfoBanner
+      v-if="statusMessage && !isLoading"
+      class="status-message"
+      :status="statusType"
+      role="alert"
+    >
+      <div>{{ statusMessage }}</div>
     </InfoBanner>
 
+    <!-- Partial Failure Warning -->
+    <InfoBanner
+      v-if="failedScopes.length > 0 && !isLoading"
+      class="status-message"
+      status="warning"
+    >
+      <strong>Partial failure:</strong> Failed to fetch {{ failedScopes.join(', ') }}. Showing
+      results from successfully fetched scopes only.
+    </InfoBanner>
+
+    <!-- Skeleton Loading States -->
+    <div v-if="isLoading" class="search-content__loading">
+      <Card v-for="i in 3" :key="i" :skeleton="true" class="search-content__skeleton-card" />
+    </div>
+
     <!-- Results -->
-    <div v-if="results.length > 0" id="resultsContainer" class="search-content__results-container">
-      <div class="search-content__summary">
-        Found <strong>{{ results.length }}</strong> {{ pluralize(results.length, 'item', 'items') }}
-        {{ negateSearch ? 'NOT' : '' }} containing "<strong>{{ searchTerm }}</strong
-        >" with <strong>{{ totalMatches }}</strong> total
-        {{ pluralize(totalMatches, 'match', 'matches') }}
+    <div
+      v-if="results.length > 0 && !isLoading"
+      id="resultsContainer"
+      class="search-content__results-container"
+    >
+      <div class="search-content__summary" aria-live="polite" aria-atomic="true">
+        Found {{ matchesSummary }} {{ negateSearch ? 'NOT' : '' }} containing "<strong>{{
+          searchTerm
+        }}</strong
+        >"
       </div>
       <div class="results-list">
-        <div
+        <Card
           v-for="(result, index) in results"
           :key="index"
           v-memo="[result, searchTerm]"
-          class="search-content__result-item"
+          class="search-content__result-card"
         >
-          <div class="search-content__result-header search-content__result-header--desktop">
-            <div>
+          <div class="search-content__result-header">
+            <div class="search-content__result-header-left">
               <div class="search-content__result-title-wrapper">
-                <Chip class="search-content__source-badge">{{ getResultSourceBadge(result) }}</Chip>
+                <Chip size="small">{{ getResultSourceBadge(result) }}</Chip>
                 <span class="search-content__result-title">{{ result.title }}</span>
               </div>
               <div class="search-content__result-slug">{{ result.slug }}</div>
             </div>
-            <Chip
+            <Chip size="medium" class="search-content__match-count"
               >{{ getResultMatchCount(result) }}
               {{ pluralize(getResultMatchCount(result), 'match', 'matches') }}</Chip
             >
@@ -153,7 +172,7 @@
               ></div>
             </div>
           </div>
-        </div>
+        </Card>
       </div>
     </div>
 
@@ -166,15 +185,18 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, computed } from 'vue'
+import { ref, computed, defineAsyncComponent } from 'vue'
 import { useStore } from '@/stores/index'
 import UtilitySection from '../UtilitySection.vue'
 import TextInput from '../TextInput.vue'
 import Btn from '../Btn.vue'
 import InfoBanner from '../InfoBanner.vue'
 import Chip from '../Chip.vue'
+import Toggle from '../Toggle.vue'
 import { searchContent } from '@/features/searchContent'
 import type { AsyncReturnType } from 'type-fest'
+
+const Card = defineAsyncComponent(() => import('../Card.vue'))
 
 const store = useStore()
 const includeBlog = computed({
@@ -192,6 +214,7 @@ const statusType = ref<'info' | 'success' | 'error' | 'warning'>('info')
 const results = ref<AsyncReturnType<typeof searchContent>['results']>([])
 const failedResource = ref<string | null>(null)
 const failedError = ref<string | null>(null)
+const failedScopes = ref<string[]>([])
 const totalItems = ref(0)
 
 const hasResults = computed(() => results.value.length > 0)
@@ -218,6 +241,7 @@ function resetSearch(): void {
   results.value = []
   failedResource.value = null
   failedError.value = null
+  failedScopes.value = []
   statusMessage.value = ''
   searchTerm.value = ''
   showMissingSearchTermError.value = false
@@ -268,6 +292,7 @@ async function executeSearch(): Promise<void> {
   results.value = []
   failedResource.value = null
   failedError.value = null
+  failedScopes.value = []
   statusMessage.value = ''
 
   if (!token) {
@@ -296,11 +321,13 @@ async function executeSearch(): Promise<void> {
     if (!searchResponse.success) {
       failedResource.value = searchResponse.error!
       failedError.value = searchResponse.error!
+      failedScopes.value = searchResponse.failedScopes || []
       setStatus(searchResponse.error!, 'error')
       return
     }
 
     totalItems.value = searchResponse.totalItems!
+    failedScopes.value = searchResponse.failedScopes || []
 
     if (searchResponse.results.length === 0) {
       setStatus(
@@ -329,6 +356,31 @@ const totalMatches = computed(() => {
   }, 0)
 })
 
+const matchesByScope = computed(() => {
+  const scopeMap = new Map<string, number>()
+
+  results.value.forEach((result) => {
+    const sourceType = result.sourceType || 'Unknown'
+    const matchCount = result.matches.reduce((sum, m) => sum + (m.count || 1), 0)
+    scopeMap.set(sourceType, (scopeMap.get(sourceType) || 0) + matchCount)
+  })
+
+  return Array.from(scopeMap.entries())
+    .map(([scope, count]) => ({ scope, count }))
+    .sort((a, b) => b.count - a.count)
+})
+
+const matchesSummary = computed(() => {
+  const total = totalMatches.value
+  if (matchesByScope.value.length === 0) return ''
+
+  const scopeBreakdown = matchesByScope.value
+    .map(({ scope, count }) => `${count} in ${scope}`)
+    .join(', ')
+
+  return `${total} ${pluralize(total, 'match', 'matches')}: ${scopeBreakdown}`
+})
+
 function getResultMatchCount(
   result: AsyncReturnType<typeof searchContent>['results'][number],
 ): number {
@@ -340,7 +392,7 @@ function getResultMatchCount(
 .search-content {
   // Scopes selection
   &__scopes-selection {
-    margin: 0 0 1.5rem 0;
+    margin: 0 0 var(--space-6) 0;
     padding: 0;
     border: 0;
   }
@@ -348,195 +400,231 @@ function getResultMatchCount(
   &__scopes-label {
     display: block;
     font-weight: 500;
-    margin-bottom: 0.75rem;
+    margin-bottom: var(--space-3);
     color: var(--text-primary);
-    font-size: 0.9375rem;
+    font-size: var(--font-size-sm);
   }
 
   &__negation-section {
-    margin: 1.5rem 0;
-    padding: 0;
-    border: 0;
+    margin: var(--space-2) 0;
+    padding: var(--space-4);
+    background-color: var(--bg-secondary);
+    border-radius: var(--radius-lg);
   }
 
   &__negation-label {
     display: block;
     font-weight: 500;
-    margin-bottom: 0.75rem;
+    margin-bottom: var(--space-3);
     color: var(--text-primary);
-    font-size: 0.9375rem;
+    font-size: var(--font-size-sm);
   }
 
   &__checkbox-option {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: var(--space-2);
     cursor: pointer;
-    font-size: 0.9375rem;
+    font-size: var(--font-size-sm);
 
     &:disabled {
       opacity: 0.5;
       cursor: not-allowed;
     }
 
-    input {
+    input[type='checkbox'] {
       cursor: inherit;
+      width: 1rem;
+      height: 1rem;
+      margin-top: 0.125rem;
+      flex-shrink: 0;
+      accent-color: var(--accent-blue);
     }
   }
 
   &__scope-group {
-    margin-top: 1.5rem;
-    border-left: 2px solid var(--butter-border);
-    padding-left: 1rem;
+    margin-top: var(--space-5);
+    border-left: 2px solid var(--border-base);
+    padding-left: var(--space-4);
   }
 
   &__scope-group-title {
-    font-size: 0.875rem;
+    font-size: var(--font-size-xs);
     font-weight: 600;
     color: var(--text-secondary);
-    margin-bottom: 0.5rem;
+    margin-bottom: var(--space-3);
     text-transform: uppercase;
+    letter-spacing: 0.05em;
   }
 
   &__scope-options {
     display: flex;
-    gap: 0.5rem 1rem;
+    gap: var(--space-2) var(--space-4);
     flex-wrap: wrap;
   }
 
   &__empty-scopes {
     color: var(--text-secondary);
-    font-size: 0.9375rem;
-    margin-top: 1rem;
-    padding: 1rem;
-    background-color: var(--butter-light-gray);
-    border-radius: 6px;
+    font-size: var(--font-size-sm);
+    margin-top: var(--space-4);
+    padding: var(--space-4);
+    background-color: var(--bg-secondary);
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border-light);
+
+    p {
+      margin: 0;
+    }
   }
 
-  // Source badge
-  &__source-badge {
-    font-size: 0.75rem;
-    padding: 0.125rem 0.5rem;
-  }
-
-  &__result-title-wrapper {
+  // Loading skeleton
+  &__loading {
     display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    flex-wrap: wrap;
+    flex-direction: column;
+    gap: var(--space-4);
+    margin-top: var(--space-6);
   }
 
-  // Loading text
-  &__loading-text {
-    font-weight: 500;
-    color: var(--text-secondary);
+  &__skeleton-card {
+    margin-bottom: 0;
   }
 
   // Summary section
   &__summary {
-    background-color: white;
-    border: 1px solid var(--butter-border);
-    border-radius: 6px;
-    padding: 1rem;
+    background-color: var(--bg-primary);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-lg);
+    padding: var(--space-5);
     font-weight: 500;
+    font-size: var(--font-size-sm);
+    line-height: var(--line-height-relaxed);
     position: sticky;
-    top: 0;
+    top: var(--space-4);
     z-index: 10;
+    box-shadow: var(--shadow-sm);
+    margin-bottom: var(--space-6);
   }
 
-  // Result item
-  &__result-item {
-    background-color: var(--butter-light-gray);
-    border: 1px solid var(--butter-border);
-    border-radius: 6px;
-    padding: 1.25rem;
-    margin-bottom: 1rem;
+  // Results list
+  .results-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-5);
+  }
+
+  // Result card
+  &__result-card {
+    margin-bottom: 0;
   }
 
   // Result header
   &__result-header {
     display: flex;
     flex-direction: column;
-    gap: 1rem;
-    margin-bottom: 0.75rem;
+    gap: var(--space-4);
+    margin-bottom: var(--space-5);
 
-    &--desktop {
-      @media (min-width: 769px) {
-        flex-direction: row;
-        justify-content: space-between;
-        align-items: start;
-      }
+    @media (min-width: 769px) {
+      flex-direction: row;
+      justify-content: space-between;
+      align-items: flex-start;
     }
+  }
+
+  &__result-header-left {
+    flex: 1;
+  }
+
+  // Result title wrapper
+  &__result-title-wrapper {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    flex-wrap: wrap;
+    margin-bottom: var(--space-2);
   }
 
   // Result title
   &__result-title {
     font-weight: 600;
-    color: var(--butter-dark);
-    font-size: 1rem;
+    color: var(--text-primary);
+    font-size: var(--font-size-lg);
+    line-height: var(--line-height-tight);
   }
 
   // Result slug
   &__result-slug {
-    color: var(--text-secondary);
-    font-size: 0.875rem;
+    color: var(--text-tertiary);
+    font-size: var(--font-size-sm);
     font-family: 'Courier New', monospace;
-    margin-top: 0.25rem;
+  }
+
+  // Match count chip
+  &__match-count {
+    flex-shrink: 0;
+    align-self: flex-start;
   }
 
   // Matches list
   &__matches-list {
-    margin-top: 0.75rem;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
   }
 
   // Match item
   &__match-item {
-    background-color: white;
-    border-left: 3px solid var(--butter-yellow);
-    padding: 0.75rem;
-    margin-bottom: 0.5rem;
-    border-radius: 4px;
-    line-height: 1.4;
+    background-color: var(--bg-secondary);
+    border-left: 3px solid var(--accent-blue);
+    padding: var(--space-4);
+    border-radius: var(--radius-md);
+    line-height: var(--line-height-relaxed);
   }
 
   // Match path
   &__match-path {
-    color: var(--butter-gray);
-    font-size: 0.8125rem;
+    color: var(--text-tertiary);
+    font-size: var(--font-size-xs);
     font-family: 'Courier New', monospace;
-    margin-bottom: 0.25rem;
+    margin-bottom: var(--space-2);
+    font-weight: 500;
   }
 
   // Match value
   &__match-value {
     color: var(--text-primary);
-    font-size: 0.9375rem;
+    font-size: var(--font-size-sm);
     word-break: break-word;
+    line-height: var(--line-height-relaxed);
 
     :deep(mark) {
-      background-color: var(--butter-yellow);
-      color: var(--butter-dark);
-      padding: 0.125rem 0.25rem;
-      border-radius: 2px;
+      background-color: var(--accent-yellow);
+      color: var(--text-primary);
+      padding: var(--space-1) var(--space-2);
+      border-radius: var(--radius-sm);
       font-weight: 600;
     }
   }
 
   // Failed items section
   &__failed-items {
-    background-color: #fef3f2;
-    border: 1px solid #fda29b;
-    border-radius: 6px;
-    padding: 1rem;
-    margin-top: 1.5rem;
+    background-color: var(--error-bg);
+    border: 1px solid var(--error-border);
+    border-radius: var(--radius-lg);
+    padding: var(--space-5);
+    margin-top: var(--space-6);
   }
 
   &__failed-items-title {
     color: var(--error);
-    font-size: 1rem;
+    font-size: var(--font-size-base);
     margin-top: 0;
-    margin-bottom: 0.5rem;
+    margin-bottom: var(--space-3);
     font-weight: 600;
   }
+}
+
+.status-message {
+  margin-top: var(--space-6);
 }
 </style>

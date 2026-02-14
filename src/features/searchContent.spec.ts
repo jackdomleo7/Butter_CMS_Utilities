@@ -155,15 +155,54 @@ describe('searchContent', () => {
   })
 
   describe('Error handling', () => {
-    it('should handle API errors gracefully', async () => {
+    it('should log failed scopes and continue with successful ones', async () => {
+      // Mock one page type to fail, others succeed
+      mockGetAllPages.mockRejectedValueOnce(new Error('API Error'))
+      mockGetAllPosts.mockImplementation(async () => [
+        {
+          published: '2024-01-01',
+          title: 'Test Post',
+          slug: 'test-post',
+          body: 'test content',
+        },
+      ])
+      mockGetAllCollections.mockImplementation(async () => [])
+
+      const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
+
+      const result = await searchContent('test', 'test-token', false, ['landing_page'], [], true)
+
+      // Should still succeed with partial results
+      expect(result.success).toBe(true)
+      expect(result.results).toHaveLength(1)
+      expect(result.results[0]!.sourceType).toBe('Blog')
+      expect(result.failedScopes).toEqual(['Page Type: landing_page'])
+
+      // Should log the error
+      expect(consoleErrorSpy).toHaveBeenCalledWith(
+        'Failed to fetch page type "landing_page":',
+        expect.any(Error),
+      )
+
+      consoleErrorSpy.mockRestore()
+    })
+
+    it('should fail completely when all scopes fail', async () => {
       mockGetAllPages.mockRejectedValueOnce(new Error('API Error'))
       mockGetAllPosts.mockImplementation(async () => [])
       mockGetAllCollections.mockImplementation(async () => [])
 
+      const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
+
       const result = await searchContent('test', 'test-token', false, ['landing_page'], [], false)
 
+      // Should return success=false when all selected scopes fail
       expect(result.success).toBe(false)
-      expect(result.error).toContain('API Error')
+      expect(result.results).toHaveLength(0)
+      expect(result.failedScopes).toEqual(['Page Type: landing_page'])
+      expect(result.error).toBe('Failed to fetch all selected scopes. Check console for details.')
+
+      consoleErrorSpy.mockRestore()
     })
   })
 
@@ -434,6 +473,104 @@ describe('searchContent', () => {
 
       expect(result.success).toBe(true)
       expect(result.results).toHaveLength(0)
+    })
+  })
+
+  describe('Additional error handling coverage', () => {
+    it('should handle blog post fetch failure with page type succeeding', async () => {
+      mockGetAllPages.mockImplementation(async () => [
+        {
+          id: '1',
+          slug: 'page-1',
+          name: 'Test Page',
+          page_type: 'landing_page',
+          published: '2023-01-01',
+        },
+      ])
+      mockGetAllPosts.mockRejectedValueOnce(new Error('Blog API Error'))
+      mockGetAllCollections.mockImplementation(async () => [])
+
+      const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
+
+      const result = await searchContent('Test', 'test-token', false, ['landing_page'], [], true)
+
+      expect(result.success).toBe(true)
+      expect(result.results).toHaveLength(1)
+      expect(result.results[0]!.sourceType).toBe('landing_page')
+      expect(result.failedScopes).toEqual(['Blog'])
+
+      expect(consoleErrorSpy).toHaveBeenCalledWith('Failed to fetch Blog posts:', expect.any(Error))
+
+      consoleErrorSpy.mockRestore()
+    })
+
+    it('should handle collection fetch failure with blog succeeding', async () => {
+      mockGetAllPages.mockImplementation(async () => [])
+      mockGetAllPosts.mockImplementation(async () => [
+        {
+          id: '1',
+          slug: 'post-1',
+          title: 'Test Post',
+          published: '2023-01-01',
+        },
+      ])
+      mockGetAllCollections.mockRejectedValueOnce(new Error('Collection API Error'))
+
+      const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
+
+      const result = await searchContent('Test', 'test-token', false, [], ['recipes'], true)
+
+      expect(result.success).toBe(true)
+      expect(result.results).toHaveLength(1)
+      expect(result.results[0]!.sourceType).toBe('Blog')
+      expect(result.failedScopes).toEqual(['Collection: recipes'])
+
+      expect(consoleErrorSpy).toHaveBeenCalledWith(
+        'Failed to fetch collection "recipes":',
+        expect.any(Error),
+      )
+
+      consoleErrorSpy.mockRestore()
+    })
+
+    it('should handle whitespace-only search string', async () => {
+      mockGetAllPages.mockImplementation(async () => [])
+      mockGetAllPosts.mockImplementation(async () => [])
+      mockGetAllCollections.mockImplementation(async () => [])
+
+      const result = await searchContent('   ', 'test-token', false, ['landing_page'], [], true)
+
+      expect(result.success).toBe(true)
+      expect(result.results).toHaveLength(0)
+      expect(result.totalItems).toBe(0)
+    })
+
+    it('should handle unexpected errors in outer catch block', async () => {
+      // Mock getAllPages to return a promise, but the data processing throws
+      // We'll make the search string matching logic throw an error
+      mockGetAllPages.mockImplementation(async () => [
+        {
+          id: '1',
+          slug: 'page-1',
+          name: 'Test',
+          page_type: 'landing_page',
+          published: '2023-01-01',
+          // Add a circular reference to cause an error during processing
+          get circular() {
+            throw new Error('Unexpected processing error')
+          },
+        },
+      ])
+      mockGetAllPosts.mockImplementation(async () => [])
+      mockGetAllCollections.mockImplementation(async () => [])
+
+      const result = await searchContent('test', 'test-token', false, ['landing_page'], [], false)
+
+      // The outer catch should capture any unexpected error
+      expect(result.success).toBe(false)
+      expect(result.results).toHaveLength(0)
+      expect(result.totalItems).toBeNull()
+      expect(result.error).toBeTruthy()
     })
   })
 })

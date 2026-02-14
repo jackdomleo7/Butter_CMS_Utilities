@@ -11,6 +11,7 @@ interface SearchResponse {
     matches: Array<{ path: string; value: string; count: number }>
   }>
   totalItems: number | null
+  failedScopes?: string[]
   error?: string
 }
 
@@ -158,6 +159,9 @@ export async function searchContent(
 
   const searchLower = trimmedSearch.toLowerCase()
 
+  const failedScopes: string[] = []
+  let hasAnySuccessfulScope = false
+
   try {
     const searchResults: Array<{
       title: string
@@ -172,32 +176,61 @@ export async function searchContent(
     // Search pages if any page types are selected
     if (selectedPageTypes.length > 0) {
       for (const pageType of selectedPageTypes) {
-        const pages = await getAllPages({ token, pageType, preview })
-        pages.forEach((page) => {
-          itemsWithSource.push({ data: page, sourceType: pageType })
-        })
+        try {
+          const pages = await getAllPages({ token, pageType, preview })
+          pages.forEach((page) => {
+            itemsWithSource.push({ data: page, sourceType: pageType })
+          })
+          hasAnySuccessfulScope = true
+        } catch (error) {
+          console.error(`Failed to fetch page type "${pageType}":`, error)
+          failedScopes.push(`Page Type: ${pageType}`)
+        }
       }
     }
 
     // Search blog posts if enabled
     if (includeBlog) {
-      const posts = await getAllPosts({ token, preview })
-      posts.forEach((post) => {
-        itemsWithSource.push({ data: post, sourceType: 'Blog' })
-      })
+      try {
+        const posts = await getAllPosts({ token, preview })
+        posts.forEach((post) => {
+          itemsWithSource.push({ data: post, sourceType: 'Blog' })
+        })
+        hasAnySuccessfulScope = true
+      } catch (error) {
+        console.error('Failed to fetch Blog posts:', error)
+        failedScopes.push('Blog')
+      }
     }
 
     // Search collections if any collection keys are selected
     if (selectedCollectionKeys.length > 0) {
       for (const collectionKey of selectedCollectionKeys) {
-        const collections = await getAllCollections({
-          token,
-          collectionType: collectionKey,
-          preview,
-        })
-        collections.forEach((collection) => {
-          itemsWithSource.push({ data: collection, sourceType: collectionKey })
-        })
+        try {
+          const collections = await getAllCollections({
+            token,
+            collectionType: collectionKey,
+            preview,
+          })
+          collections.forEach((collection) => {
+            itemsWithSource.push({ data: collection, sourceType: collectionKey })
+          })
+          hasAnySuccessfulScope = true
+        } catch (error) {
+          console.error(`Failed to fetch collection "${collectionKey}":`, error)
+          failedScopes.push(`Collection: ${collectionKey}`)
+        }
+      }
+    }
+
+    // If all scopes failed, return error
+    if (!hasAnySuccessfulScope) {
+      return {
+        success: false,
+        results: [],
+        totalItems: null,
+        failedScopes,
+        error: `Failed to fetch all selected scopes. Check console for details.`,
       }
     }
 
@@ -259,12 +292,18 @@ export async function searchContent(
     }
 
     searchResults.sort((a, b) => a.slug.localeCompare(b.slug))
-    return { success: true, results: searchResults, totalItems: itemsWithSource.length }
+    return {
+      success: true,
+      results: searchResults,
+      totalItems: itemsWithSource.length,
+      failedScopes: failedScopes.length > 0 ? failedScopes : undefined,
+    }
   } catch (error) {
     return {
       success: false,
       results: [],
       totalItems: null,
+      failedScopes,
       error: (error as Error).message,
     }
   }
