@@ -20,24 +20,27 @@
       />
     </div>
 
-    <!-- Search Term -->
-    <TextInput
-      id="search-content-search-term"
-      type="text"
-      :required="true"
-      :disabled="hasResults"
-      v-model="searchTerm"
-      @keypress.enter="executeSearch"
-    >
-      <template v-slot:label>Search Term</template>
-      <template v-slot:error v-if="showMissingSearchTermError">Please enter a search term</template>
-    </TextInput>
+    <!-- Search Form -->
+    <form class="search-content__form" @submit.prevent="executeSearch">
+      <TextInput
+        id="search-content-search-term"
+        type="text"
+        :required="true"
+        :disabled="hasResults"
+        v-model="searchTerm"
+      >
+        <template v-slot:label>Search Term</template>
+        <template v-slot:error v-if="showMissingSearchTermError"
+          >Please enter a search term</template
+        >
+      </TextInput>
 
-    <Btn @click="executeSearch" v-if="!hasResults && !isLoading"> Search </Btn>
+      <Btn type="submit" v-if="!hasResults && !isLoading"> Search </Btn>
 
-    <Btn v-if="hasResults || statusMessage" type="reset" status="tertiary" @click="resetSearch">
-      Reset
-    </Btn>
+      <Btn v-if="hasResults || statusMessage" type="reset" status="tertiary" @click="resetSearch">
+        Reset
+      </Btn>
+    </form>
 
     <InfoBanner v-if="statusMessage && !isLoading" :status="statusType" role="alert">
       <div>{{ statusMessage }}</div>
@@ -489,6 +492,16 @@ function getResultMatchCount(
     margin-top: 0;
     margin-bottom: var(--space-3);
     font-weight: 600;
+  }
+
+  &__form {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+
+    :deep(.btn) {
+      width: 100%;
+    }
   }
 }
 </style>

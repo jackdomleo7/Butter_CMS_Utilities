@@ -33,6 +33,12 @@ describe('SearchContent.vue', () => {
     })
   }
 
+  // Helper function to submit the search form
+  const submitSearchForm = async (wrapper: ReturnType<typeof mount>) => {
+    const form = wrapper.find('form')
+    await form.trigger('submit')
+  }
+
   beforeEach(() => {
     setActivePinia(createPinia())
     localStorage.clear()
@@ -79,10 +85,7 @@ describe('SearchContent.vue', () => {
       store.selectedScopes.blog = true
 
       await wrapper.find('#search-content-search-term').setValue('test')
-      await wrapper
-        .findAll('button')
-        .find((btn) => btn.text() === 'Search')
-        ?.trigger('click')
+      await submitSearchForm(wrapper)
       await flushPromises()
       await nextTick()
 
@@ -104,10 +107,7 @@ describe('SearchContent.vue', () => {
       store.selectedScopes.blog = true
 
       await wrapper.find('#search-content-search-term').setValue('test')
-      await wrapper
-        .findAll('button')
-        .find((btn) => btn.text() === 'Search')
-        ?.trigger('click')
+      await submitSearchForm(wrapper)
       await flushPromises()
       await nextTick()
 
@@ -180,10 +180,7 @@ describe('SearchContent.vue', () => {
       store.selectedScopes.blog = true
 
       await wrapper.find('#search-content-search-term').setValue('test')
-      await wrapper
-        .findAll('button')
-        .find((btn) => btn.text() === 'Search')
-        ?.trigger('click')
+      await submitSearchForm(wrapper)
       await flushPromises()
       await nextTick()
 
@@ -205,10 +202,7 @@ describe('SearchContent.vue', () => {
       store.selectedScopes.blog = true
 
       await wrapper.find('#search-content-search-term').setValue('test')
-      await wrapper
-        .findAll('button')
-        .find((btn) => btn.text() === 'Search')
-        ?.trigger('click')
+      await submitSearchForm(wrapper)
       await flushPromises()
       await nextTick()
 
@@ -271,10 +265,7 @@ describe('SearchContent.vue', () => {
       store.token = 'test-token'
       store.selectedScopes.blog = true
 
-      await wrapper
-        .findAll('button')
-        .find((btn) => btn.text() === 'Search')
-        ?.trigger('click')
+      await submitSearchForm(wrapper)
       await nextTick()
 
       expect(wrapper.text()).toContain('Please enter a search term')
@@ -287,10 +278,7 @@ describe('SearchContent.vue', () => {
       store.selectedScopes.blog = true
 
       // Trigger error
-      await wrapper
-        .findAll('button')
-        .find((btn) => btn.text() === 'Search')
-        ?.trigger('click')
+      await submitSearchForm(wrapper)
       await nextTick()
       expect(wrapper.text()).toContain('Please enter a search term')
 
@@ -316,9 +304,8 @@ describe('SearchContent.vue', () => {
       store.token = 'test-token'
       store.selectedScopes.blog = true
 
-      const input = wrapper.find('#search-content-search-term')
-      await input.setValue('test')
-      await input.trigger('keypress.enter')
+      await wrapper.find('#search-content-search-term').setValue('test')
+      await submitSearchForm(wrapper)
       await flushPromises()
 
       expect(mockSearchContent).toHaveBeenCalled()
@@ -341,10 +328,7 @@ describe('SearchContent.vue', () => {
 
       const input = wrapper.find('#search-content-search-term')
       await input.setValue('  test  ')
-      await wrapper
-        .findAll('button')
-        .find((btn) => btn.text() === 'Search')
-        ?.trigger('click')
+      await submitSearchForm(wrapper)
       await flushPromises()
 
       expect(mockSearchContent).toHaveBeenCalledWith(
@@ -373,10 +357,7 @@ describe('SearchContent.vue', () => {
 
       const input = wrapper.find('#search-content-search-term')
       await input.setValue('   ')
-      await wrapper
-        .findAll('button')
-        .find((btn) => btn.text() === 'Search')
-        ?.trigger('click')
+      await submitSearchForm(wrapper)
       await flushPromises()
       await nextTick()
 
@@ -407,10 +388,7 @@ describe('SearchContent.vue', () => {
 
       const input = wrapper.find('#search-content-search-term')
       await input.setValue('a')
-      await wrapper
-        .findAll('button')
-        .find((btn) => btn.text() === 'Search')
-        ?.trigger('click')
+      await submitSearchForm(wrapper)
       await flushPromises()
 
       expect(mockSearchContent).toHaveBeenCalled()
@@ -431,10 +409,7 @@ describe('SearchContent.vue', () => {
 
       const input = wrapper.find('#search-content-search-term')
       await input.setValue('@#$%')
-      await wrapper
-        .findAll('button')
-        .find((btn) => btn.text() === 'Search')
-        ?.trigger('click')
+      await submitSearchForm(wrapper)
       await flushPromises()
 
       expect(mockSearchContent).toHaveBeenCalled()
@@ -456,10 +431,7 @@ describe('SearchContent.vue', () => {
       store.selectedScopes.blog = true
 
       await wrapper.find('#search-content-search-term').setValue('test')
-      await wrapper
-        .findAll('button')
-        .find((btn) => btn.text() === 'Search')
-        ?.trigger('click')
+      await submitSearchForm(wrapper)
       await flushPromises()
 
       expect(mockSearchContent).toHaveBeenCalledWith(
@@ -480,10 +452,7 @@ describe('SearchContent.vue', () => {
       store.selectedScopes.blog = true
 
       await wrapper.find('#search-content-search-term').setValue('test')
-      await wrapper
-        .findAll('button')
-        .find((btn) => btn.text() === 'Search')
-        ?.trigger('click')
+      await submitSearchForm(wrapper)
       await flushPromises()
 
       expect(wrapper.text()).toContain('Please enter your API token')
@@ -505,8 +474,7 @@ describe('SearchContent.vue', () => {
       store.selectedScopes.blog = true
 
       await wrapper.find('#search-content-search-term').setValue('test')
-      const searchBtn = wrapper.findAll('button').find((btn) => btn.text() === 'Search')
-      await searchBtn?.trigger('click')
+      await submitSearchForm(wrapper)
       await nextTick()
 
       expect(wrapper.find('.search-content__loading').exists()).toBe(true)
@@ -533,10 +501,7 @@ describe('SearchContent.vue', () => {
       store.selectedScopes.blog = true
 
       await wrapper.find('#search-content-search-term').setValue('test')
-      await wrapper
-        .findAll('button')
-        .find((btn) => btn.text() === 'Search')
-        ?.trigger('click')
+      await submitSearchForm(wrapper)
       await nextTick()
 
       const skeletons = wrapper.findAll('[data-skeleton="true"]')
@@ -557,10 +522,7 @@ describe('SearchContent.vue', () => {
       store.selectedScopes.blog = true
 
       await wrapper.find('#search-content-search-term').setValue('test')
-      await wrapper
-        .findAll('button')
-        .find((btn) => btn.text() === 'Search')
-        ?.trigger('click')
+      await submitSearchForm(wrapper)
       await flushPromises()
 
       expect(wrapper.find('.search-content__loading').exists()).toBe(false)
@@ -583,10 +545,7 @@ describe('SearchContent.vue', () => {
       store.includePreview = false
 
       await wrapper.find('#search-content-search-term').setValue('test query')
-      await wrapper
-        .findAll('button')
-        .find((btn) => btn.text() === 'Search')
-        ?.trigger('click')
+      await submitSearchForm(wrapper)
       await flushPromises()
 
       expect(mockSearchContent).toHaveBeenCalledWith(
@@ -616,10 +575,7 @@ describe('SearchContent.vue', () => {
       store.selectedScopes.blog = false
 
       await wrapper.find('#search-content-search-term').setValue('test')
-      await wrapper
-        .findAll('button')
-        .find((btn) => btn.text() === 'Search')
-        ?.trigger('click')
+      await submitSearchForm(wrapper)
       await flushPromises()
 
       expect(mockSearchContent).toHaveBeenCalledWith(
@@ -649,10 +605,7 @@ describe('SearchContent.vue', () => {
       store.selectedScopes.blog = false
 
       await wrapper.find('#search-content-search-term').setValue('test')
-      await wrapper
-        .findAll('button')
-        .find((btn) => btn.text() === 'Search')
-        ?.trigger('click')
+      await submitSearchForm(wrapper)
       await flushPromises()
 
       expect(mockSearchContent).toHaveBeenCalledWith(
@@ -684,10 +637,7 @@ describe('SearchContent.vue', () => {
       await nextTick()
 
       await wrapper.find('#search-content-search-term').setValue('test')
-      await wrapper
-        .findAll('button')
-        .find((btn) => btn.text() === 'Search')
-        ?.trigger('click')
+      await submitSearchForm(wrapper)
       await flushPromises()
 
       expect(mockSearchContent).toHaveBeenCalledWith('test', 'api-token', false, [], [], true, true)
@@ -708,10 +658,7 @@ describe('SearchContent.vue', () => {
       store.includePreview = true
 
       await wrapper.find('#search-content-search-term').setValue('test')
-      await wrapper
-        .findAll('button')
-        .find((btn) => btn.text() === 'Search')
-        ?.trigger('click')
+      await submitSearchForm(wrapper)
       await flushPromises()
 
       expect(mockSearchContent).toHaveBeenCalledWith('test', 'api-token', true, [], [], true, false)
@@ -737,10 +684,7 @@ describe('SearchContent.vue', () => {
       }
 
       await wrapper.find('#search-content-search-term').setValue('test')
-      await wrapper
-        .findAll('button')
-        .find((btn) => btn.text() === 'Search')
-        ?.trigger('click')
+      await submitSearchForm(wrapper)
       await flushPromises()
 
       expect(mockSearchContent).toHaveBeenCalledWith(
@@ -769,10 +713,7 @@ describe('SearchContent.vue', () => {
       store.selectedScopes.blog = true
 
       await wrapper.find('#search-content-search-term').setValue('test')
-      await wrapper
-        .findAll('button')
-        .find((btn) => btn.text() === 'Search')
-        ?.trigger('click')
+      await submitSearchForm(wrapper)
       await flushPromises()
 
       expect(wrapper.text()).toContain('API error occurred')
@@ -787,10 +728,7 @@ describe('SearchContent.vue', () => {
       store.selectedScopes.blog = true
 
       await wrapper.find('#search-content-search-term').setValue('test')
-      await wrapper
-        .findAll('button')
-        .find((btn) => btn.text() === 'Search')
-        ?.trigger('click')
+      await submitSearchForm(wrapper)
       await flushPromises()
 
       expect(wrapper.text()).toContain('Network error')
@@ -818,10 +756,7 @@ describe('SearchContent.vue', () => {
 
       // First search
       await wrapper.find('#search-content-search-term').setValue('first')
-      await wrapper
-        .findAll('button')
-        .find((btn) => btn.text() === 'Search')
-        ?.trigger('click')
+      await submitSearchForm(wrapper)
       await flushPromises()
       await nextTick()
 
@@ -850,10 +785,7 @@ describe('SearchContent.vue', () => {
 
       const input = wrapper.find('#search-content-search-term')
       await input.setValue('second')
-      await wrapper
-        .findAll('button')
-        .find((btn) => btn.text() === 'Search')
-        ?.trigger('click')
+      await submitSearchForm(wrapper)
       await flushPromises()
       await nextTick()
 
@@ -875,10 +807,7 @@ describe('SearchContent.vue', () => {
 
       // First search with error
       await wrapper.find('#search-content-search-term').setValue('test1')
-      await wrapper
-        .findAll('button')
-        .find((btn) => btn.text() === 'Search')
-        ?.trigger('click')
+      await submitSearchForm(wrapper)
       await flushPromises()
 
       expect(wrapper.text()).toContain('Error message')
@@ -893,10 +822,7 @@ describe('SearchContent.vue', () => {
 
       const input = wrapper.find('#search-content-search-term')
       await input.setValue('test2')
-      await wrapper
-        .findAll('button')
-        .find((btn) => btn.text() === 'Search')
-        ?.trigger('click')
+      await submitSearchForm(wrapper)
       await flushPromises()
 
       expect(wrapper.text()).not.toContain('Error message')
@@ -925,10 +851,7 @@ describe('SearchContent.vue', () => {
       store.selectedScopes.blog = true
 
       await wrapper.find('#search-content-search-term').setValue('test')
-      await wrapper
-        .findAll('button')
-        .find((btn) => btn.text() === 'Search')
-        ?.trigger('click')
+      await submitSearchForm(wrapper)
       await flushPromises()
       await nextTick()
 
@@ -963,10 +886,7 @@ describe('SearchContent.vue', () => {
       store.selectedScopes.blog = true
 
       await wrapper.find('#search-content-search-term').setValue('test')
-      await wrapper
-        .findAll('button')
-        .find((btn) => btn.text() === 'Search')
-        ?.trigger('click')
+      await submitSearchForm(wrapper)
       await flushPromises()
       await nextTick()
 
@@ -995,10 +915,7 @@ describe('SearchContent.vue', () => {
       store.selectedScopes.blog = true
 
       await wrapper.find('#search-content-search-term').setValue('test')
-      await wrapper
-        .findAll('button')
-        .find((btn) => btn.text() === 'Search')
-        ?.trigger('click')
+      await submitSearchForm(wrapper)
       await flushPromises()
       await nextTick()
 
@@ -1027,10 +944,7 @@ describe('SearchContent.vue', () => {
       store.selectedScopes.blog = true
 
       await wrapper.find('#search-content-search-term').setValue('test')
-      await wrapper
-        .findAll('button')
-        .find((btn) => btn.text() === 'Search')
-        ?.trigger('click')
+      await submitSearchForm(wrapper)
       await flushPromises()
       await nextTick()
 
@@ -1052,10 +966,7 @@ describe('SearchContent.vue', () => {
       store.selectedScopes.blog = true
 
       await wrapper.find('#search-content-search-term').setValue('test')
-      await wrapper
-        .findAll('button')
-        .find((btn) => btn.text() === 'Search')
-        ?.trigger('click')
+      await submitSearchForm(wrapper)
       await flushPromises()
       await nextTick()
 
@@ -1085,10 +996,7 @@ describe('SearchContent.vue', () => {
       store.selectedScopes.blog = true
 
       await wrapper.find('#search-content-search-term').setValue('test')
-      await wrapper
-        .findAll('button')
-        .find((btn) => btn.text() === 'Search')
-        ?.trigger('click')
+      await submitSearchForm(wrapper)
       await flushPromises()
       await nextTick()
 
@@ -1119,10 +1027,7 @@ describe('SearchContent.vue', () => {
       store.selectedScopes.pageTypes = ['landing_page']
 
       await wrapper.find('#search-content-search-term').setValue('test')
-      await wrapper
-        .findAll('button')
-        .find((btn) => btn.text() === 'Search')
-        ?.trigger('click')
+      await submitSearchForm(wrapper)
       await flushPromises()
       await nextTick()
 
@@ -1155,10 +1060,7 @@ describe('SearchContent.vue', () => {
       store.selectedScopes.blog = true
 
       await wrapper.find('#search-content-search-term').setValue('test')
-      await wrapper
-        .findAll('button')
-        .find((btn) => btn.text() === 'Search')
-        ?.trigger('click')
+      await submitSearchForm(wrapper)
       await flushPromises()
       await nextTick()
 
@@ -1187,10 +1089,7 @@ describe('SearchContent.vue', () => {
       store.selectedScopes.blog = true
 
       await wrapper.find('#search-content-search-term').setValue('test')
-      await wrapper
-        .findAll('button')
-        .find((btn) => btn.text() === 'Search')
-        ?.trigger('click')
+      await submitSearchForm(wrapper)
       await flushPromises()
       await nextTick()
 
@@ -1229,10 +1128,7 @@ describe('SearchContent.vue', () => {
       store.selectedScopes.pageTypes = ['landing_page']
 
       await wrapper.find('#search-content-search-term').setValue('test')
-      await wrapper
-        .findAll('button')
-        .find((btn) => btn.text() === 'Search')
-        ?.trigger('click')
+      await submitSearchForm(wrapper)
       await flushPromises()
       await nextTick()
 
@@ -1267,10 +1163,7 @@ describe('SearchContent.vue', () => {
       store.selectedScopes.blog = true
 
       await wrapper.find('#search-content-search-term').setValue('test')
-      await wrapper
-        .findAll('button')
-        .find((btn) => btn.text() === 'Search')
-        ?.trigger('click')
+      await submitSearchForm(wrapper)
       await flushPromises()
       await nextTick()
 
@@ -1302,10 +1195,7 @@ describe('SearchContent.vue', () => {
       store.selectedScopes.blog = true
 
       await wrapper.find('#search-content-search-term').setValue('test')
-      await wrapper
-        .findAll('button')
-        .find((btn) => btn.text() === 'Search')
-        ?.trigger('click')
+      await submitSearchForm(wrapper)
       await flushPromises()
       await nextTick()
 
@@ -1334,10 +1224,7 @@ describe('SearchContent.vue', () => {
       store.selectedScopes.blog = true
 
       await wrapper.find('#search-content-search-term').setValue('test')
-      await wrapper
-        .findAll('button')
-        .find((btn) => btn.text() === 'Search')
-        ?.trigger('click')
+      await submitSearchForm(wrapper)
       await flushPromises()
       await nextTick()
 
@@ -1366,10 +1253,7 @@ describe('SearchContent.vue', () => {
       store.selectedScopes.blog = true
 
       await wrapper.find('#search-content-search-term').setValue('test')
-      await wrapper
-        .findAll('button')
-        .find((btn) => btn.text() === 'Search')
-        ?.trigger('click')
+      await submitSearchForm(wrapper)
       await flushPromises()
       await nextTick()
 
@@ -1403,10 +1287,7 @@ describe('SearchContent.vue', () => {
       store.selectedScopes.blog = true
 
       await wrapper.find('#search-content-search-term').setValue('test')
-      await wrapper
-        .findAll('button')
-        .find((btn) => btn.text() === 'Search')
-        ?.trigger('click')
+      await submitSearchForm(wrapper)
       await flushPromises()
       await nextTick()
 
@@ -1435,10 +1316,7 @@ describe('SearchContent.vue', () => {
       store.selectedScopes.blog = true
 
       await wrapper.find('#search-content-search-term').setValue('script')
-      await wrapper
-        .findAll('button')
-        .find((btn) => btn.text() === 'Search')
-        ?.trigger('click')
+      await submitSearchForm(wrapper)
       await flushPromises()
       await nextTick()
 
@@ -1470,10 +1348,7 @@ describe('SearchContent.vue', () => {
       store.selectedScopes.blog = true
 
       await wrapper.find('#search-content-search-term').setValue('test')
-      await wrapper
-        .findAll('button')
-        .find((btn) => btn.text() === 'Search')
-        ?.trigger('click')
+      await submitSearchForm(wrapper)
       await flushPromises()
       await nextTick()
 
@@ -1507,10 +1382,7 @@ describe('SearchContent.vue', () => {
 
       // Search for £ - should highlight both £ symbols
       await wrapper.find('#search-content-search-term').setValue('£')
-      await wrapper
-        .findAll('button')
-        .find((btn) => btn.text() === 'Search')
-        ?.trigger('click')
+      await submitSearchForm(wrapper)
       await flushPromises()
       await nextTick()
 
@@ -1527,10 +1399,7 @@ describe('SearchContent.vue', () => {
 
       // Search for " - should highlight both quote pairs
       await wrapper.find('#search-content-search-term').setValue('"')
-      await wrapper
-        .findAll('button')
-        .find((btn) => btn.text() === 'Search')
-        ?.trigger('click')
+      await submitSearchForm(wrapper)
       await flushPromises()
       await nextTick()
 
@@ -1565,10 +1434,7 @@ describe('SearchContent.vue', () => {
       store.selectedScopes.blog = true
 
       await wrapper.find('#search-content-search-term').setValue('test')
-      await wrapper
-        .findAll('button')
-        .find((btn) => btn.text() === 'Search')
-        ?.trigger('click')
+      await submitSearchForm(wrapper)
       await flushPromises()
       await nextTick()
 
@@ -1591,10 +1457,7 @@ describe('SearchContent.vue', () => {
       store.selectedScopes.blog = true
 
       await wrapper.find('#search-content-search-term').setValue('nonexistent')
-      await wrapper
-        .findAll('button')
-        .find((btn) => btn.text() === 'Search')
-        ?.trigger('click')
+      await submitSearchForm(wrapper)
       await flushPromises()
       await nextTick()
 
@@ -1618,10 +1481,7 @@ describe('SearchContent.vue', () => {
       store.selectedScopes.blog = true
 
       await wrapper.find('#search-content-search-term').setValue('test')
-      await wrapper
-        .findAll('button')
-        .find((btn) => btn.text() === 'Search')
-        ?.trigger('click')
+      await submitSearchForm(wrapper)
       await flushPromises()
       await nextTick()
 
@@ -1645,10 +1505,7 @@ describe('SearchContent.vue', () => {
       store.selectedScopes.blog = true
 
       await wrapper.find('#search-content-search-term').setValue('my search query')
-      await wrapper
-        .findAll('button')
-        .find((btn) => btn.text() === 'Search')
-        ?.trigger('click')
+      await submitSearchForm(wrapper)
       await flushPromises()
       await nextTick()
 
@@ -1669,10 +1526,7 @@ describe('SearchContent.vue', () => {
       store.selectedScopes.blog = true
 
       await wrapper.find('#search-content-search-term').setValue('test')
-      await wrapper
-        .findAll('button')
-        .find((btn) => btn.text() === 'Search')
-        ?.trigger('click')
+      await submitSearchForm(wrapper)
       await flushPromises()
       await nextTick()
 
@@ -1697,10 +1551,7 @@ describe('SearchContent.vue', () => {
       await nextTick()
 
       await wrapper.find('#search-content-search-term').setValue('test')
-      await wrapper
-        .findAll('button')
-        .find((btn) => btn.text() === 'Search')
-        ?.trigger('click')
+      await submitSearchForm(wrapper)
       await flushPromises()
       await nextTick()
 
@@ -1721,10 +1572,7 @@ describe('SearchContent.vue', () => {
       store.selectedScopes.blog = true
 
       await wrapper.find('#search-content-search-term').setValue('test')
-      await wrapper
-        .findAll('button')
-        .find((btn) => btn.text() === 'Search')
-        ?.trigger('click')
+      await submitSearchForm(wrapper)
       await flushPromises()
       await nextTick()
 
@@ -1749,10 +1597,7 @@ describe('SearchContent.vue', () => {
       store.selectedScopes.blog = true
 
       await wrapper.find('#search-content-search-term').setValue('test')
-      await wrapper
-        .findAll('button')
-        .find((btn) => btn.text() === 'Search')
-        ?.trigger('click')
+      await submitSearchForm(wrapper)
       await nextTick()
 
       const infoBanners = wrapper.findAllComponents({ name: 'InfoBanner' })
@@ -1783,10 +1628,7 @@ describe('SearchContent.vue', () => {
       store.selectedScopes.blog = true
 
       await wrapper.find('#search-content-search-term').setValue('test')
-      await wrapper
-        .findAll('button')
-        .find((btn) => btn.text() === 'Search')
-        ?.trigger('click')
+      await submitSearchForm(wrapper)
       await flushPromises()
       await nextTick()
 
@@ -1809,10 +1651,7 @@ describe('SearchContent.vue', () => {
       store.selectedScopes.blog = true
 
       await wrapper.find('#search-content-search-term').setValue('test')
-      await wrapper
-        .findAll('button')
-        .find((btn) => btn.text() === 'Search')
-        ?.trigger('click')
+      await submitSearchForm(wrapper)
       await flushPromises()
       await nextTick()
 
@@ -1836,10 +1675,7 @@ describe('SearchContent.vue', () => {
       store.selectedScopes.blog = true
 
       await wrapper.find('#search-content-search-term').setValue('test')
-      await wrapper
-        .findAll('button')
-        .find((btn) => btn.text() === 'Search')
-        ?.trigger('click')
+      await submitSearchForm(wrapper)
       await flushPromises()
       await nextTick()
 
@@ -1860,10 +1696,7 @@ describe('SearchContent.vue', () => {
       store.selectedScopes.blog = true
 
       await wrapper.find('#search-content-search-term').setValue('test1')
-      await wrapper
-        .findAll('button')
-        .find((btn) => btn.text() === 'Search')
-        ?.trigger('click')
+      await submitSearchForm(wrapper)
       await flushPromises()
       await nextTick()
 
@@ -1878,10 +1711,7 @@ describe('SearchContent.vue', () => {
 
       const input = wrapper.find('#search-content-search-term')
       await input.setValue('test2')
-      await wrapper
-        .findAll('button')
-        .find((btn) => btn.text() === 'Search')
-        ?.trigger('click')
+      await submitSearchForm(wrapper)
       await flushPromises()
       await nextTick()
 
@@ -1911,10 +1741,7 @@ describe('SearchContent.vue', () => {
       store.selectedScopes.blog = true
 
       await wrapper.find('#search-content-search-term').setValue('test')
-      await wrapper
-        .findAll('button')
-        .find((btn) => btn.text() === 'Search')
-        ?.trigger('click')
+      await submitSearchForm(wrapper)
       await nextTick()
 
       expect(wrapper.text()).not.toContain('Partial failure')
@@ -1943,10 +1770,7 @@ describe('SearchContent.vue', () => {
       store.selectedScopes.blog = true
 
       await wrapper.find('#search-content-search-term').setValue('test')
-      await wrapper
-        .findAll('button')
-        .find((btn) => btn.text() === 'Search')
-        ?.trigger('click')
+      await submitSearchForm(wrapper)
       await flushPromises()
       await nextTick()
 
@@ -1982,10 +1806,7 @@ describe('SearchContent.vue', () => {
       store.selectedScopes.blog = true
 
       await wrapper.find('#search-content-search-term').setValue('test query')
-      await wrapper
-        .findAll('button')
-        .find((btn) => btn.text() === 'Search')
-        ?.trigger('click')
+      await submitSearchForm(wrapper)
       await flushPromises()
       await nextTick()
 
@@ -2013,10 +1834,7 @@ describe('SearchContent.vue', () => {
       store.selectedScopes.blog = true
 
       await wrapper.find('#search-content-search-term').setValue('test')
-      await wrapper
-        .findAll('button')
-        .find((btn) => btn.text() === 'Search')
-        ?.trigger('click')
+      await submitSearchForm(wrapper)
       await flushPromises()
       await nextTick()
 
@@ -2047,10 +1865,7 @@ describe('SearchContent.vue', () => {
       store.selectedScopes.blog = true
 
       await wrapper.find('#search-content-search-term').setValue('test')
-      await wrapper
-        .findAll('button')
-        .find((btn) => btn.text() === 'Search')
-        ?.trigger('click')
+      await submitSearchForm(wrapper)
       await flushPromises()
       await nextTick()
 
@@ -2086,10 +1901,7 @@ describe('SearchContent.vue', () => {
       store.selectedScopes.blog = true
 
       await wrapper.find('#search-content-search-term').setValue('test')
-      await wrapper
-        .findAll('button')
-        .find((btn) => btn.text() === 'Search')
-        ?.trigger('click')
+      await submitSearchForm(wrapper)
       await flushPromises()
       await nextTick()
 
@@ -2123,10 +1935,7 @@ describe('SearchContent.vue', () => {
       store.selectedScopes.blog = true
 
       await wrapper.find('#search-content-search-term').setValue('test')
-      await wrapper
-        .findAll('button')
-        .find((btn) => btn.text() === 'Search')
-        ?.trigger('click')
+      await submitSearchForm(wrapper)
       await flushPromises()
       await nextTick()
 
@@ -2157,10 +1966,7 @@ describe('SearchContent.vue', () => {
       store.selectedScopes.blog = true
 
       await wrapper.find('#search-content-search-term').setValue('test')
-      await wrapper
-        .findAll('button')
-        .find((btn) => btn.text() === 'Search')
-        ?.trigger('click')
+      await submitSearchForm(wrapper)
       await flushPromises()
       await nextTick()
 
@@ -2191,10 +1997,7 @@ describe('SearchContent.vue', () => {
       store.selectedScopes.blog = true
 
       await wrapper.find('#search-content-search-term').setValue('test')
-      await wrapper
-        .findAll('button')
-        .find((btn) => btn.text() === 'Search')
-        ?.trigger('click')
+      await submitSearchForm(wrapper)
       await flushPromises()
       await nextTick()
 
@@ -2234,10 +2037,7 @@ describe('SearchContent.vue', () => {
       store.selectedScopes.blog = true
 
       await wrapper.find('#search-content-search-term').setValue('test')
-      await wrapper
-        .findAll('button')
-        .find((btn) => btn.text() === 'Search')
-        ?.trigger('click')
+      await submitSearchForm(wrapper)
       await flushPromises()
       await nextTick()
 
@@ -2266,10 +2066,7 @@ describe('SearchContent.vue', () => {
       store.selectedScopes.blog = true
 
       await wrapper.find('#search-content-search-term').setValue('test')
-      await wrapper
-        .findAll('button')
-        .find((btn) => btn.text() === 'Search')
-        ?.trigger('click')
+      await submitSearchForm(wrapper)
       await flushPromises()
       await nextTick()
 
@@ -2291,10 +2088,7 @@ describe('SearchContent.vue', () => {
       store.selectedScopes.blog = true
 
       await wrapper.find('#search-content-search-term').setValue('test')
-      await wrapper
-        .findAll('button')
-        .find((btn) => btn.text() === 'Search')
-        ?.trigger('click')
+      await submitSearchForm(wrapper)
       await flushPromises()
       await nextTick()
 
@@ -2338,9 +2132,8 @@ describe('SearchContent.vue', () => {
       store.token = 'test-token'
       store.selectedScopes.blog = true
 
-      const input = wrapper.find('#search-content-search-term')
-      await input.setValue('test')
-      await input.trigger('keypress.enter')
+      await wrapper.find('#search-content-search-term').setValue('test')
+      await submitSearchForm(wrapper)
       await flushPromises()
 
       expect(mockSearchContent).toHaveBeenCalled()
@@ -2367,10 +2160,7 @@ describe('SearchContent.vue', () => {
       store.selectedScopes.blog = true
 
       await wrapper.find('#search-content-search-term').setValue('test')
-      await wrapper
-        .findAll('button')
-        .find((btn) => btn.text() === 'Search')
-        ?.trigger('click')
+      await submitSearchForm(wrapper)
       await flushPromises()
       await nextTick()
 
@@ -2411,10 +2201,7 @@ describe('SearchContent.vue', () => {
       store.selectedScopes.blog = true
 
       await wrapper.find('#search-content-search-term').setValue('test')
-      await wrapper
-        .findAll('button')
-        .find((btn) => btn.text() === 'Search')
-        ?.trigger('click')
+      await submitSearchForm(wrapper)
       await flushPromises()
       await nextTick()
 
@@ -2459,10 +2246,7 @@ describe('SearchContent.vue', () => {
       store.selectedScopes.blog = true
 
       await wrapper.find('#search-content-search-term').setValue('test')
-      await wrapper
-        .findAll('button')
-        .find((btn) => btn.text() === 'Search')
-        ?.trigger('click')
+      await submitSearchForm(wrapper)
       await flushPromises()
       await nextTick()
 
@@ -2496,10 +2280,7 @@ describe('SearchContent.vue', () => {
       store.selectedScopes.blog = true
 
       await wrapper.find('#search-content-search-term').setValue('test')
-      await wrapper
-        .findAll('button')
-        .find((btn) => btn.text() === 'Search')
-        ?.trigger('click')
+      await submitSearchForm(wrapper)
       await flushPromises()
       await nextTick()
 
@@ -2533,10 +2314,7 @@ describe('SearchContent.vue', () => {
       store.selectedScopes.blog = true
 
       await wrapper.find('#search-content-search-term').setValue('test')
-      await wrapper
-        .findAll('button')
-        .find((btn) => btn.text() === 'Search')
-        ?.trigger('click')
+      await submitSearchForm(wrapper)
       await flushPromises()
       await nextTick()
 
@@ -2572,10 +2350,7 @@ describe('SearchContent.vue', () => {
       store.selectedScopes.blog = true
 
       await wrapper.find('#search-content-search-term').setValue('test')
-      await wrapper
-        .findAll('button')
-        .find((btn) => btn.text() === 'Search')
-        ?.trigger('click')
+      await submitSearchForm(wrapper)
       await flushPromises()
       await nextTick()
 
