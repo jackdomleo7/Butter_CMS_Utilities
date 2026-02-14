@@ -1,5 +1,6 @@
-import { describe, it, expect, vi } from 'vitest'
-import { mount } from '@vue/test-utils'
+import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { mount, flushPromises } from '@vue/test-utils'
+import { createPinia, setActivePinia } from 'pinia'
 import App from './App.vue'
 
 // Mock Header to avoid favicon import issues in test environment
@@ -11,9 +12,15 @@ vi.mock('./components/Header.vue', () => ({
 }))
 
 describe('App.vue', () => {
+  beforeEach(() => {
+    localStorage.clear()
+    setActivePinia(createPinia())
+  })
+
   const createWrapper = () => {
     return mount(App, {
       global: {
+        plugins: [createPinia()],
         stubs: {
           Header: { name: 'Header', template: '<header>Header Stub</header>' },
           Footer: { name: 'Footer', template: '<footer>Footer Stub</footer>' },
@@ -25,16 +32,6 @@ describe('App.vue', () => {
           ApiConfiguration: {
             name: 'ApiConfiguration',
             template: '<div class="api-config-stub">API Config</div>',
-          },
-          Tabs: {
-            name: 'Tabs',
-            template:
-              '<div class="tabs-stub"><slot name="tabs" /><slot name="panels" :activeTabIndex="0" /></div>',
-          },
-          Tab: {
-            name: 'Tab',
-            template: '<button class="tab-stub"><slot /></button>',
-            props: ['label', 'icon', 'panelId', 'index'],
           },
           SearchContent: {
             name: 'SearchContent',
@@ -50,7 +47,6 @@ describe('App.vue', () => {
           },
         },
       },
-      shallow: true,
     })
   }
 
@@ -114,8 +110,18 @@ describe('App.vue', () => {
       expect(searchContent.exists()).toBe(true)
     })
 
-    it('renders AuditContent component within tabs', () => {
+    it('renders AuditContent component within tabs', async () => {
       const wrapper = createWrapper()
+      await flushPromises()
+
+      // Click the Audit tab to render the AuditContent
+      const tabs = wrapper.findAll('button[class*="tab"]')
+      const auditTab = tabs[1]
+      if (auditTab) {
+        await auditTab.trigger('click')
+        await flushPromises()
+      }
+
       const auditContent = wrapper.findComponent({ name: 'AuditContent' })
       expect(auditContent.exists()).toBe(true)
     })
@@ -161,10 +167,19 @@ describe('App.vue', () => {
       expect(searchPanel.attributes('aria-labelledby')).toBe('tab-0')
     })
 
-    it('audit panel has correct id and role', () => {
+    it('audit panel has correct id and role', async () => {
       const wrapper = createWrapper()
-      const auditPanel = wrapper.find('#audit-panel')
+      await flushPromises()
 
+      // Click the Audit tab to render the audit panel
+      const tabs = wrapper.findAll('button[class*="tab"]')
+      const auditTab = tabs[1]
+      if (auditTab) {
+        await auditTab.trigger('click')
+        await flushPromises()
+      }
+
+      const auditPanel = wrapper.find('#audit-panel')
       expect(auditPanel.exists()).toBe(true)
       expect(auditPanel.attributes('role')).toBe('tabpanel')
       expect(auditPanel.attributes('aria-labelledby')).toBe('tab-1')
