@@ -41,6 +41,14 @@ const showModal = ref<boolean>(false)
 
 const features: Feature[] = [
   {
+    id: 'audit-html-bloat',
+    type: 'feature',
+    title: 'Audit HTML Bloat',
+    description:
+      'New Audit utility detects bloated HTML attributes from design tools (Figma), word processors (Microsoft Office, Google Docs), and deprecated HTML that inflate your page size which may affect Core Web Vital metrics. Access this feature via the new tab navigation alongside Search Content. The audit checks for common problematic patterns like <code>mso-</code>, <code>figma=</code>, <code>paraid=</code>, and many more that often appear when content is copied without proper formatting.',
+    utcDatetimeAdded: new Date('2026-02-14T17:45:00Z'),
+  },
+  {
     id: 'api-config-multi-input',
     type: 'improvement',
     title:

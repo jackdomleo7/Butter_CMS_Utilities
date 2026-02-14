@@ -360,6 +360,7 @@ describe('useStore', () => {
         includePreview: true,
         pageTypes: ['landing_page'],
         collectionKeys: ['products'],
+        activeTabIndex: 0,
         selectedScopes: {
           blog: true,
           pageTypes: ['landing_page'],

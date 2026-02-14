@@ -9,6 +9,7 @@ export const useStore = defineStore('store', () => {
     includePreview: boolean
     pageTypes: string[]
     collectionKeys: string[]
+    activeTabIndex: number
     selectedScopes: {
       blog: boolean
       pageTypes: string[]
@@ -19,7 +20,17 @@ export const useStore = defineStore('store', () => {
       const stored = localStorage.getItem('butter_cms_config')
       if (stored) {
         try {
-          return JSON.parse(stored)
+          const parsed = JSON.parse(stored)
+          // Validate activeTabIndex - must be a non-negative integer
+          if (
+            typeof parsed.activeTabIndex === 'number' &&
+            parsed.activeTabIndex >= 0 &&
+            parsed.activeTabIndex < 10
+          ) {
+            return { ...parsed, activeTabIndex: parsed.activeTabIndex }
+          }
+          // If invalid or missing, default to 0
+          return { ...parsed, activeTabIndex: 0 }
         } catch {
           console.warn('Failed to parse stored config, using defaults')
         }
@@ -30,6 +41,7 @@ export const useStore = defineStore('store', () => {
         includePreview: false,
         pageTypes: [],
         collectionKeys: [],
+        activeTabIndex: 0,
         selectedScopes: {
           blog: false,
           pageTypes: [],
@@ -82,6 +94,18 @@ export const useStore = defineStore('store', () => {
     },
   })
 
+  const activeTabIndex = computed({
+    get: () => config.value.activeTabIndex ?? 0,
+    set: (val: number) => {
+      // Validate: only allow non-negative integers
+      if (typeof val === 'number' && val >= 0 && Number.isInteger(val)) {
+        config.value.activeTabIndex = val
+      } else {
+        config.value.activeTabIndex = 0
+      }
+    },
+  })
+
   // Watch for config changes and save to localStorage
   watch(
     config,
@@ -115,5 +139,13 @@ export const useStore = defineStore('store', () => {
     },
   )
 
-  return { token, lockToken, includePreview, pageTypes, collectionKeys, selectedScopes }
+  return {
+    token,
+    lockToken,
+    includePreview,
+    pageTypes,
+    collectionKeys,
+    selectedScopes,
+    activeTabIndex,
+  }
 })
