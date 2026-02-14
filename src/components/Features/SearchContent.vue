@@ -21,7 +21,7 @@
     </div>
 
     <!-- Search Form -->
-    <form class="search-content__form" @submit.prevent="executeSearch">
+    <form class="search-content__form" novalidate @submit.prevent="executeSearch">
       <TextInput
         id="search-content-search-term"
         type="text"

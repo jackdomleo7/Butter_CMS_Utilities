@@ -57,7 +57,7 @@
       <!-- Page Types Section -->
       <div class="api-config__section">
         <h3 class="api-config__section-title">Page Types</h3>
-        <form @submit.prevent="addPageType" class="api-config__form">
+        <form @submit.prevent="addPageType" novalidate class="api-config__form">
           <TextInput
             id="page-type-input"
             type="text"
@@ -84,7 +84,7 @@
       <!-- Collection Keys Section -->
       <div class="api-config__section">
         <h3 class="api-config__section-title">Collection Keys</h3>
-        <form @submit.prevent="addCollectionKey" class="api-config__form">
+        <form @submit.prevent="addCollectionKey" novalidate class="api-config__form">
           <TextInput
             id="collection-key-input"
             type="text"
