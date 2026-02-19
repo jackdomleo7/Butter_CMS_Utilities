@@ -35,7 +35,16 @@ Search for specific content across your Butter CMS account:
 - Search for items containing OR NOT containing specific terms
 - See exactly where matches were found with context snippets
 - Highlighted matches for easy scanning
-- Include draft content or published only
+
+### Audit HTML Bloat
+Detect bloated HTML attributes introduced when content is pasted from external tools:
+- Scans blog posts, page types, and collections simultaneously
+- Detects Microsoft Office artifacts (`mso-`, `paraid=`, `data-contrast`, etc.)
+- Detects Figma attributes (`figma=`, `data-figma-`)
+- Detects Google Docs markup (`google-`, `docs-`)
+- Detects rich text editor remnants (`data-pm-slice`)
+- Detects generic `data-*` attributes and inline event handlers (`onclick=`, `onerror=`, etc.)
+- Shows context snippets around each finding for manual review
 
 ## 🔧 Development
 
