@@ -573,4 +573,120 @@ describe('searchContent', () => {
       expect(result.error).toBeTruthy()
     })
   })
+
+  describe('Status field', () => {
+    it('should include published status from blog posts in results', async () => {
+      mockGetAllPages.mockImplementation(async () => [])
+      mockGetAllPosts.mockImplementation(async () => [
+        {
+          id: '1',
+          slug: 'post-published',
+          title: 'Published Post',
+          body: 'Butter content',
+          status: 'published',
+        },
+      ])
+      mockGetAllCollections.mockImplementation(async () => [])
+
+      const result = await searchContent('Butter content', 'test-token', false, [], [], true)
+
+      expect(result.success).toBe(true)
+      expect(result.results).toHaveLength(1)
+      expect(result.results[0]!.status).toBe('published')
+    })
+
+    it('should include draft status from pages in results', async () => {
+      mockGetAllPages.mockImplementation(async () => [
+        {
+          id: '1',
+          slug: 'draft-page',
+          name: 'Draft Page',
+          page_type: 'landing_page',
+          fields: { body: 'Butter content' },
+          status: 'draft',
+        },
+      ])
+      mockGetAllPosts.mockImplementation(async () => [])
+      mockGetAllCollections.mockImplementation(async () => [])
+
+      const result = await searchContent(
+        'Butter content',
+        'test-token',
+        false,
+        ['landing_page'],
+        [],
+        false,
+      )
+
+      expect(result.success).toBe(true)
+      expect(result.results).toHaveLength(1)
+      expect(result.results[0]!.status).toBe('draft')
+    })
+
+    it('should include scheduled status from blog posts in results', async () => {
+      mockGetAllPages.mockImplementation(async () => [])
+      mockGetAllPosts.mockImplementation(async () => [
+        {
+          id: '1',
+          slug: 'scheduled-post',
+          title: 'Scheduled Post',
+          body: 'Butter content',
+          status: 'scheduled',
+        },
+      ])
+      mockGetAllCollections.mockImplementation(async () => [])
+
+      const result = await searchContent('Butter content', 'test-token', false, [], [], true)
+
+      expect(result.success).toBe(true)
+      expect(result.results).toHaveLength(1)
+      expect(result.results[0]!.status).toBe('scheduled')
+    })
+
+    it('should have undefined status for collection items', async () => {
+      mockGetAllPages.mockImplementation(async () => [])
+      mockGetAllPosts.mockImplementation(async () => [])
+      mockGetAllCollections.mockImplementation(async () => [
+        {
+          id: '1',
+          slug: 'col-item',
+          name: 'Collection Item',
+          description: 'Butter content',
+        },
+      ])
+
+      const result = await searchContent(
+        'Butter content',
+        'test-token',
+        false,
+        [],
+        ['my_collection'],
+        false,
+      )
+
+      expect(result.success).toBe(true)
+      expect(result.results).toHaveLength(1)
+      expect(result.results[0]!.status).toBeUndefined()
+    })
+
+    it('should have undefined status when item has an unrecognised status value', async () => {
+      mockGetAllPages.mockImplementation(async () => [])
+      mockGetAllPosts.mockImplementation(async () => [
+        {
+          id: '1',
+          slug: 'unknown-status-post',
+          title: 'Unknown Status Post',
+          body: 'Butter content',
+          status: 'unknown_value',
+        },
+      ])
+      mockGetAllCollections.mockImplementation(async () => [])
+
+      const result = await searchContent('Butter content', 'test-token', false, [], [], true)
+
+      expect(result.success).toBe(true)
+      expect(result.results).toHaveLength(1)
+      expect(result.results[0]!.status).toBeUndefined()
+    })
+  })
 })

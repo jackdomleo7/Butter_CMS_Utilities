@@ -2436,4 +2436,129 @@ describe('SearchContent.vue', () => {
       expect(wrapper.find('.search-content__results-container').exists()).toBe(true)
     })
   })
+
+  describe('Status Badge', () => {
+    it('should show status badge with published class when result has published status', async () => {
+      mockSearchContent.mockResolvedValue({
+        success: true,
+        results: [
+          {
+            title: 'Published Page',
+            slug: 'published-page',
+            sourceType: 'Blog',
+            status: 'published',
+            matches: [],
+          },
+        ],
+        totalItems: 1,
+        failedScopes: [],
+      })
+
+      const wrapper = mountComponent()
+      const store = useStore()
+      store.token = 'test-token'
+      store.selectedScopes.blog = true
+
+      await wrapper.find('#search-content-search-term').setValue('test')
+      await submitSearchForm(wrapper)
+      await flushPromises()
+      await nextTick()
+
+      const badge = wrapper.find('.search-content__status-badge')
+      expect(badge.exists()).toBe(true)
+      expect(badge.text()).toBe('published')
+      expect(badge.classes()).toContain('search-content__status-badge--published')
+    })
+
+    it('should show status badge with draft class when result has draft status', async () => {
+      mockSearchContent.mockResolvedValue({
+        success: true,
+        results: [
+          {
+            title: 'Draft Page',
+            slug: 'draft-page',
+            sourceType: 'landing_page',
+            status: 'draft',
+            matches: [],
+          },
+        ],
+        totalItems: 1,
+        failedScopes: [],
+      })
+
+      const wrapper = mountComponent()
+      const store = useStore()
+      store.token = 'test-token'
+      store.selectedScopes.blog = true
+
+      await wrapper.find('#search-content-search-term').setValue('test')
+      await submitSearchForm(wrapper)
+      await flushPromises()
+      await nextTick()
+
+      const badge = wrapper.find('.search-content__status-badge')
+      expect(badge.exists()).toBe(true)
+      expect(badge.classes()).toContain('search-content__status-badge--draft')
+    })
+
+    it('should show status badge with scheduled class when result has scheduled status', async () => {
+      mockSearchContent.mockResolvedValue({
+        success: true,
+        results: [
+          {
+            title: 'Scheduled Page',
+            slug: 'scheduled-page',
+            sourceType: 'Blog',
+            status: 'scheduled',
+            matches: [],
+          },
+        ],
+        totalItems: 1,
+        failedScopes: [],
+      })
+
+      const wrapper = mountComponent()
+      const store = useStore()
+      store.token = 'test-token'
+      store.selectedScopes.blog = true
+
+      await wrapper.find('#search-content-search-term').setValue('test')
+      await submitSearchForm(wrapper)
+      await flushPromises()
+      await nextTick()
+
+      const badge = wrapper.find('.search-content__status-badge')
+      expect(badge.exists()).toBe(true)
+      expect(badge.classes()).toContain('search-content__status-badge--scheduled')
+    })
+
+    it('should not show status badge when result has no status (e.g. collection)', async () => {
+      mockSearchContent.mockResolvedValue({
+        success: true,
+        results: [
+          {
+            title: 'Collection Item',
+            slug: 'col-item',
+            sourceType: 'my_collection',
+            matches: [],
+          },
+        ],
+        totalItems: 1,
+        failedScopes: [],
+      })
+
+      const wrapper = mountComponent()
+      const store = useStore()
+      store.token = 'test-token'
+      store.selectedScopes.blog = true
+
+      await wrapper.find('#search-content-search-term').setValue('test')
+      await submitSearchForm(wrapper)
+      await flushPromises()
+      await nextTick()
+
+      const badge = wrapper.find('.search-content__status-badge')
+      expect(badge.exists()).toBe(false)
+    })
+  })
 })

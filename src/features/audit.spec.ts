@@ -558,4 +558,100 @@ describe('auditContent', () => {
       expect(result.totalIssues).toBeGreaterThanOrEqual(3)
     })
   })
+
+  describe('Status field', () => {
+    it('should include published status from blog posts in results', async () => {
+      mockGetAllPages.mockResolvedValueOnce([])
+      mockGetAllPosts.mockResolvedValueOnce([
+        {
+          slug: 'published-post',
+          title: 'Published Post',
+          body: '<div onclick="test">content</div>',
+          status: 'published',
+        },
+      ])
+      mockGetAllCollections.mockResolvedValueOnce([])
+
+      const result = await auditContent('test-token', false, [], [], true)
+
+      expect(result.success).toBe(true)
+      expect(result.results).toHaveLength(1)
+      expect(result.results[0]!.status).toBe('published')
+    })
+
+    it('should include draft status from pages in results', async () => {
+      mockGetAllPages.mockResolvedValueOnce([
+        {
+          slug: 'draft-page',
+          name: 'Draft Page',
+          fields: { body: '<p onclick="test">content</p>' },
+          status: 'draft',
+        },
+      ])
+      mockGetAllPosts.mockResolvedValueOnce([])
+      mockGetAllCollections.mockResolvedValueOnce([])
+
+      const result = await auditContent('test-token', false, ['landing_page'], [], false)
+
+      expect(result.success).toBe(true)
+      expect(result.results).toHaveLength(1)
+      expect(result.results[0]!.status).toBe('draft')
+    })
+
+    it('should include scheduled status in results', async () => {
+      mockGetAllPages.mockResolvedValueOnce([])
+      mockGetAllPosts.mockResolvedValueOnce([
+        {
+          slug: 'scheduled-post',
+          title: 'Scheduled Post',
+          body: '<p onclick="test">content</p>',
+          status: 'scheduled',
+        },
+      ])
+      mockGetAllCollections.mockResolvedValueOnce([])
+
+      const result = await auditContent('test-token', false, [], [], true)
+
+      expect(result.success).toBe(true)
+      expect(result.results).toHaveLength(1)
+      expect(result.results[0]!.status).toBe('scheduled')
+    })
+
+    it('should have undefined status for collection items', async () => {
+      mockGetAllPages.mockResolvedValueOnce([])
+      mockGetAllPosts.mockResolvedValueOnce([])
+      mockGetAllCollections.mockResolvedValueOnce([
+        {
+          slug: 'col-item',
+          name: 'Collection Item',
+          body: '<div onclick="test">content</div>',
+        },
+      ])
+
+      const result = await auditContent('test-token', false, [], ['my_collection'], false)
+
+      expect(result.success).toBe(true)
+      expect(result.results).toHaveLength(1)
+      expect(result.results[0]!.status).toBeUndefined()
+    })
+
+    it('should have undefined status when item has an unrecognised status value', async () => {
+      mockGetAllPages.mockResolvedValueOnce([])
+      mockGetAllPosts.mockResolvedValueOnce([
+        {
+          slug: 'unknown-post',
+          title: 'Unknown Status Post',
+          body: '<p onclick="test">content</p>',
+          status: 'archived',
+        },
+      ])
+      mockGetAllCollections.mockResolvedValueOnce([])
+
+      const result = await auditContent('test-token', false, [], [], true)
+
+      expect(result.success).toBe(true)
+      expect(result.results).toHaveLength(1)
+      expect(result.results[0]!.status).toBeUndefined()
+    })
+  })
 })

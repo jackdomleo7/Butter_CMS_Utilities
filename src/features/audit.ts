@@ -113,6 +113,7 @@ interface AuditResponse {
     title: string
     slug: string
     sourceType: string
+    status?: 'published' | 'draft' | 'scheduled'
     issues: Array<{
       pattern: string
       path: string
@@ -235,6 +236,11 @@ function searchObjectForPattern(
   return matchMap
 }
 
+function toStatus(val: unknown): 'published' | 'draft' | 'scheduled' | undefined {
+  if (val === 'published' || val === 'draft' || val === 'scheduled') return val
+  return undefined
+}
+
 export async function auditContent(
   token: string,
   preview: boolean,
@@ -262,6 +268,7 @@ export async function auditContent(
       title: string
       slug: string
       sourceType: string
+      status?: 'published' | 'draft' | 'scheduled'
       issues: Array<{
         pattern: string
         path: string
@@ -418,6 +425,7 @@ export async function auditContent(
             (item.name as string) || (item.title as string) || (item.slug as string) || 'Untitled',
           slug: (item.slug as string) || 'N/A',
           sourceType: sourceType,
+          status: toStatus(item.status),
           issues: itemIssues.sort((a, b) => {
             // Sort by pattern first, then by path
             const patternCompare = a.pattern.localeCompare(b.pattern)

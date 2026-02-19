@@ -84,6 +84,12 @@
             <div class="search-content__result-header-left">
               <div class="search-content__result-title-wrapper">
                 <Chip size="small">{{ getResultSourceBadge(result) }}</Chip>
+                <span
+                  v-if="result.status"
+                  class="search-content__status-badge"
+                  :class="`search-content__status-badge--${result.status}`"
+                  >{{ result.status }}</span
+                >
                 <span class="search-content__result-title">{{ result.title }}</span>
               </div>
               <div class="search-content__result-slug">{{ result.slug }}</div>
@@ -425,6 +431,33 @@ function getResultMatchCount(
     gap: var(--space-3);
     flex-wrap: wrap;
     margin-bottom: var(--space-2);
+  }
+
+  // Status badge (Butter CMS status colours)
+  &__status-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 2px var(--space-2);
+    border-radius: var(--radius-sm);
+    font-size: var(--font-size-xs);
+    font-weight: 600;
+    text-transform: capitalize;
+    letter-spacing: 0.03em;
+
+    &--published {
+      color: #34824d;
+      background-color: #d4f4d2;
+    }
+
+    &--draft {
+      color: #726a3a;
+      background-color: #fff7ca;
+    }
+
+    &--scheduled {
+      color: #31459a;
+      background-color: #eff1ff;
+    }
   }
 
   // Result title

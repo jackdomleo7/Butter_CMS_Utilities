@@ -3,12 +3,18 @@ import { getAllPosts } from '@/core/posts'
 import { getAllCollections } from '@/core/collections'
 import { normalizeWhitespace, createContextSnippet } from '@/utils/textNormalization'
 
+function toStatus(val: unknown): 'published' | 'draft' | 'scheduled' | undefined {
+  if (val === 'published' || val === 'draft' || val === 'scheduled') return val
+  return undefined
+}
+
 interface SearchResponse {
   success: boolean
   results: Array<{
     title: string
     slug: string
     sourceType?: string
+    status?: 'published' | 'draft' | 'scheduled'
     matches: Array<{ path: string; value: string; count: number }>
   }>
   totalItems: number | null
@@ -144,6 +150,7 @@ export async function searchContent(
       title: string
       slug: string
       sourceType?: string
+      status?: 'published' | 'draft' | 'scheduled'
       matches: Array<{ path: string; value: string; count: number }>
     }> = []
 
@@ -229,6 +236,7 @@ export async function searchContent(
               'Untitled',
             slug: (item.slug as string) || 'N/A',
             sourceType: sourceType,
+            status: toStatus(item.status),
             matches: [],
           })
         } else {
@@ -261,6 +269,7 @@ export async function searchContent(
                 'Untitled',
               slug: (item.slug as string) || 'N/A',
               sourceType: sourceType,
+              status: toStatus(item.status),
               matches: validMatches,
             })
           }

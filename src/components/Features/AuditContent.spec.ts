@@ -654,4 +654,130 @@ describe('AuditContent.vue', () => {
       expect(alert.exists()).toBe(true)
     })
   })
+
+  describe('Status Badge', () => {
+    const runAudit = async (wrapper: ReturnType<typeof mountComponent>) => {
+      await wrapper
+        .findAll('button')
+        .find((btn) => btn.text() === 'Run Audit')
+        ?.trigger('click')
+      await flushPromises()
+      await nextTick()
+    }
+
+    it('should show status badge with published class when result has published status', async () => {
+      mockAuditContent.mockResolvedValue({
+        success: true,
+        results: [
+          {
+            title: 'Published Page',
+            slug: 'published-page',
+            sourceType: 'Blog',
+            status: 'published',
+            issues: [{ pattern: 'mso-', path: 'body', value: 'test', count: 1 }],
+          },
+        ],
+        totalIssues: 1,
+        patternsFound: ['mso-'],
+        failedScopes: [],
+      })
+
+      const wrapper = mountComponent()
+      const store = useStore()
+      store.token = 'test-token'
+      store.selectedScopes.blog = true
+
+      await runAudit(wrapper)
+
+      const badge = wrapper.find('.audit-content__status-badge')
+      expect(badge.exists()).toBe(true)
+      expect(badge.text()).toBe('published')
+      expect(badge.classes()).toContain('audit-content__status-badge--published')
+    })
+
+    it('should show status badge with draft class when result has draft status', async () => {
+      mockAuditContent.mockResolvedValue({
+        success: true,
+        results: [
+          {
+            title: 'Draft Page',
+            slug: 'draft-page',
+            sourceType: 'landing_page',
+            status: 'draft',
+            issues: [{ pattern: 'mso-', path: 'body', value: 'test', count: 1 }],
+          },
+        ],
+        totalIssues: 1,
+        patternsFound: ['mso-'],
+        failedScopes: [],
+      })
+
+      const wrapper = mountComponent()
+      const store = useStore()
+      store.token = 'test-token'
+      store.selectedScopes.blog = true
+
+      await runAudit(wrapper)
+
+      const badge = wrapper.find('.audit-content__status-badge')
+      expect(badge.exists()).toBe(true)
+      expect(badge.classes()).toContain('audit-content__status-badge--draft')
+    })
+
+    it('should show status badge with scheduled class when result has scheduled status', async () => {
+      mockAuditContent.mockResolvedValue({
+        success: true,
+        results: [
+          {
+            title: 'Scheduled Page',
+            slug: 'scheduled-page',
+            sourceType: 'Blog',
+            status: 'scheduled',
+            issues: [{ pattern: 'mso-', path: 'body', value: 'test', count: 1 }],
+          },
+        ],
+        totalIssues: 1,
+        patternsFound: ['mso-'],
+        failedScopes: [],
+      })
+
+      const wrapper = mountComponent()
+      const store = useStore()
+      store.token = 'test-token'
+      store.selectedScopes.blog = true
+
+      await runAudit(wrapper)
+
+      const badge = wrapper.find('.audit-content__status-badge')
+      expect(badge.exists()).toBe(true)
+      expect(badge.classes()).toContain('audit-content__status-badge--scheduled')
+    })
+
+    it('should not show status badge when result has no status (e.g. collection)', async () => {
+      mockAuditContent.mockResolvedValue({
+        success: true,
+        results: [
+          {
+            title: 'Collection Item',
+            slug: 'col-item',
+            sourceType: 'my_collection',
+            issues: [{ pattern: 'mso-', path: 'body', value: 'test', count: 1 }],
+          },
+        ],
+        totalIssues: 1,
+        patternsFound: ['mso-'],
+        failedScopes: [],
+      })
+
+      const wrapper = mountComponent()
+      const store = useStore()
+      store.token = 'test-token'
+      store.selectedScopes.blog = true
+
+      await runAudit(wrapper)
+
+      const badge = wrapper.find('.audit-content__status-badge')
+      expect(badge.exists()).toBe(false)
+    })
+  })
 })

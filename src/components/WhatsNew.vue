@@ -41,6 +41,14 @@ const showModal = ref<boolean>(false)
 
 const features: Feature[] = [
   {
+    id: 'status-badges',
+    type: 'improvement',
+    title: 'Status badges for content items in Search Content results',
+    description:
+      'Search Content results now include status badges to indicate whether items are published, drafts, or scheduled. This makes it easier to identify the status of your content at a glance without having to click into each item.',
+    utcDatetimeAdded: new Date('2026-02-19T19:45:00Z'),
+  },
+  {
     id: 'enhanced-text-normalization',
     type: 'improvement',
     title: 'Enhanced text normalization for search and audit',
