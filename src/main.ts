@@ -1,6 +1,7 @@
 import { createApp } from 'vue'
 import { createPinia } from 'pinia'
 import App from './App.vue'
+import 'modern-normalize/modern-normalize.css'
 import './assets/styles/main.scss'
 
 const app = createApp(App)
