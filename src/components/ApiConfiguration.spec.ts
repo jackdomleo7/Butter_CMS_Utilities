@@ -488,11 +488,10 @@ describe('ApiConfiguration.vue', () => {
         await wrapper.vm.$nextTick()
         const form = wrapper.findAll('form')[0]!
         await form.trigger('submit')
-        expect(getVm(wrapper).store.pageTypes).toEqual([
-          'about_page',
-          'landing_page',
-          'product_page',
-        ])
+        expect(getVm(wrapper).store.pageTypes).toHaveLength(3)
+        expect(getVm(wrapper).store.pageTypes).toEqual(
+          expect.arrayContaining(['about_page', 'landing_page', 'product_page']),
+        )
       })
 
       it('filters out empty values in comma-separated page types', async () => {
@@ -502,12 +501,10 @@ describe('ApiConfiguration.vue', () => {
         await wrapper.vm.$nextTick()
         const form = wrapper.findAll('form')[0]!
         await form.trigger('submit')
-        expect(getVm(wrapper).store.pageTypes).toEqual([
-          'about_page',
-          'landing_page',
-          'product_page',
-        ])
-        expect(getVm(wrapper).store.pageTypes.length).toBe(3)
+        expect(getVm(wrapper).store.pageTypes).toHaveLength(3)
+        expect(getVm(wrapper).store.pageTypes).toEqual(
+          expect.arrayContaining(['about_page', 'landing_page', 'product_page']),
+        )
       })
 
       it('does not add duplicate page types in comma-separated input', async () => {
@@ -566,7 +563,10 @@ describe('ApiConfiguration.vue', () => {
         await wrapper.vm.$nextTick()
         const forms = wrapper.findAll('form')
         await forms[1]!.trigger('submit')
-        expect(getVm(wrapper).store.collectionKeys).toEqual(['articles', 'products', 'recipes'])
+        expect(getVm(wrapper).store.collectionKeys).toHaveLength(3)
+        expect(getVm(wrapper).store.collectionKeys).toEqual(
+          expect.arrayContaining(['articles', 'products', 'recipes']),
+        )
       })
 
       it('filters out empty values in comma-separated collection keys', async () => {
@@ -576,8 +576,10 @@ describe('ApiConfiguration.vue', () => {
         await wrapper.vm.$nextTick()
         const forms = wrapper.findAll('form')
         await forms[1]!.trigger('submit')
-        expect(getVm(wrapper).store.collectionKeys).toEqual(['articles', 'products', 'recipes'])
-        expect(getVm(wrapper).store.collectionKeys.length).toBe(3)
+        expect(getVm(wrapper).store.collectionKeys).toHaveLength(3)
+        expect(getVm(wrapper).store.collectionKeys).toEqual(
+          expect.arrayContaining(['articles', 'products', 'recipes']),
+        )
       })
 
       it('does not add duplicate collection keys in comma-separated input', async () => {
@@ -587,8 +589,10 @@ describe('ApiConfiguration.vue', () => {
         await wrapper.vm.$nextTick()
         const forms = wrapper.findAll('form')
         await forms[1]!.trigger('submit')
-        expect(getVm(wrapper).store.collectionKeys).toEqual(['articles', 'recipes'])
-        expect(getVm(wrapper).store.collectionKeys.length).toBe(2)
+        expect(getVm(wrapper).store.collectionKeys).toHaveLength(2)
+        expect(getVm(wrapper).store.collectionKeys).toEqual(
+          expect.arrayContaining(['articles', 'recipes']),
+        )
       })
 
       it('handles mixed duplicates and new values in comma-separated input', async () => {

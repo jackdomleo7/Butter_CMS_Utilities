@@ -72,7 +72,7 @@
           >
         </form>
         <ul v-if="store.pageTypes.length > 0" class="api-config__list">
-          <li v-for="pageType in store.pageTypes" :key="pageType">
+          <li v-for="pageType in sortedPageTypes" :key="pageType">
             <Chip removable @remove="removePageType(pageType)">
               {{ pageType }}
             </Chip>
@@ -99,7 +99,7 @@
           >
         </form>
         <ul v-if="store.collectionKeys.length > 0" class="api-config__list">
-          <li v-for="collectionKey in store.collectionKeys" :key="collectionKey">
+          <li v-for="collectionKey in sortedCollectionKeys" :key="collectionKey">
             <Chip removable @remove="removeCollectionKey(collectionKey)">
               {{ collectionKey }}
             </Chip>
@@ -130,7 +130,7 @@
           >
         </form>
         <ul v-if="store.knownComponents.length > 0" class="api-config__list">
-          <li v-for="component in store.knownComponents" :key="component">
+          <li v-for="component in sortedKnownComponents" :key="component">
             <Chip removable @remove="removeKnownComponent(component)">
               {{ component }}
             </Chip>
@@ -163,6 +163,10 @@ const maskedToken = computed((): string => {
   const last4 = store.token.substring(store.token.length - 4)
   return `${first4}...${last4}`
 })
+
+const sortedPageTypes = computed(() => [...store.pageTypes].sort())
+const sortedCollectionKeys = computed(() => [...store.collectionKeys].sort())
+const sortedKnownComponents = computed(() => [...store.knownComponents].sort())
 
 function toggleTokenLock(): void {
   store.lockToken = !store.lockToken
