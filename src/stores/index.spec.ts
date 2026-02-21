@@ -29,6 +29,7 @@ describe('useStore', () => {
       expect(store.includePreview).toBe(false)
       expect(store.pageTypes).toEqual([])
       expect(store.collectionKeys).toEqual([])
+      expect(store.knownComponents).toEqual([])
       expect(store.selectedScopes).toEqual({
         blog: false,
         pageTypes: [],
@@ -360,6 +361,7 @@ describe('useStore', () => {
         includePreview: true,
         pageTypes: ['landing_page'],
         collectionKeys: ['products'],
+        knownComponents: [],
         activeTabIndex: 0,
         selectedScopes: {
           blog: true,
@@ -435,6 +437,103 @@ describe('useStore', () => {
 
       // Should return empty array for null
       expect(store.pageTypes).toEqual([])
+    })
+  })
+
+  describe('Known Components Management', () => {
+    it('should initialize with empty knownComponents by default', () => {
+      const store = useStore()
+      expect(store.knownComponents).toEqual([])
+    })
+
+    it('should load knownComponents from localStorage when available', () => {
+      localStorage.setItem(
+        'butter_cms_config',
+        JSON.stringify({
+          token: 'test-token',
+          lockToken: false,
+          includePreview: false,
+          pageTypes: [],
+          collectionKeys: [],
+          knownComponents: ['hero_banner', 'cta_block'],
+          activeTabIndex: 0,
+          selectedScopes: { blog: false, pageTypes: [], collectionKeys: [] },
+        }),
+      )
+
+      setActivePinia(createPinia())
+      const store = useStore()
+
+      expect(store.knownComponents).toEqual(['hero_banner', 'cta_block'])
+    })
+
+    it('should default to empty array when knownComponents is missing from localStorage', () => {
+      localStorage.setItem(
+        'butter_cms_config',
+        JSON.stringify({
+          token: 'test-token',
+          lockToken: false,
+          includePreview: false,
+          pageTypes: [],
+          collectionKeys: [],
+          activeTabIndex: 0,
+          selectedScopes: { blog: false, pageTypes: [], collectionKeys: [] },
+        }),
+      )
+
+      setActivePinia(createPinia())
+      const store = useStore()
+
+      expect(store.knownComponents).toEqual([])
+    })
+
+    it('should add known components', () => {
+      const store = useStore()
+
+      store.knownComponents = ['hero_banner', 'testimonial']
+
+      expect(store.knownComponents).toEqual(['hero_banner', 'testimonial'])
+    })
+
+    it('should remove known components', () => {
+      const store = useStore()
+
+      store.knownComponents = ['hero_banner', 'cta_block', 'testimonial']
+      store.knownComponents = store.knownComponents.filter((c) => c !== 'cta_block')
+
+      expect(store.knownComponents).toEqual(['hero_banner', 'testimonial'])
+    })
+
+    it('should clear known components', () => {
+      const store = useStore()
+
+      store.knownComponents = ['hero_banner']
+      store.knownComponents = []
+
+      expect(store.knownComponents).toEqual([])
+    })
+
+    it('should persist knownComponents to localStorage', async () => {
+      const store = useStore()
+
+      store.knownComponents = ['hero_banner', 'cta_block']
+
+      await new Promise((resolve) => setTimeout(resolve, 0))
+
+      const stored = JSON.parse(localStorage.getItem('butter_cms_config')!)
+      expect(stored.knownComponents).toEqual(['hero_banner', 'cta_block'])
+    })
+
+    it('should persist knownComponents across store instances', async () => {
+      const store1 = useStore()
+      store1.knownComponents = ['my_component']
+
+      await new Promise((resolve) => setTimeout(resolve, 0))
+
+      setActivePinia(createPinia())
+      const store2 = useStore()
+
+      expect(store2.knownComponents).toEqual(['my_component'])
     })
   })
 })

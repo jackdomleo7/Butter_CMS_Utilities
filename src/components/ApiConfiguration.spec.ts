@@ -15,6 +15,7 @@ interface ApiConfigurationInstance extends ComponentPublicInstance {
   store: ReturnType<typeof useStore>
   pageTypeInput: string
   collectionKeyInput: string
+  knownComponentInput: string
 }
 
 // Helper to get typed component instance
@@ -488,9 +489,9 @@ describe('ApiConfiguration.vue', () => {
         const form = wrapper.findAll('form')[0]!
         await form.trigger('submit')
         expect(getVm(wrapper).store.pageTypes).toEqual([
+          'about_page',
           'landing_page',
           'product_page',
-          'about_page',
         ])
       })
 
@@ -502,9 +503,9 @@ describe('ApiConfiguration.vue', () => {
         const form = wrapper.findAll('form')[0]!
         await form.trigger('submit')
         expect(getVm(wrapper).store.pageTypes).toEqual([
+          'about_page',
           'landing_page',
           'product_page',
-          'about_page',
         ])
         expect(getVm(wrapper).store.pageTypes.length).toBe(3)
       })
@@ -565,7 +566,7 @@ describe('ApiConfiguration.vue', () => {
         await wrapper.vm.$nextTick()
         const forms = wrapper.findAll('form')
         await forms[1]!.trigger('submit')
-        expect(getVm(wrapper).store.collectionKeys).toEqual(['recipes', 'articles', 'products'])
+        expect(getVm(wrapper).store.collectionKeys).toEqual(['articles', 'products', 'recipes'])
       })
 
       it('filters out empty values in comma-separated collection keys', async () => {
@@ -575,7 +576,7 @@ describe('ApiConfiguration.vue', () => {
         await wrapper.vm.$nextTick()
         const forms = wrapper.findAll('form')
         await forms[1]!.trigger('submit')
-        expect(getVm(wrapper).store.collectionKeys).toEqual(['recipes', 'articles', 'products'])
+        expect(getVm(wrapper).store.collectionKeys).toEqual(['articles', 'products', 'recipes'])
         expect(getVm(wrapper).store.collectionKeys.length).toBe(3)
       })
 
@@ -586,7 +587,7 @@ describe('ApiConfiguration.vue', () => {
         await wrapper.vm.$nextTick()
         const forms = wrapper.findAll('form')
         await forms[1]!.trigger('submit')
-        expect(getVm(wrapper).store.collectionKeys).toEqual(['recipes', 'articles'])
+        expect(getVm(wrapper).store.collectionKeys).toEqual(['articles', 'recipes'])
         expect(getVm(wrapper).store.collectionKeys.length).toBe(2)
       })
 
@@ -787,6 +788,151 @@ describe('ApiConfiguration.vue', () => {
       const buttons = collectionForm.findAllComponents(Btn)
       expect(buttons.length).toBe(1)
       expect(buttons[0].text()).toBe('Add')
+    })
+  })
+
+  describe('Known Components Section', () => {
+    it('renders known components section heading', () => {
+      const wrapper = mount(ApiConfiguration)
+      expect(wrapper.text()).toContain('Components')
+    })
+
+    it('renders the known component TextInput', () => {
+      const wrapper = mount(ApiConfiguration)
+      const input = wrapper.find('#known-component-input')
+      expect(input.exists()).toBe(true)
+    })
+
+    it('shows empty state message when no known components are configured', () => {
+      const store = useStore()
+      store.knownComponents = []
+
+      const wrapper = mount(ApiConfiguration)
+      expect(wrapper.text()).toContain('No known components configured yet')
+    })
+
+    it('does not show Add button when known component input is empty', () => {
+      const wrapper = mount(ApiConfiguration)
+      const forms = wrapper.findAll('form')
+      const knownComponentForm = forms[2]!
+      const buttons = knownComponentForm.findAllComponents(Btn)
+      expect(buttons.length).toBe(0)
+    })
+
+    it('shows Add button when known component input has value', async () => {
+      const wrapper = mount(ApiConfiguration)
+      getVm(wrapper).knownComponentInput = 'hero_banner'
+      await wrapper.vm.$nextTick()
+
+      const forms = wrapper.findAll('form')
+      const knownComponentForm = forms[2]!
+      const buttons = knownComponentForm.findAllComponents(Btn)
+      expect(buttons.length).toBe(1)
+      expect(buttons[0].text()).toBe('Add')
+    })
+
+    it('adds a known component on form submit', async () => {
+      const store = useStore()
+      store.knownComponents = []
+
+      const wrapper = mount(ApiConfiguration)
+      getVm(wrapper).knownComponentInput = 'hero_banner'
+      await wrapper.vm.$nextTick()
+
+      const forms = wrapper.findAll('form')
+      await forms[2]!.trigger('submit')
+      await wrapper.vm.$nextTick()
+
+      expect(store.knownComponents).toContain('hero_banner')
+    })
+
+    it('adds multiple components from comma-separated input', async () => {
+      const store = useStore()
+      store.knownComponents = []
+
+      const wrapper = mount(ApiConfiguration)
+      getVm(wrapper).knownComponentInput = 'hero_banner, cta_block, testimonial'
+      await wrapper.vm.$nextTick()
+
+      const forms = wrapper.findAll('form')
+      await forms[2]!.trigger('submit')
+      await wrapper.vm.$nextTick()
+
+      expect(store.knownComponents).toContain('hero_banner')
+      expect(store.knownComponents).toContain('cta_block')
+      expect(store.knownComponents).toContain('testimonial')
+    })
+
+    it('trims whitespace from component slugs', async () => {
+      const store = useStore()
+      store.knownComponents = []
+
+      const wrapper = mount(ApiConfiguration)
+      getVm(wrapper).knownComponentInput = '  hero_banner  ,  cta_block  '
+      await wrapper.vm.$nextTick()
+
+      const forms = wrapper.findAll('form')
+      await forms[2]!.trigger('submit')
+      await wrapper.vm.$nextTick()
+
+      expect(store.knownComponents).toContain('hero_banner')
+      expect(store.knownComponents).toContain('cta_block')
+    })
+
+    it('does not add duplicate known components', async () => {
+      const store = useStore()
+      store.knownComponents = ['hero_banner']
+
+      const wrapper = mount(ApiConfiguration)
+      getVm(wrapper).knownComponentInput = 'hero_banner'
+      await wrapper.vm.$nextTick()
+
+      const forms = wrapper.findAll('form')
+      await forms[2]!.trigger('submit')
+      await wrapper.vm.$nextTick()
+
+      const heroCount = store.knownComponents.filter((c) => c === 'hero_banner').length
+      expect(heroCount).toBe(1)
+    })
+
+    it('clears the input after adding a component', async () => {
+      const wrapper = mount(ApiConfiguration)
+      getVm(wrapper).knownComponentInput = 'hero_banner'
+      await wrapper.vm.$nextTick()
+
+      const forms = wrapper.findAll('form')
+      await forms[2]!.trigger('submit')
+      await wrapper.vm.$nextTick()
+
+      expect(getVm(wrapper).knownComponentInput).toBe('')
+    })
+
+    it('renders existing known components as chips', () => {
+      const store = useStore()
+      store.knownComponents = ['hero_banner', 'cta_block']
+
+      const wrapper = mount(ApiConfiguration)
+      const chips = wrapper.findAllComponents(Chip)
+      const chipTexts = chips.map((c) => c.text())
+      expect(chipTexts.some((t) => t.includes('hero_banner'))).toBe(true)
+      expect(chipTexts.some((t) => t.includes('cta_block'))).toBe(true)
+    })
+
+    it('removes a known component when its chip is closed', async () => {
+      const store = useStore()
+      store.knownComponents = ['hero_banner', 'cta_block']
+
+      const wrapper = mount(ApiConfiguration)
+      await wrapper.vm.$nextTick()
+
+      const chips = wrapper.findAllComponents(Chip)
+      const heroBannerChip = chips.find((c) => c.text().includes('hero_banner'))!
+      // Chip emits 'remove' from its internal button click
+      await heroBannerChip.find('.chip__remove').trigger('click')
+      await wrapper.vm.$nextTick()
+
+      expect(store.knownComponents).not.toContain('hero_banner')
+      expect(store.knownComponents).toContain('cta_block')
     })
   })
 })
