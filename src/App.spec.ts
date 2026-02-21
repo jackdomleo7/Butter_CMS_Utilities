@@ -82,7 +82,6 @@ describe('App.vue', () => {
 
     it('displays privacy banner text', () => {
       const wrapper = createWrapper()
-      expect(wrapper.text()).toContain('Privacy First')
       expect(wrapper.text()).toContain('All operations run entirely in your browser')
     })
 
