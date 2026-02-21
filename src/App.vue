@@ -3,9 +3,8 @@
   <main>
     <InfoBanner status="info" class="app__privacy-banner">
       <p>
-        <strong>🔒 Privacy First:</strong> All operations run entirely in your browser. No data is
-        transmitted to third-party servers. Your Butter CMS token is used only for direct API calls
-        to Butter CMS.
+        🔒 All operations run entirely in your browser. No data is transmitted to third-party
+        servers. Your Butter CMS token is used only for direct API calls to Butter CMS.
       </p>
     </InfoBanner>
 
