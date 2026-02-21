@@ -46,6 +46,7 @@ pnpm run test:unit    # Run Vitest (add file path for specific tests) - must pas
 - `v-memo` on `v-for` lists to optimize re-renders
 - Use `defineAsyncComponent()` where appropriate
 - Fail fast and handle errors gracefully
+- This project can often deal with large datasets and needs to crawl large JSON objects
 
 **Component Design:**
 - Single responsibility principle

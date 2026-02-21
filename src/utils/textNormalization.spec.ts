@@ -1,5 +1,13 @@
 import { describe, it, expect } from 'vitest'
-import { normalizeWhitespace, createContextSnippet } from './textNormalization'
+import {
+  normalizeWhitespace,
+  createContextSnippet,
+  pluralize,
+  escapeHtml,
+  createVariantPattern,
+  highlightMatches,
+  highlightPattern,
+} from './textNormalization'
 
 describe('normalizeWhitespace', () => {
   describe('HTML entity normalization', () => {
@@ -165,5 +173,165 @@ describe('createContextSnippet', () => {
     // Should be: 20 chars before + 1 match + 20 chars after = 41 chars
     // Plus ellipsis on both ends = 47 chars
     expect(result).toHaveLength(47)
+  })
+})
+
+describe('pluralize', () => {
+  it('should return singular when count is 1', () => {
+    expect(pluralize(1, 'match', 'matches')).toBe('match')
+    expect(pluralize(1, 'item', 'items')).toBe('item')
+    expect(pluralize(1, 'page', 'pages')).toBe('page')
+  })
+
+  it('should return plural when count is 0', () => {
+    expect(pluralize(0, 'match', 'matches')).toBe('matches')
+    expect(pluralize(0, 'item', 'items')).toBe('items')
+  })
+
+  it('should return plural when count is greater than 1', () => {
+    expect(pluralize(2, 'match', 'matches')).toBe('matches')
+    expect(pluralize(100, 'item', 'items')).toBe('items')
+  })
+
+  it('should return plural for negative numbers', () => {
+    expect(pluralize(-1, 'item', 'items')).toBe('items')
+  })
+})
+
+describe('escapeHtml', () => {
+  it('should escape ampersands', () => {
+    expect(escapeHtml('a & b')).toBe('a &amp; b')
+  })
+
+  it('should escape less-than signs', () => {
+    expect(escapeHtml('<script>')).toBe('&lt;script&gt;')
+  })
+
+  it('should escape greater-than signs', () => {
+    expect(escapeHtml('a > b > c')).toBe('a &gt; b &gt; c')
+  })
+
+  it('should escape double quotes', () => {
+    expect(escapeHtml('say "hello"')).toBe('say &quot;hello&quot;')
+  })
+
+  it('should escape multiple special characters in one string', () => {
+    expect(escapeHtml('<a href="url">link & more</a>')).toBe(
+      '&lt;a href=&quot;url&quot;&gt;link &amp; more&lt;/a&gt;',
+    )
+  })
+
+  it('should return the original string if no special characters', () => {
+    expect(escapeHtml('Hello World')).toBe('Hello World')
+    expect(escapeHtml('')).toBe('')
+  })
+
+  it('should handle strings with only special characters', () => {
+    expect(escapeHtml('&<>"')).toBe('&amp;&lt;&gt;&quot;')
+  })
+})
+
+describe('createVariantPattern', () => {
+  it('should return a non-capturing group matching all apostrophe variants', () => {
+    const pattern = createVariantPattern("'")
+    const regex = new RegExp(pattern)
+    expect(regex.test("'")).toBe(true)
+    expect(regex.test('&apos;')).toBe(true)
+    expect(regex.test('&#39;')).toBe(true)
+    expect(regex.test('\u2018')).toBe(true)
+    expect(regex.test('\u2019')).toBe(true)
+  })
+
+  it('should return a non-capturing group matching all dash variants', () => {
+    const pattern = createVariantPattern('-')
+    const regex = new RegExp(pattern)
+    expect(regex.test('-')).toBe(true)
+    expect(regex.test('&ndash;')).toBe(true)
+    expect(regex.test('&mdash;')).toBe(true)
+    expect(regex.test('\u2013')).toBe(true)
+    expect(regex.test('\u2014')).toBe(true)
+  })
+
+  it('should match £ and its entity variant', () => {
+    const pattern = createVariantPattern('£')
+    const regex = new RegExp(pattern)
+    expect(regex.test('£')).toBe(true)
+    expect(regex.test('&pound;')).toBe(true)
+  })
+
+  it('should escape and return the raw character for unknown chars', () => {
+    expect(createVariantPattern('a')).toBe('a')
+    expect(createVariantPattern('z')).toBe('z')
+  })
+
+  it('should escape regex special characters for unknown chars', () => {
+    const pattern = createVariantPattern('.')
+    // Should be escaped so it only matches a literal dot
+    const regex = new RegExp(`^${pattern}$`)
+    expect(regex.test('.')).toBe(true)
+    expect(regex.test('a')).toBe(false)
+  })
+})
+
+describe('highlightMatches', () => {
+  it('should wrap matched text in <mark> tags', () => {
+    expect(highlightMatches('Hello World', 'world')).toBe('Hello <mark>World</mark>')
+  })
+
+  it('should HTML-escape the source text before highlighting', () => {
+    expect(highlightMatches('<b>Hello</b>', 'Hello')).toBe('&lt;b&gt;<mark>Hello</mark>&lt;/b&gt;')
+  })
+
+  it('should match fancy Unicode quotes when user searches with a straight apostrophe', () => {
+    // Source has fancy right single quote (U+2019), user searched with straight apostrophe.
+    // escapeHtml does not alter Unicode quotes, so the variant pattern can still match them.
+    // The full search term pattern matches from the start, wrapping the entire match.
+    const result = highlightMatches('it\u2019s great', "it's great")
+    expect(result).toBe('<mark>it\u2019s great</mark>')
+  })
+
+  it('should match case-insensitively', () => {
+    expect(highlightMatches('Hello World', 'HELLO')).toBe('<mark>Hello</mark> World')
+  })
+
+  it('should highlight multiple occurrences', () => {
+    expect(highlightMatches('foo foo foo', 'foo')).toBe(
+      '<mark>foo</mark> <mark>foo</mark> <mark>foo</mark>',
+    )
+  })
+
+  it('should return escaped text unchanged when no match', () => {
+    expect(highlightMatches('Hello World', 'xyz')).toBe('Hello World')
+  })
+})
+
+describe('highlightPattern', () => {
+  it('should wrap matched text in <mark> tags', () => {
+    expect(highlightPattern('Hello World', 'World')).toBe('Hello <mark>World</mark>')
+  })
+
+  it('should HTML-escape the source text before highlighting', () => {
+    expect(highlightPattern('<script>alert(1)</script>', 'script')).toBe(
+      '&lt;<mark>script</mark>&gt;alert(1)&lt;/<mark>script</mark>&gt;',
+    )
+  })
+
+  it('should match case-insensitively', () => {
+    expect(highlightPattern('Hello World', 'hello')).toBe('<mark>Hello</mark> World')
+  })
+
+  it('should highlight multiple occurrences', () => {
+    expect(highlightPattern('foo foo foo', 'foo')).toBe(
+      '<mark>foo</mark> <mark>foo</mark> <mark>foo</mark>',
+    )
+  })
+
+  it('should treat the pattern as a literal string, not a regex', () => {
+    // '.' should match only a literal dot, not any character
+    expect(highlightPattern('a.b a-b', '.')).toBe('a<mark>.</mark>b a-b')
+  })
+
+  it('should return escaped text unchanged when no match', () => {
+    expect(highlightPattern('Hello World', 'xyz')).toBe('Hello World')
   })
 })

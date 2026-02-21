@@ -114,15 +114,23 @@ export async function auditComponents(
   const failedScopes: string[] = []
   let totalScanned = 0
 
-  for (const pageType of selectedPageTypes) {
-    let pages: Butter.Page[]
-    try {
-      pages = await getAllPages({ token, preview, pageType })
-    } catch {
-      failedScopes.push(pageType)
-      continue
-    }
+  // Fetch all page types concurrently
+  const fetchedPages: Array<{ pages: Butter.Page[]; pageType: string }> = []
+  await Promise.all(
+    selectedPageTypes.map(async (pageType) => {
+      try {
+        const pages = await getAllPages({ token, preview, pageType })
+        fetchedPages.push({ pages, pageType })
+      } catch {
+        failedScopes.push(pageType)
+      }
+    }),
+  )
 
+  // Process all pages sequentially with periodic main-thread yields to avoid
+  // blocking the UI during large crawls (walkJson is a deep recursive tree-walk)
+  let pageIndex = 0
+  for (const { pages, pageType } of fetchedPages) {
     for (const page of pages) {
       totalScanned++
 
@@ -148,8 +156,10 @@ export async function auditComponents(
         }
       }
 
-      // Yield to the main thread between pages to avoid blocking during large crawls
-      await new Promise<void>((resolve) => setTimeout(resolve, 0))
+      // Yield to the main thread every 50 pages to avoid blocking during large crawls
+      if (++pageIndex % 50 === 0) {
+        await new Promise<void>((resolve) => setTimeout(resolve, 0))
+      }
     }
   }
 

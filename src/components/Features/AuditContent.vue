@@ -112,6 +112,7 @@ import Btn from '../Btn.vue'
 import InfoBanner from '../InfoBanner.vue'
 import Chip from '../Chip.vue'
 import { auditContent } from '@/features/audit'
+import { pluralize, highlightPattern } from '@/utils/textNormalization'
 import type { AsyncReturnType } from 'type-fest'
 
 const Card = defineAsyncComponent(() => import('../Card.vue'))
@@ -128,24 +129,6 @@ const totalIssues = ref(0)
 const patternsFound = ref<string[]>([])
 
 const hasResults = computed(() => results.value.length > 0)
-
-// Utility functions
-function pluralize(count: number, singular: string, plural: string): string {
-  return count === 1 ? singular : plural
-}
-
-function escapeHtml(str: string): string {
-  const div = document.createElement('div')
-  div.textContent = str
-  return div.innerHTML
-}
-
-function highlightPattern(text: string, pattern: string): string {
-  const escapedText = escapeHtml(text)
-  const escapedPattern = pattern.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
-  const regex = new RegExp(`(${escapedPattern})`, 'gi')
-  return escapedText.replace(regex, '<mark>$1</mark>')
-}
 
 function resetAudit(): void {
   results.value = []

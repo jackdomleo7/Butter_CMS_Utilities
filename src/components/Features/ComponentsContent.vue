@@ -153,6 +153,7 @@ import InfoBanner from '../InfoBanner.vue'
 import Chip from '../Chip.vue'
 import { auditComponents } from '@/features/components'
 import type { ComponentsResponse } from '@/features/components'
+import { pluralize } from '@/utils/textNormalization'
 
 const Card = defineAsyncComponent(() => import('../Card.vue'))
 
@@ -168,10 +169,6 @@ const totalScanned = ref(0)
 
 const hasResults = computed(() => results.value.length > 0)
 const orphanCount = computed(() => results.value.filter((r) => r.usageCount === 0).length)
-
-function pluralize(count: number, singular: string, plural: string): string {
-  return count === 1 ? singular : plural
-}
 
 function resetAudit(): void {
   results.value = []
