@@ -350,4 +350,110 @@ describe('ScopeSelection.vue', () => {
       expect(store.selectedScopes.pageTypes).toEqual(['blog_post'])
     })
   })
+
+  describe('Exclude Prop', () => {
+    it('hides blog checkbox when exclude includes "blog"', () => {
+      const wrapper = mount(ScopeSelection, {
+        props: { exclude: ['blog'] },
+      })
+      // Blog checkbox is the first checkbox - it should not exist when excluded
+      const blogLabel = wrapper
+        .findAll('label')
+        .find((l) => l.text().toLowerCase().includes('blog'))
+      expect(blogLabel).toBeUndefined()
+    })
+
+    it('shows blog checkbox when exclude does not include "blog"', () => {
+      const wrapper = mount(ScopeSelection, {
+        props: { exclude: ['collectionKeys'] },
+      })
+      const blogLabel = wrapper
+        .findAll('label')
+        .find((l) => l.text().toLowerCase().includes('blog'))
+      expect(blogLabel).toBeDefined()
+    })
+
+    it('shows blog checkbox when exclude prop is not provided', () => {
+      const wrapper = mount(ScopeSelection)
+      const blogLabel = wrapper
+        .findAll('label')
+        .find((l) => l.text().toLowerCase().includes('blog'))
+      expect(blogLabel).toBeDefined()
+    })
+
+    it('hides collection keys group when exclude includes "collectionKeys"', () => {
+      const store = useStore()
+      store.collectionKeys = ['products', 'customers']
+
+      const wrapper = mount(ScopeSelection, {
+        props: { exclude: ['collectionKeys'] },
+      })
+
+      const allText = wrapper.text()
+      expect(allText).not.toContain('Collection Keys')
+    })
+
+    it('shows collection keys group when exclude does not include "collectionKeys"', () => {
+      const store = useStore()
+      store.collectionKeys = ['products']
+
+      const wrapper = mount(ScopeSelection, {
+        props: { exclude: ['blog'] },
+      })
+
+      expect(wrapper.text()).toContain('Collection Keys')
+    })
+
+    it('hides both blog and collection keys when both are excluded', () => {
+      const store = useStore()
+      store.collectionKeys = ['products']
+
+      const wrapper = mount(ScopeSelection, {
+        props: { exclude: ['blog', 'collectionKeys'] },
+      })
+
+      const blogLabel = wrapper
+        .findAll('label')
+        .find((l) => l.text().toLowerCase().includes('blog'))
+      expect(blogLabel).toBeUndefined()
+      expect(wrapper.text()).not.toContain('Collection Keys')
+    })
+
+    it('shows page types even when blog and collectionKeys are excluded', () => {
+      const store = useStore()
+      store.pageTypes = ['landing_page']
+
+      const wrapper = mount(ScopeSelection, {
+        props: { exclude: ['blog', 'collectionKeys'] },
+      })
+
+      expect(wrapper.text()).toContain('Page Types')
+      expect(wrapper.text()).toContain('landing_page')
+    })
+
+    it('shows page-types-only empty message when blog and collectionKeys excluded and no page types', () => {
+      const wrapper = mount(ScopeSelection, {
+        props: { exclude: ['blog', 'collectionKeys'] },
+      })
+
+      const emptyMessage = wrapper.find('.scope-selection__empty-scopes')
+      expect(emptyMessage.exists()).toBe(true)
+      expect(emptyMessage.text()).toContain('No page types configured')
+    })
+
+    it('has no effect when exclude is an empty array', () => {
+      const store = useStore()
+      store.collectionKeys = ['products']
+
+      const wrapper = mount(ScopeSelection, {
+        props: { exclude: [] },
+      })
+
+      const blogLabel = wrapper
+        .findAll('label')
+        .find((l) => l.text().toLowerCase().includes('blog'))
+      expect(blogLabel).toBeDefined()
+      expect(wrapper.text()).toContain('Collection Keys')
+    })
+  })
 })

@@ -9,6 +9,7 @@ export const useStore = defineStore('store', () => {
     includePreview: boolean
     pageTypes: string[]
     collectionKeys: string[]
+    knownComponents: string[]
     activeTabIndex: number
     selectedScopes: {
       blog: boolean
@@ -27,10 +28,14 @@ export const useStore = defineStore('store', () => {
             parsed.activeTabIndex >= 0 &&
             parsed.activeTabIndex < 10
           ) {
-            return { ...parsed, activeTabIndex: parsed.activeTabIndex }
+            return {
+              ...parsed,
+              activeTabIndex: parsed.activeTabIndex,
+              knownComponents: parsed.knownComponents ?? [],
+            }
           }
           // If invalid or missing, default to 0
-          return { ...parsed, activeTabIndex: 0 }
+          return { ...parsed, activeTabIndex: 0, knownComponents: parsed.knownComponents ?? [] }
         } catch {
           console.warn('Failed to parse stored config, using defaults')
         }
@@ -41,6 +46,7 @@ export const useStore = defineStore('store', () => {
         includePreview: false,
         pageTypes: [],
         collectionKeys: [],
+        knownComponents: [],
         activeTabIndex: 0,
         selectedScopes: {
           blog: false,
@@ -84,6 +90,13 @@ export const useStore = defineStore('store', () => {
     get: () => config.value.collectionKeys ?? [],
     set: (val: string[]) => {
       config.value.collectionKeys = val
+    },
+  })
+
+  const knownComponents = computed({
+    get: () => config.value.knownComponents ?? [],
+    set: (val: string[]) => {
+      config.value.knownComponents = val
     },
   })
 
@@ -145,6 +158,7 @@ export const useStore = defineStore('store', () => {
     includePreview,
     pageTypes,
     collectionKeys,
+    knownComponents,
     selectedScopes,
     activeTabIndex,
   }

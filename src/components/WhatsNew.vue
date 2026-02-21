@@ -41,6 +41,14 @@ const showModal = ref<boolean>(false)
 
 const features: Feature[] = [
   {
+    id: 'component-usage-audit',
+    type: 'feature',
+    title: 'Component Usage Audit',
+    description:
+      "The new <strong>Components</strong> tab lets you audit which of your known Butter CMS components are actually used across individual pages. Unlike Butter CMS's built-in view (which shows which <em>page types</em> reference a component), this tool reveals which specific pages use each component - so you can spot components with zero real-world page usages. Add your component slugs in API Configuration, run an audit, and see results sorted from least-used to most-used. Components with no page usages are flagged with a warning.",
+    utcDatetimeAdded: new Date('2026-02-21T16:30:00Z'),
+  },
+  {
     id: 'status-badges',
     type: 'improvement',
     title: 'Status badges for content items in Search Content results',

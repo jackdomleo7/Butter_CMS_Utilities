@@ -5,7 +5,7 @@
     </legend>
 
     <!-- Blog Checkbox -->
-    <label class="scope-selection__checkbox-option">
+    <label v-if="!exclude?.includes('blog')" class="scope-selection__checkbox-option">
       <input
         type="checkbox"
         v-model="includeBlog"
@@ -38,7 +38,10 @@
     </div>
 
     <!-- Collection Keys Checkboxes -->
-    <div v-if="store.collectionKeys.length > 0" class="scope-selection__scope-group">
+    <div
+      v-if="!exclude?.includes('collectionKeys') && store.collectionKeys.length > 0"
+      class="scope-selection__scope-group"
+    >
       <div class="scope-selection__scope-group-title">Collection Keys</div>
       <div class="scope-selection__scope-options">
         <label
@@ -61,10 +64,18 @@
 
     <!-- Message if no page types or collection keys configured -->
     <div
-      v-if="store.pageTypes.length === 0 && store.collectionKeys.length === 0"
+      v-if="
+        store.pageTypes.length === 0 &&
+        (exclude?.includes('collectionKeys') || store.collectionKeys.length === 0)
+      "
       class="scope-selection__empty-scopes"
     >
-      <p>No page types or collection keys configured. Configure them in API Configuration above.</p>
+      <p v-if="exclude?.includes('blog') && exclude?.includes('collectionKeys')">
+        No page types configured. Add them in API Configuration above.
+      </p>
+      <p v-else>
+        No page types or collection keys configured. Configure them in API Configuration above.
+      </p>
     </div>
   </fieldset>
 </template>
@@ -76,6 +87,7 @@ import { useStore } from '@/stores/index'
 defineProps<{
   disabled?: boolean
   ariaContext?: string
+  exclude?: ('blog' | 'collectionKeys')[]
 }>()
 
 const store = useStore()

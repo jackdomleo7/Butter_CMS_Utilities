@@ -12,23 +12,15 @@
     <ApiConfiguration />
 
     <Tabs>
-      <template #tabs>
-        <Tab label="Search" icon="🔍" panel-id="search-panel" :index="0" />
-        <Tab label="Audit" icon="⚠️" panel-id="audit-panel" :index="1" />
-      </template>
-      <template #panels="{ activeTabIndex }">
-        <div id="search-panel" role="tabpanel" aria-labelledby="tab-0" v-if="activeTabIndex === 0">
-          <SearchContent />
-        </div>
-        <div
-          id="audit-panel"
-          role="tabpanel"
-          aria-labelledby="tab-1"
-          v-else-if="activeTabIndex === 1"
-        >
-          <AuditContent />
-        </div>
-      </template>
+      <TabPanel label="Search" icon="🔍" :index="0">
+        <SearchContent />
+      </TabPanel>
+      <TabPanel label="Audit" icon="⚠️" :index="1">
+        <AuditContent />
+      </TabPanel>
+      <TabPanel label="Components" icon="🧩" :index="2">
+        <ComponentsContent />
+      </TabPanel>
     </Tabs>
   </main>
   <Footer />
@@ -42,11 +34,14 @@ import Footer from './components/Footer.vue'
 import InfoBanner from './components/InfoBanner.vue'
 import ApiConfiguration from './components/ApiConfiguration.vue'
 import Tabs from './components/Tabs.vue'
-import Tab from './components/Tab.vue'
+import TabPanel from './components/TabPanel.vue'
 import WhatsNew from './components/WhatsNew.vue'
 
 const SearchContent = defineAsyncComponent(() => import('./components/Features/SearchContent.vue'))
 const AuditContent = defineAsyncComponent(() => import('./components/Features/AuditContent.vue'))
+const ComponentsContent = defineAsyncComponent(
+  () => import('./components/Features/ComponentsContent.vue'),
+)
 </script>
 
 <style lang="scss" scoped>

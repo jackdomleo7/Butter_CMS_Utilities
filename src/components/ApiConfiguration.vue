@@ -107,6 +107,37 @@
         </ul>
         <p v-else class="api-config__empty">No collection keys configured yet</p>
       </div>
+
+      <!-- Components Section -->
+      <div class="api-config__section">
+        <h3 class="api-config__section-title">Components</h3>
+        <form @submit.prevent="addKnownComponent" novalidate class="api-config__form">
+          <TextInput
+            id="known-component-input"
+            type="text"
+            v-model="knownComponentInput"
+            root-class="api-config__input"
+            placeholder="e.g. hero_banner, cta_block, testimonial"
+          >
+            <template v-slot:label>Add Component Slug (comma-separated for multiple)</template>
+          </TextInput>
+          <Btn
+            v-if="knownComponentInput"
+            type="submit"
+            status="secondary"
+            class="api-config__button"
+            >Add</Btn
+          >
+        </form>
+        <ul v-if="store.knownComponents.length > 0" class="api-config__list">
+          <li v-for="component in store.knownComponents" :key="component">
+            <Chip removable @remove="removeKnownComponent(component)">
+              {{ component }}
+            </Chip>
+          </li>
+        </ul>
+        <p v-else class="api-config__empty">No known components configured yet</p>
+      </div>
     </div>
   </Accordion>
 </template>
@@ -123,6 +154,7 @@ import Chip from './Chip.vue'
 const store = useStore()
 const pageTypeInput = ref('')
 const collectionKeyInput = ref('')
+const knownComponentInput = ref('')
 
 const maskedToken = computed((): string => {
   if (!store.token) return ''
@@ -166,6 +198,22 @@ function addCollectionKey(): void {
 
 function removeCollectionKey(collectionKey: string): void {
   store.collectionKeys = store.collectionKeys.filter((c: string) => c !== collectionKey)
+}
+
+function addKnownComponent(): void {
+  const values = knownComponentInput.value
+    .split(',')
+    .map((v) => v.trim())
+    .filter((v) => v && !store.knownComponents.includes(v))
+
+  if (values.length > 0) {
+    store.knownComponents = [...store.knownComponents, ...values]
+    knownComponentInput.value = ''
+  }
+}
+
+function removeKnownComponent(component: string): void {
+  store.knownComponents = store.knownComponents.filter((c: string) => c !== component)
 }
 </script>
 

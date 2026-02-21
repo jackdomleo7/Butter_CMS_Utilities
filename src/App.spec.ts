@@ -100,8 +100,8 @@ describe('App.vue', () => {
 
     it('renders Tab components for Search and Audit', () => {
       const wrapper = createWrapper()
-      const tabComponents = wrapper.findAllComponents({ name: 'Tab' })
-      expect(tabComponents).toHaveLength(2)
+      const tabPanelComponents = wrapper.findAllComponents({ name: 'TabPanel' })
+      expect(tabPanelComponents.length).toBeGreaterThanOrEqual(2)
     })
 
     it('renders SearchContent component within tabs', () => {
@@ -136,31 +136,33 @@ describe('App.vue', () => {
   describe('Tab Configuration', () => {
     it('Search tab has correct props', () => {
       const wrapper = createWrapper()
-      const tabs = wrapper.findAllComponents({ name: 'Tab' })
-      const searchTab = tabs[0]
+      const tabPanels = wrapper.findAllComponents({ name: 'TabPanel' })
+      const searchTab = tabPanels.find((t) => t.props('label') === 'Search')
 
+      expect(searchTab).toBeDefined()
       expect(searchTab!.props('label')).toBe('Search')
       expect(searchTab!.props('icon')).toBe('🔍')
-      expect(searchTab!.props('panelId')).toBe('search-panel')
       expect(searchTab!.props('index')).toBe(0)
     })
 
     it('Audit tab has correct props', () => {
       const wrapper = createWrapper()
-      const tabs = wrapper.findAllComponents({ name: 'Tab' })
-      const auditTab = tabs[1]
+      const tabPanels = wrapper.findAllComponents({ name: 'TabPanel' })
+      const auditTab = tabPanels.find((t) => t.props('label') === 'Audit')
 
+      expect(auditTab).toBeDefined()
       expect(auditTab!.props('label')).toBe('Audit')
       expect(auditTab!.props('icon')).toBe('⚠️')
-      expect(auditTab!.props('panelId')).toBe('audit-panel')
       expect(auditTab!.props('index')).toBe(1)
     })
   })
 
   describe('Tab Panels', () => {
-    it('search panel has correct id and role', () => {
+    it('search panel has correct id and role', async () => {
       const wrapper = createWrapper()
-      const searchPanel = wrapper.find('#search-panel')
+      await wrapper.vm.$nextTick()
+
+      const searchPanel = wrapper.find('#tab-panel-0')
 
       expect(searchPanel.exists()).toBe(true)
       expect(searchPanel.attributes('role')).toBe('tabpanel')
@@ -179,7 +181,7 @@ describe('App.vue', () => {
         await flushPromises()
       }
 
-      const auditPanel = wrapper.find('#audit-panel')
+      const auditPanel = wrapper.find('#tab-panel-1')
       expect(auditPanel.exists()).toBe(true)
       expect(auditPanel.attributes('role')).toBe('tabpanel')
       expect(auditPanel.attributes('aria-labelledby')).toBe('tab-1')
