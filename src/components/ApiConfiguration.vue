@@ -3,7 +3,7 @@
     <template #title>
       <div class="api-config__summary">
         <div class="api-config__summary-main">
-          <span class="api-config__title">API Configuration</span>
+          <h2 class="api-config__title">API Configuration</h2>
           <span v-if="store.token" class="api-config__token-preview">{{ maskedToken }}</span>
         </div>
         <div v-if="store.token" class="api-config__toggle">
@@ -245,6 +245,7 @@ function removeKnownComponent(component: string): void {
     font-size: var(--font-size-lg);
     font-weight: 600;
     color: var(--text-primary);
+    margin: 0;
   }
 
   &__token-preview {

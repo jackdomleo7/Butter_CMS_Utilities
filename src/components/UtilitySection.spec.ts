@@ -3,55 +3,6 @@ import { mount } from '@vue/test-utils'
 import UtilitySection from './UtilitySection.vue'
 
 describe('UtilitySection', () => {
-  describe('Props - Title', () => {
-    it('should render with required title prop', () => {
-      const wrapper = mount(UtilitySection, {
-        props: {
-          title: 'Test Utility',
-        },
-      })
-
-      expect(wrapper.find('.utility-section__title').text()).toBe('Test Utility')
-    })
-
-    it('should render title as h3 by default', () => {
-      const wrapper = mount(UtilitySection, {
-        props: {
-          title: 'Default Title',
-        },
-      })
-
-      expect(wrapper.find('h3').exists()).toBe(true)
-      expect(wrapper.find('h3').text()).toBe('Default Title')
-      expect(wrapper.find('h3').classes()).toContain('utility-section__title')
-    })
-
-    it('should render title as h2 when titleHeadingLevel is h2', () => {
-      const wrapper = mount(UtilitySection, {
-        props: {
-          title: 'H2 Title',
-          titleHeadingLevel: 'h2',
-        },
-      })
-
-      expect(wrapper.find('h2').exists()).toBe(true)
-      expect(wrapper.find('h2').text()).toBe('H2 Title')
-      expect(wrapper.find('h3').exists()).toBe(false)
-    })
-
-    it('should render title as h3 when explicitly specified', () => {
-      const wrapper = mount(UtilitySection, {
-        props: {
-          title: 'H3 Title',
-          titleHeadingLevel: 'h3',
-        },
-      })
-
-      expect(wrapper.find('h3').exists()).toBe(true)
-      expect(wrapper.find('h3').text()).toBe('H3 Title')
-    })
-  })
-
   describe('Props - Description', () => {
     it('should not render description by default', () => {
       const wrapper = mount(UtilitySection, {
@@ -227,7 +178,6 @@ describe('UtilitySection', () => {
       const wrapper = mount(UtilitySection, {
         props: {
           title: 'Title',
-          titleHeadingLevel: 'h2',
         },
       })
 

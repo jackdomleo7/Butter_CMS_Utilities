@@ -1,6 +1,6 @@
 <template>
   <section class="utility-section">
-    <component :is="titleHeadingLevel" class="utility-section__title">{{ title }}</component>
+    <h2 class="utility-section__title">{{ title }}</h2>
     <p class="utility-section__description" v-if="description" v-html="description" />
     <div class="utility-section__content">
       <slot />
@@ -9,16 +9,10 @@
 </template>
 
 <script setup lang="ts">
-withDefaults(
-  defineProps<{
-    title: string
-    titleHeadingLevel?: 'h2' | 'h3'
-    description?: string
-  }>(),
-  {
-    titleHeadingLevel: 'h3',
-  },
-)
+defineProps<{
+  title: string
+  description?: string
+}>()
 </script>
 
 <style lang="scss">
