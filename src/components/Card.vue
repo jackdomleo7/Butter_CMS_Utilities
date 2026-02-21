@@ -39,7 +39,6 @@ withDefaults(
   border-radius: var(--radius-lg);
   padding: var(--space-5);
   box-shadow: var(--shadow-sm);
-  transition: all var(--transition-fast);
 
   &--clickable {
     cursor: pointer;
@@ -59,7 +58,9 @@ withDefaults(
   }
 
   @media (prefers-reduced-motion: no-preference) {
-    transition: all var(--transition-fast);
+    transition:
+      box-shadow var(--transition-fast),
+      border-color var(--transition-fast);
   }
 }
 
