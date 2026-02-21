@@ -67,6 +67,7 @@ const emit = defineEmits<{
     color: var(--text-secondary);
     min-width: 1.5rem;
     min-height: 1.5rem;
+    user-select: none;
 
     @media (prefers-reduced-motion: no-preference) {
       transition: color var(--transition-fast);
