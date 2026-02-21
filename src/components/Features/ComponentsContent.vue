@@ -1,10 +1,15 @@
 <template>
   <UtilitySection
     title="Component Usage Audit"
-    description="Identify which of your known Butter CMS components are actually used across individual pages. Unlike Butter CMS's built-in view (which shows which page types reference a component), this tool shows which individual pages use each component — so you can spot components with zero real-world page usages."
+    description="Identify which of your Butter CMS component library components are actually used across individual pages. This applies to reusable components created in the Butter CMS component library — not to inline components defined directly within a page type. Unlike Butter CMS's built-in view (which shows which page types reference a component), this tool shows which individual pages use each component — so you can spot components with zero real-world page usages."
   >
     <!-- Info Banner -->
     <InfoBanner status="info" class="components-content__info">
+      <strong>Component library only:</strong> This tool tracks components from your Butter CMS
+      <em>component library</em> — reusable, shared components created independently and added to
+      page types. It does <strong>not</strong> track inline components defined directly within a
+      page type (local components that are not part of the shared library). Only add slugs for
+      component library components in API Configuration. <br /><br />
       <strong>Page types only:</strong> Components are only available in page types — blog posts and
       collections do not support Butter CMS components. Ensure all of your page types are added in
       API Configuration and all are selected below for a complete analysis. A component showing
@@ -19,8 +24,8 @@
 
     <!-- Guard: no known components configured -->
     <InfoBanner v-if="store.knownComponents.length === 0" status="warning">
-      No known components configured. Add your component slugs in
-      <strong>API Configuration → Known Components</strong> above to run an analysis.
+      No known component library components configured. Add your component library slugs in
+      <strong>API Configuration → Component Library</strong> above to run an analysis.
     </InfoBanner>
 
     <!-- Scope Selection (page types only) -->

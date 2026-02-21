@@ -121,7 +121,12 @@
 
       <!-- Components Section -->
       <div class="api-config__section">
-        <h3 class="api-config__section-title">Components</h3>
+        <h3 class="api-config__section-title">Component Library</h3>
+        <p class="api-config__section-description">
+          Add slugs for components from your Butter CMS <strong>component library</strong> only —
+          these are reusable, shared components created independently and added to page types.
+          Inline components defined directly within a page type are not tracked.
+        </p>
         <form @submit.prevent="addKnownComponent" novalidate class="api-config__form">
           <TextInput
             id="known-component-input"
@@ -130,7 +135,9 @@
             root-class="api-config__input"
             placeholder="e.g. hero_banner, cta_block, testimonial"
           >
-            <template v-slot:label>Add Component Slug (comma-separated for multiple)</template>
+            <template v-slot:label
+              >Add Component Library Slug (comma-separated for multiple)</template
+            >
           </TextInput>
           <Btn
             v-if="knownComponentInput"
@@ -147,7 +154,7 @@
             </Chip>
           </li>
         </ul>
-        <p v-else class="api-config__empty">No known components configured yet</p>
+        <p v-else class="api-config__empty">No component library components configured yet</p>
       </div>
     </div>
   </Accordion>
@@ -379,8 +386,15 @@ function removeKnownComponent(component: string): void {
   &__section-title {
     font-size: var(--font-size-lg);
     font-weight: 600;
-    margin: 0 0 var(--space-4) 0;
+    margin: 0 0 var(--space-2) 0;
     color: var(--text-primary);
+  }
+
+  &__section-description {
+    font-size: var(--font-size-sm);
+    color: var(--text-secondary);
+    line-height: var(--line-height-relaxed);
+    margin: 0 0 var(--space-4) 0;
   }
 
   &__form {

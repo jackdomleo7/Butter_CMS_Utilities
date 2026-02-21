@@ -809,7 +809,7 @@ describe('ApiConfiguration.vue', () => {
   describe('Known Components Section', () => {
     it('renders known components section heading', () => {
       const wrapper = mount(ApiConfiguration)
-      expect(wrapper.text()).toContain('Components')
+      expect(wrapper.text()).toContain('Component Library')
     })
 
     it('renders the known component TextInput', () => {
@@ -823,7 +823,7 @@ describe('ApiConfiguration.vue', () => {
       store.knownComponents = []
 
       const wrapper = mount(ApiConfiguration)
-      expect(wrapper.text()).toContain('No known components configured yet')
+      expect(wrapper.text()).toContain('No component library components configured yet')
     })
 
     it('does not show Add button when known component input is empty', () => {

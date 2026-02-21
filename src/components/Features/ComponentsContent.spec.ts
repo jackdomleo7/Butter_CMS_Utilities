@@ -56,7 +56,7 @@ describe('ComponentsContent.vue', () => {
     it('shows warning when no known components configured', () => {
       store.knownComponents = []
       const wrapper = mountComponent()
-      expect(wrapper.text()).toContain('No known components configured')
+      expect(wrapper.text()).toContain('No known component library components configured')
     })
 
     it('does not show ScopeSelection when no known components configured', () => {

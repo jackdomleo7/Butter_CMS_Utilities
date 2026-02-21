@@ -47,10 +47,10 @@ Detect bloated HTML attributes introduced when content is pasted from external t
 - Shows context snippets around each finding for manual review
 
 ### Component Usage Audit
-Audit which of your known Butter CMS components are actually used across individual pages — complementing Butter CMS's built-in view, which shows which page types reference a component:
-- Add your component slugs to the Known Components configuration
+Audit which of your Butter CMS **component library** components are actually used across individual pages — complementing Butter CMS's built-in view, which shows which page types reference a component. This applies to reusable components created in the Butter CMS component library, not to inline components defined directly within a page type:
+- Add your component library slugs to the Component Library configuration
 - Scans all fields recursively — detects both object key-based and `type` field-based component references
-- Shows usage counts for each known component with a list of individual pages where it appears
+- Shows usage counts for each component library component with a list of individual pages where it appears
 - Warns when a component has zero individual page usages, noting that Butter CMS may still reference it at the page type level
 
 ## 🔧 Development
