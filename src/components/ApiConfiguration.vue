@@ -19,6 +19,17 @@
     </template>
 
     <div class="api-config__content">
+      <div v-if="!store.token" class="api-config__example">
+        <p class="api-config__example-text">
+          <strong>New to Butter CMS Utilities?</strong> Load an example configuration to explore the
+          tool before using your own API token. Page types and collection keys are pre-configured
+          for the example account.
+        </p>
+        <Btn status="secondary" class="api-config__example-btn" @click="loadExampleConfig">
+          Load Example Configuration
+        </Btn>
+      </div>
+
       <div class="api-config__token-input-container">
         <TextInput
           root-class="api-config__token-input"
@@ -151,6 +162,17 @@ import TextInput from './TextInput.vue'
 import Btn from './Btn.vue'
 import Chip from './Chip.vue'
 
+const EXAMPLE_TOKEN = '4f4433c31718b6821b9850fe1921255020be6dc2'
+const EXAMPLE_PAGE_TYPES = ['landing-page', 'product_page']
+const EXAMPLE_COLLECTION_KEYS = ['navigation_menu', 'recipe']
+const EXAMPLE_KNOWN_COMPONENTS = [
+  'features',
+  'hero',
+  'seo',
+  'two_column_with_image',
+  'some_unused_component',
+]
+
 const store = useStore()
 const pageTypeInput = ref('')
 const collectionKeyInput = ref('')
@@ -167,6 +189,14 @@ const maskedToken = computed((): string => {
 const sortedPageTypes = computed(() => [...store.pageTypes].sort())
 const sortedCollectionKeys = computed(() => [...store.collectionKeys].sort())
 const sortedKnownComponents = computed(() => [...store.knownComponents].sort())
+
+function loadExampleConfig(): void {
+  store.token = EXAMPLE_TOKEN
+  store.lockToken = true
+  store.pageTypes = [...EXAMPLE_PAGE_TYPES]
+  store.collectionKeys = [...EXAMPLE_COLLECTION_KEYS]
+  store.knownComponents = [...EXAMPLE_KNOWN_COMPONENTS]
+}
 
 function toggleTokenLock(): void {
   store.lockToken = !store.lockToken
@@ -304,6 +334,33 @@ function removeKnownComponent(component: string): void {
 
     &:active {
       transform: scale(0.98);
+    }
+  }
+
+  &__example {
+    display: flex;
+    align-items: center;
+    gap: var(--space-4);
+    padding: var(--space-4) var(--space-5);
+    background-color: var(--info-bg);
+    border-left: 4px solid var(--info);
+    border-radius: var(--radius-md);
+    font-size: var(--font-size-sm);
+    line-height: var(--line-height-relaxed);
+
+    @media (max-width: 600px) {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+
+    &-text {
+      flex: 1;
+      margin: 0;
+    }
+
+    &-btn {
+      flex-shrink: 0;
+      white-space: nowrap;
     }
   }
 

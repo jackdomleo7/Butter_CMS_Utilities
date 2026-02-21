@@ -10,6 +10,17 @@ import Btn from './Btn.vue'
 import Chip from './Chip.vue'
 import { useStore } from '@/stores/index'
 
+const EXAMPLE_TOKEN = '4f4433c31718b6821b9850fe1921255020be6dc2'
+const EXAMPLE_PAGE_TYPES = ['landing-page', 'product_page']
+const EXAMPLE_COLLECTION_KEYS = ['navigation_menu', 'recipe']
+const EXAMPLE_KNOWN_COMPONENTS = [
+  'features',
+  'hero',
+  'seo',
+  'two_column_with_image',
+  'some_unused_component',
+]
+
 // Type helper for accessing component internals in tests
 interface ApiConfigurationInstance extends ComponentPublicInstance {
   store: ReturnType<typeof useStore>
@@ -937,6 +948,134 @@ describe('ApiConfiguration.vue', () => {
 
       expect(store.knownComponents).not.toContain('hero_banner')
       expect(store.knownComponents).toContain('cta_block')
+    })
+  })
+
+  describe('Example Configuration', () => {
+    it('renders the example config block when token is empty', () => {
+      const wrapper = mount(ApiConfiguration)
+      const block = wrapper.find('.api-config__example')
+      expect(block.exists()).toBe(true)
+    })
+
+    it('does not render the example config block when token is set', async () => {
+      const wrapper = mount(ApiConfiguration)
+      getVm(wrapper).store.token = 'my_real_token'
+      await wrapper.vm.$nextTick()
+      const block = wrapper.find('.api-config__example')
+      expect(block.exists()).toBe(false)
+    })
+
+    it('renders descriptive text inside the example block', () => {
+      const wrapper = mount(ApiConfiguration)
+      const text = wrapper.find('.api-config__example-text')
+      expect(text.exists()).toBe(true)
+      expect(text.text()).toContain('New to Butter CMS Utilities?')
+    })
+
+    it('renders a "Load Example Configuration" button', () => {
+      const wrapper = mount(ApiConfiguration)
+      const btn = wrapper.find('.api-config__example-btn')
+      expect(btn.exists()).toBe(true)
+      expect(btn.text()).toBe('Load Example Configuration')
+    })
+
+    it('sets store.token to the example token when clicked', async () => {
+      const wrapper = mount(ApiConfiguration)
+      await wrapper.find('.api-config__example-btn').trigger('click')
+      expect(getVm(wrapper).store.token).toBe(EXAMPLE_TOKEN)
+    })
+
+    it('sets store.lockToken to true when clicked', async () => {
+      const wrapper = mount(ApiConfiguration)
+      await wrapper.find('.api-config__example-btn').trigger('click')
+      expect(getVm(wrapper).store.lockToken).toBe(true)
+    })
+
+    it('adds example page types to store.pageTypes when clicked', async () => {
+      const wrapper = mount(ApiConfiguration)
+      getVm(wrapper).store.pageTypes = []
+      await wrapper.find('.api-config__example-btn').trigger('click')
+      EXAMPLE_PAGE_TYPES.forEach((pt) => {
+        expect(getVm(wrapper).store.pageTypes).toContain(pt)
+      })
+    })
+
+    it('adds example collection keys to store.collectionKeys when clicked', async () => {
+      const wrapper = mount(ApiConfiguration)
+      getVm(wrapper).store.collectionKeys = []
+      await wrapper.find('.api-config__example-btn').trigger('click')
+      EXAMPLE_COLLECTION_KEYS.forEach((ck) => {
+        expect(getVm(wrapper).store.collectionKeys).toContain(ck)
+      })
+    })
+
+    it('overwrites existing page types when loading example config', async () => {
+      const wrapper = mount(ApiConfiguration)
+      getVm(wrapper).store.pageTypes = ['my_existing_type']
+      await wrapper.find('.api-config__example-btn').trigger('click')
+      expect(getVm(wrapper).store.pageTypes).not.toContain('my_existing_type')
+      EXAMPLE_PAGE_TYPES.forEach((pt) => {
+        expect(getVm(wrapper).store.pageTypes).toContain(pt)
+      })
+    })
+
+    it('overwrites existing collection keys when loading example config', async () => {
+      const wrapper = mount(ApiConfiguration)
+      getVm(wrapper).store.collectionKeys = ['my_existing_key']
+      await wrapper.find('.api-config__example-btn').trigger('click')
+      expect(getVm(wrapper).store.collectionKeys).not.toContain('my_existing_key')
+      EXAMPLE_COLLECTION_KEYS.forEach((ck) => {
+        expect(getVm(wrapper).store.collectionKeys).toContain(ck)
+      })
+    })
+
+    it('sets page types to exactly the example values', async () => {
+      const wrapper = mount(ApiConfiguration)
+      getVm(wrapper).store.pageTypes = ['some_other_type']
+      await wrapper.find('.api-config__example-btn').trigger('click')
+      expect(getVm(wrapper).store.pageTypes).toEqual(EXAMPLE_PAGE_TYPES)
+    })
+
+    it('sets collection keys to exactly the example values', async () => {
+      const wrapper = mount(ApiConfiguration)
+      getVm(wrapper).store.collectionKeys = ['some_other_key']
+      await wrapper.find('.api-config__example-btn').trigger('click')
+      expect(getVm(wrapper).store.collectionKeys).toEqual(EXAMPLE_COLLECTION_KEYS)
+    })
+
+    it('hides example block after loading example config', async () => {
+      const wrapper = mount(ApiConfiguration)
+      await wrapper.find('.api-config__example-btn').trigger('click')
+      await wrapper.vm.$nextTick()
+      expect(wrapper.find('.api-config__example').exists()).toBe(false)
+    })
+
+    it.each(EXAMPLE_KNOWN_COMPONENTS)(
+      'adds "%s" to store.knownComponents when clicked',
+      async (component) => {
+        const wrapper = mount(ApiConfiguration)
+        getVm(wrapper).store.knownComponents = []
+        await wrapper.find('.api-config__example-btn').trigger('click')
+        expect(getVm(wrapper).store.knownComponents).toContain(component)
+      },
+    )
+
+    it('overwrites existing known components when loading example config', async () => {
+      const wrapper = mount(ApiConfiguration)
+      getVm(wrapper).store.knownComponents = ['my_existing_component']
+      await wrapper.find('.api-config__example-btn').trigger('click')
+      expect(getVm(wrapper).store.knownComponents).not.toContain('my_existing_component')
+      EXAMPLE_KNOWN_COMPONENTS.forEach((c) => {
+        expect(getVm(wrapper).store.knownComponents).toContain(c)
+      })
+    })
+
+    it('sets known components to exactly the example values', async () => {
+      const wrapper = mount(ApiConfiguration)
+      getVm(wrapper).store.knownComponents = [...EXAMPLE_KNOWN_COMPONENTS]
+      await wrapper.find('.api-config__example-btn').trigger('click')
+      expect(getVm(wrapper).store.knownComponents).toEqual(EXAMPLE_KNOWN_COMPONENTS)
     })
   })
 })
