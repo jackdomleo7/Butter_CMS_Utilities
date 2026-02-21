@@ -293,7 +293,7 @@ function removeKnownComponent(component: string): void {
   }
 
   &__content {
-    padding: var(--space-4);
+    padding: var(--space-2);
     display: flex;
     flex-direction: column;
     gap: var(--space-6);
