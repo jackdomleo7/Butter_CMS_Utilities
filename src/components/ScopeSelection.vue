@@ -143,6 +143,7 @@ function toggleCollectionKey(collectionKey: string): void {
     gap: var(--space-2);
     cursor: pointer;
     font-size: var(--font-size-sm);
+    word-break: break-all;
 
     &:disabled {
       opacity: 0.5;

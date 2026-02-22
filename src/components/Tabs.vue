@@ -157,6 +157,7 @@ onUnmounted(() => {
     gap: var(--space-1);
     border-bottom: 1px solid var(--border-base);
     margin-bottom: var(--space-6);
+    overflow-x: auto;
   }
 
   &__panels {
