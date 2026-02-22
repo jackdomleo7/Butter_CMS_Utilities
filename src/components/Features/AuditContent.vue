@@ -270,7 +270,6 @@ const issuesSummary = computed(() => {
 
   &__result-card {
     margin-bottom: var(--space-4);
-    border-left: 3px solid var(--accent-blue);
   }
 
   &__result-header {
