@@ -1,10 +1,10 @@
 # Butter CMS Utilities
 
-An unofficial collection of client-side utilities for Butter CMS. These tools fill gaps in the Butter CMS workflow that are not available out of the box.
+An unofficial collection of client-side utilities for [Butter CMS](https://buttercms.com/). These tools fill gaps in the Butter CMS workflow that are not (yet) available out of the box.
 
 ## 🎯 What This Is
 
-A simple, focused web application that provides utilities for working with Butter CMS content. All operations run entirely in your browser - no servers, no data collection, no third-party tracking.
+A simple, focused web application that provides utilities for working with Butter CMS content. All operations run entirely in your browser - no servers, no data collection, no third-party tracking. Just pure utility.
 
 ## 🔒 Privacy & Security
 
@@ -16,7 +16,7 @@ A simple, focused web application that provides utilities for working with Butte
 - Your Butter CMS token makes direct API calls to Butter CMS only
 - Settings stored locally in your browser's localStorage
 
-**Only requires a read-only API token.** This application never writes or modifies your Butter CMS content.
+**Only requires a read-only API token.** This application **never** writes or modifies your Butter CMS content.
 
 ## 🚀 Usage
 
