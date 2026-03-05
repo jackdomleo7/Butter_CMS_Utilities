@@ -20,7 +20,7 @@ describe('WhatsNew.vue', () => {
 
   beforeEach(() => {
     localStorage.clear()
-    vi.useFakeTimers()
+    vi.useFakeTimers({ now: new Date('2026-03-12T00:00:00Z') })
   })
 
   afterEach(() => {
