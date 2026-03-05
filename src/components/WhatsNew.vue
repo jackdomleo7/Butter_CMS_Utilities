@@ -41,6 +41,14 @@ const showModal = ref<boolean>(false)
 
 const features: Feature[] = [
   {
+    id: 'improve-audit-figma',
+    type: 'improvement',
+    title: 'Improve HTML Audit for Figma metadata',
+    description:
+      `Improved the Audit feature to search for common <code>data-metadata</code>, <code>data-buffer</code>, <code>&lt;!--(figmeta)</code>, and <code>&lt;!--(figma)</code> patterns. This should help catch more of the bloated HTML attributes that Figma adds when copying content, which can inflate page size and affect Core Web Vital metrics.`,
+    utcDatetimeAdded: new Date('2026-03-05T18:45:00Z'),
+  },
+  {
     id: 'component-usage-audit',
     type: 'feature',
     title: 'Component Usage Audit',

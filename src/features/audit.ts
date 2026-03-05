@@ -52,6 +52,10 @@ export const UGLY_HTML_PATTERNS = [
   'figma=',
   'figmeta=',
   'data-figma',
+  'data-metadata',
+  'data-buffer',
+  '<!--(figmeta)',
+  '<!--(figma)',
 
   // Google Docs attributes
   'google-',
